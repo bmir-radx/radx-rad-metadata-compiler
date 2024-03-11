@@ -70,14 +70,15 @@ public class RADxRadGenerator {
       // Set properties for the creator
       Name name = new Name.Builder()
           .setFullName(dataMap.get(CREATOR_FULLNAME.getValue() + index))
-          .setFirstName(dataMap.get(CREATOR_FULLNAME.getValue() + index))
-          .setMiddleName(dataMap.get(CREATOR_FULLNAME.getValue() + index))
-          .setLastName(dataMap.get(CREATOR_FULLNAME.getValue() + index))
+          .setFirstName(dataMap.get(CREATOR_FIRSTNAME.getValue() + index))
+          .setMiddleName(dataMap.get(CREATOR_MIDDLENAME.getValue() + index))
+          .setLastName(dataMap.get(CREATOR_LASTNAME.getValue() + index))
           .build();
 
       Affiliation affiliation = new Affiliation.Builder()
-          .setAffiliationName(dataMap.get(CREATOR_AFFILIATION_NAME.getValue() + index))
-          .setAffiliationIdentifier(dataMap.get(CREATOR_AFFILIATION_IDENTIFIER.getValue() + index))
+          .setAffiliationName(dataMap.get(CREATOR_INST_NAME.getValue() + index))
+          .setAffiliationIdentifier(dataMap.get(CREATOR_INST_ID.getValue() + index))
+          .setAffiliationIdentifierScheme(dataMap.get(CREATOR_INST_ID_TYPE.getValue() + index))
           .build();
 
       Person creator = new Person.Builder()

@@ -13,7 +13,7 @@ public class SpreadsheetReaderTest {
     String pathToFile = getClass().getClassLoader().getResource("RADxRadMetadataTemplateSheet.xlsx").getPath();
 
     SpreadsheetReader reader = new SpreadsheetReader();
-    Map<String, String> fieldValues = reader.readSpreadsheet(pathToFile);
+    Map<String, String> fieldValues = reader.readRadxRadSpreadsheet(pathToFile);
 
     assertEquals("Diana Carolina Vanegas-Gamboa", fieldValues.get("pi_fullname_1"));
     assertEquals("Development of an Automated Diagnostic Platform for SARS-CoV-2 Monitoring in Vulnerable Areas", fieldValues.get("project_title"));

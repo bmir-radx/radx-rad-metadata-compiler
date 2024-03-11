@@ -58,18 +58,26 @@ public class SpreadsheetReader {
       }
       case NUMERIC -> {
         if (DateUtil.isCellDateFormatted(cell)) {
-          // Format date value as required
+          // TODO Format date value as required
           return cell.getDateCellValue().toString();
         } else {
           // Convert numeric value to String
-          return Double.toString(cell.getNumericCellValue());
+//          return Double.toString(cell.getNumericCellValue());
+          double value = cell.getNumericCellValue();
+          if (Math.floor(value) == value) {
+            // It's a whole number, convert to String without a decimal point
+            return String.valueOf((long)value);
+          } else {
+            // It's a decimal number, convert to String as is
+            return String.valueOf(value);
+          }
         }
       }
       case BOOLEAN -> {
         return Boolean.toString(cell.getBooleanCellValue());
       }
       default -> {
-        return "";
+        return null;
       }
     }
   }
