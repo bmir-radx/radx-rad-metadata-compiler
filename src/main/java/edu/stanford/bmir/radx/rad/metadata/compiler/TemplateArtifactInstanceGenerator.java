@@ -2,8 +2,6 @@ package edu.stanford.bmir.radx.rad.metadata.compiler;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import edu.stanford.bmir.radx.metadata.validator.lib.Constants;
-import edu.stanford.bmir.radx.metadata.validator.lib.JsonLoader;
 import org.metadatacenter.artifacts.model.core.ElementInstanceArtifact;
 import org.metadatacenter.artifacts.model.core.FieldInstanceArtifact;
 import org.metadatacenter.artifacts.model.core.TemplateInstanceArtifact;
@@ -36,13 +34,14 @@ public class TemplateArtifactInstanceGenerator {
     var groupedData = groupData(spreadsheetData, spreadsheet2template, templateSchemaArtifact);
 
     //generate elements that have values in the spreadsheet
-    var templateInstanceBuilder = buildElementsWithValues(groupedData, templateSchemaArtifact,spreadsheetData);
+    var templateInstanceArtifactBuilder = TemplateInstanceArtifact.builder();
+    buildElementsWithValues(groupedData, templateSchemaArtifact, templateInstanceArtifactBuilder, spreadsheetData);
 
     //generate elements that does not contained in the spreadsheet
     var notPresentElements = getNotPresentElementsSet(groupedData, expectedElements);
-    var templateInstanceBuilder2 = buildEmptyElementInstances(notPresentElements, templateSchemaArtifact, templateInstanceBuilder);
+    buildEmptyElementInstances(notPresentElements, templateSchemaArtifact, templateInstanceArtifactBuilder);
 
-    return templateInstanceBuilder2
+    return templateInstanceArtifactBuilder
         .withIsBasedOn(new URI(IS_BASED_ON.getField()))
         .withDescription(SCHEMA_DESCRIPTION.getField())
         .withName(SCHEMA_NAME.getField())
@@ -140,11 +139,10 @@ public class TemplateArtifactInstanceGenerator {
    * Build elements that have values in the spreadsheet
    * @return
    */
-  private TemplateInstanceArtifact.Builder buildElementsWithValues(Map<String, Map<Integer, Map<String, List<String>>>> groupedData,
+  private void buildElementsWithValues(Map<String, Map<Integer, Map<String, List<String>>>> groupedData,
                                                                    TemplateSchemaArtifact templateSchemaArtifact,
+                                                                   TemplateInstanceArtifact.Builder templateInstanceArtifactBuilder,
                                                                    Map<String, String> spreadsheetData) throws URISyntaxException {
-
-    var templateInstanceBuilder = TemplateInstanceArtifact.builder();
 
     for (Map.Entry<String, Map<Integer, Map<String, List<String>>>> entry : groupedData.entrySet()) {
       var elementName = entry.getKey();
@@ -213,7 +211,7 @@ public class TemplateArtifactInstanceGenerator {
         //Since radx-rad spreadsheet don't have fields that maps to nested element
         //directly build empty nested element
         for(var childElement : childElements){
-          buildEmptyElementInstance(childElement, templateSchemaArtifact, elementInstanceBuilder, "/" + elementName + "/" + childElement);
+          buildSingleEmptyElementInstance(childElement, templateSchemaArtifact, elementInstanceBuilder, "/" + elementName + "/" + childElement);
         }
 
         //Add context for each elementInstance
@@ -230,13 +228,11 @@ public class TemplateArtifactInstanceGenerator {
       };
 
       if(isMultipleElement){
-        templateInstanceBuilder.withMultiInstanceElementInstances(elementName, elementInstanceArtifacts);
+        templateInstanceArtifactBuilder.withMultiInstanceElementInstances(elementName, elementInstanceArtifacts);
       } else{
-        templateInstanceBuilder.withElementInstance(elementName, elementInstanceArtifacts.get(0));
+        templateInstanceArtifactBuilder.withElementInstance(elementName, elementInstanceArtifacts.get(0));
       }
     };
-
-    return templateInstanceBuilder;
   }
 
   private Set<String> getNotPresentElementsSet(Map<String, Map<Integer, Map<String, List<String>>>> groupedData, List<String> expectedElements){
@@ -253,7 +249,7 @@ public class TemplateArtifactInstanceGenerator {
    * @param templateInstanceBuilder
    * @return
    */
-  private TemplateInstanceArtifact.Builder buildEmptyElementInstances(Set<String> notPresentElements,
+  private void buildEmptyElementInstances(Set<String> notPresentElements,
                                                                       TemplateSchemaArtifact templateSchemaArtifact,
                                                                       TemplateInstanceArtifact.Builder templateInstanceBuilder){
     for(var elementName : notPresentElements){
@@ -262,16 +258,16 @@ public class TemplateArtifactInstanceGenerator {
       if(isMultipleElement){
         templateInstanceBuilder.withMultiInstanceElementInstances(elementName, List.of(elementInstanceBuilder.build()));
       } else{
-        buildEmptyElementInstance(elementName, templateSchemaArtifact, elementInstanceBuilder, "/" + elementName);
+          buildSingleEmptyElementInstance(elementName, templateSchemaArtifact, elementInstanceBuilder, "/" + elementName);
+          templateInstanceBuilder.withElementInstance(elementName, elementInstanceBuilder.build());
       }
     }
-    return templateInstanceBuilder;
   }
 
-  private ElementInstanceArtifact.Builder buildEmptyElementInstance(String elementName,
-                                                                     TemplateSchemaArtifact templateSchemaArtifact,
-                                                                     ElementInstanceArtifact.Builder elementInstanceBuilder,
-                                                                    String path){
+  private void buildSingleEmptyElementInstance(String elementName,
+                                                                          TemplateSchemaArtifact templateSchemaArtifact,
+                                                                          ElementInstanceArtifact.Builder elementInstanceBuilder,
+                                                                          String path){
     var elementSchemaArtifact = templateSchemaArtifact.getElementSchemaArtifact(elementName);
     var childFields = elementSchemaArtifact.getFieldNames();
 
@@ -295,11 +291,9 @@ public class TemplateArtifactInstanceGenerator {
             .withMultiInstanceElementInstances(childElement,
                 List.of(ElementInstanceArtifact.builder().build()));
       } else {
-        buildEmptyElementInstance(childElement, templateSchemaArtifact, elementInstanceBuilder, path + "/" + childElement);
+        buildSingleEmptyElementInstance(childElement, templateSchemaArtifact, elementInstanceBuilder, path + "/" + childElement);
       }
     }
-
-    return elementInstanceBuilder;
   }
 
   private FieldInstanceArtifact buildEmptyFieldInstance(){
