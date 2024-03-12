@@ -31,7 +31,7 @@ public class CedarInstanceGenerator {
     TemplateSchemaArtifact templateSchemaArtifact = jsonSchemaArtifactReader.readTemplateSchemaArtifact((ObjectNode) templateNode);
 
     return TemplateInstanceArtifact.builder()
-        .withJsonLdContext(contextGenerator.generateTemplateInstanceContext(templateSchemaArtifact))
+//        .withJsonLdContext(contextGenerator.generateTemplateInstanceContext(templateSchemaArtifact))
         .withIsBasedOn(new URI(isBasedOnUri))
         .withName(SCHEMA_NAME.getField())
         .withDescription(SCHEMA_DESCRIPTION.getField())
@@ -114,7 +114,7 @@ public class CedarInstanceGenerator {
     ElementInstanceArtifact elementInstanceArtifact;
     if(elementName.equals(DATA_FILE_CONTRIBUTORS)){
       elementInstanceArtifact = ElementInstanceArtifact.builder()
-          .withJsonLdContext(contextGenerator.generateElementInstanceContext(templateSchemaArtifact.getElementSchemaArtifact(elementName.getField())))
+//          .withJsonLdContext(contextGenerator.generateElementInstanceContext(templateSchemaArtifact.getElementSchemaArtifact(elementName.getField())))
           .withSingleInstanceFieldInstance(CONTRIBUTOR_TYPE.getField(), typeField)
           .withSingleInstanceFieldInstance(CONTRIBUTOR_NAME.getField(), nameField)
           .withSingleInstanceFieldInstance(CONTRIBUTOR_GIVEN_NAME.getField(), givenNameField)
@@ -129,7 +129,7 @@ public class CedarInstanceGenerator {
           .build();
     } else{
       elementInstanceArtifact = ElementInstanceArtifact.builder()
-          .withJsonLdContext(contextGenerator.generateElementInstanceContext(templateSchemaArtifact.getElementSchemaArtifact(elementName.getField())))
+//          .withJsonLdContext(contextGenerator.generateElementInstanceContext(templateSchemaArtifact.getElementSchemaArtifact(elementName.getField())))
           .withSingleInstanceFieldInstance(CREATOR_TYPE.getField(), typeField)
           .withSingleInstanceFieldInstance(CREATOR_NAME.getField(), nameField)
           .withSingleInstanceFieldInstance(CREATOR_GIVEN_NAME.getField(), givenNameField)
@@ -180,7 +180,7 @@ public class CedarInstanceGenerator {
         .build();
 
     var elementInstanceArtifact = ElementInstanceArtifact.builder()
-        .withJsonLdContext(contextGenerator.generateElementInstanceContext(templateSchemaArtifact.getElementSchemaArtifact(DATA_FILE_PARENT_STUDIES.getField())))
+//        .withJsonLdContext(contextGenerator.generateElementInstanceContext(templateSchemaArtifact.getElementSchemaArtifact(DATA_FILE_PARENT_STUDIES.getField())))
         .withSingleInstanceFieldInstance(STUDY_IDENTIFIER_SCHEME.getField(), studyIdentifierSchemeField)
         .withSingleInstanceFieldInstance(STUDY_END_DATE.getField(), studyEndDateField)
         .withSingleInstanceFieldInstance(STUDY_START_DATE.getField(), studyStartDateField)
@@ -199,7 +199,7 @@ public class CedarInstanceGenerator {
         .withJsonLdValue(radxRadMetadata.getStudy().getKeywords())
         .build();
     var elementInstanceArtifact = ElementInstanceArtifact.builder()
-        .withJsonLdContext(contextGenerator.generateElementInstanceContext(templateSchemaArtifact.getElementSchemaArtifact(DATA_FILE_SUBJECTS.getField())))
+//        .withJsonLdContext(contextGenerator.generateElementInstanceContext(templateSchemaArtifact.getElementSchemaArtifact(DATA_FILE_SUBJECTS.getField())))
         .withSingleInstanceFieldInstance(SUBJECT_IDENTIFIER.getField(), subjectIdentifierField)
         .withSingleInstanceFieldInstance(KEYWORD.getField(), keywordField)
         .build();
@@ -226,7 +226,7 @@ public class CedarInstanceGenerator {
     var relatedResourceRelation = FieldInstanceArtifact.builder().build();
 
     var elementInstanceArtifact = ElementInstanceArtifact.builder()
-        .withJsonLdContext(contextGenerator.generateElementInstanceContext(templateSchemaArtifact.getElementSchemaArtifact(DATA_FILE_RELATED_RESOURCES.getField())))
+//        .withJsonLdContext(contextGenerator.generateElementInstanceContext(templateSchemaArtifact.getElementSchemaArtifact(DATA_FILE_RELATED_RESOURCES.getField())))
         .withSingleInstanceFieldInstance(RELATED_RESOURCE_IDENTIFER.getField(), relatedResourceIdentifier)
         .withSingleInstanceFieldInstance(RELATED_RESOURCE_IDENTIFER_TYPE.getField(), relatedResourceIdentifierType)
         .withSingleInstanceFieldInstance(RELATED_RESOURCE_FILE_NAME.getField(), relatedResourceFileName)
@@ -244,7 +244,7 @@ public class CedarInstanceGenerator {
     var languageField = FieldInstanceArtifact.builder().build();
 
     var elementInstanceArtifact = ElementInstanceArtifact.builder()
-        .withJsonLdContext(contextGenerator.generateElementInstanceContext(templateSchemaArtifact.getElementSchemaArtifact(DATA_FILE_TITLES.getField())))
+//        .withJsonLdContext(contextGenerator.generateElementInstanceContext(templateSchemaArtifact.getElementSchemaArtifact(DATA_FILE_TITLES.getField())))
         .withSingleInstanceFieldInstance(TITLE.getField(), titleField)
         .withSingleInstanceFieldInstance(LANGUAGE.getField(), languageField)
         .build();
@@ -258,7 +258,7 @@ public class CedarInstanceGenerator {
         .build();
 
     return ElementInstanceArtifact.builder()
-        .withJsonLdContext(contextGenerator.generateElementInstanceContext(templateSchemaArtifact.getElementSchemaArtifact(DATA_FILE_DATA_DICTIONARY.getField())))
+//        .withJsonLdContext(contextGenerator.generateElementInstanceContext(templateSchemaArtifact.getElementSchemaArtifact(DATA_FILE_DATA_DICTIONARY.getField())))
         .withSingleInstanceFieldInstance(RadxSpecificationMetadataConstant.DATA_DICTIONARY_FILE_NAME.getField(), dataDictionaryFileNameField)
         .build();
   }
@@ -279,7 +279,7 @@ public class CedarInstanceGenerator {
     }
 
     var elementInstanceArtifact = ElementInstanceArtifact.builder()
-        .withJsonLdContext(contextGenerator.generateElementInstanceContext(templateSchemaArtifact.getElementSchemaArtifact(DATA_FILE_DATES.getField())))
+//        .withJsonLdContext(contextGenerator.generateElementInstanceContext(templateSchemaArtifact.getElementSchemaArtifact(DATA_FILE_DATES.getField())))
         .withSingleInstanceFieldInstance(DATA_FILE_DATES.getField(), dateField)
         .withSingleInstanceFieldInstance(EVENT_TYPE.getField(), eventTypeField)
         .build();
@@ -297,7 +297,7 @@ public class CedarInstanceGenerator {
         .build();
 
     return ElementInstanceArtifact.builder()
-        .withJsonLdContext(contextGenerator.generateElementInstanceContext(templateSchemaArtifact.getElementSchemaArtifact(DATA_FILE_IDENTITY.getField())))
+//        .withJsonLdContext(contextGenerator.generateElementInstanceContext(templateSchemaArtifact.getElementSchemaArtifact(DATA_FILE_IDENTITY.getField())))
         .withSingleInstanceFieldInstance(IDENTIFIER.getField(), identifierField)
         .withSingleInstanceFieldInstance(IDENTIFIER_TYPE.getField(), identifierTypeField)
         .withSingleInstanceFieldInstance(FILE_NAME.getField(), fileNameField)
@@ -377,7 +377,7 @@ public class CedarInstanceGenerator {
     }
 
     return  ElementInstanceArtifact.builder()
-        .withJsonLdContext(contextGenerator.generateElementInstanceContext(templateSchemaArtifact.getElementSchemaArtifact(AUXILIARY_METADATA.getField())))
+//        .withJsonLdContext(contextGenerator.generateElementInstanceContext(templateSchemaArtifact.getElementSchemaArtifact(AUXILIARY_METADATA.getField())))
         .withMultiInstanceFieldInstances(ADDITIONAL_COMMENTARY.getField(), List.of(additionalCommentaryField.build()))
         .withAttributeValueFieldInstances(DATA_FILE_DESCRIPTIVE_KEY_VALUE_PAIRS.getField(), attributeValueFieldInstances)
         .build();
@@ -389,7 +389,7 @@ public class CedarInstanceGenerator {
     var tableInTsvField = FieldInstanceArtifact.builder().build();
 
     return ElementInstanceArtifact.builder()
-        .withJsonLdContext(contextGenerator.generateElementInstanceContext(templateSchemaArtifact.getElementSchemaArtifact(DATA_CHARACTERISTICS_SUMMARY.getField())))
+//        .withJsonLdContext(contextGenerator.generateElementInstanceContext(templateSchemaArtifact.getElementSchemaArtifact(DATA_CHARACTERISTICS_SUMMARY.getField())))
         .withSingleInstanceFieldInstance(DATA_CHARACTERISTICS_TABLE_IN_HTML.getField(), tableInHtmlField)
         .withSingleInstanceFieldInstance(DATA_CHARACTERISTICS_TABLE_IN_CSV.getField(), tableInCsvField)
         .withSingleInstanceFieldInstance(DATA_CHARACTERISTICS_TABLE_IN_TSV.getField(), tableInTsvField)
@@ -402,7 +402,7 @@ public class CedarInstanceGenerator {
     var otherLangField = FieldInstanceArtifact.builder().build();
 
     return ElementInstanceArtifact.builder()
-        .withJsonLdContext(contextGenerator.generateElementInstanceContext(templateSchemaArtifact.getElementSchemaArtifact(DATA_FILE_LANGUAGE.getField())))
+//        .withJsonLdContext(contextGenerator.generateElementInstanceContext(templateSchemaArtifact.getElementSchemaArtifact(DATA_FILE_LANGUAGE.getField())))
         .withSingleInstanceFieldInstance(PRIMARY_LANGUAGE.getField(), primaryLangField)
         //TODO multiple instances
         .withMultiInstanceFieldInstances(OTHER_LANGUAGES.getField(), List.of(otherLangField))

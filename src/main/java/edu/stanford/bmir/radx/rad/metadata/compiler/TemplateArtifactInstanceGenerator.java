@@ -2,10 +2,7 @@ package edu.stanford.bmir.radx.rad.metadata.compiler;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import org.metadatacenter.artifacts.model.core.ElementInstanceArtifact;
-import org.metadatacenter.artifacts.model.core.FieldInstanceArtifact;
-import org.metadatacenter.artifacts.model.core.TemplateInstanceArtifact;
-import org.metadatacenter.artifacts.model.core.TemplateSchemaArtifact;
+import org.metadatacenter.artifacts.model.core.*;
 import org.metadatacenter.artifacts.model.core.fields.constraints.ValueConstraints;
 import org.metadatacenter.artifacts.model.reader.JsonSchemaArtifactReader;
 import org.metadatacenter.artifacts.model.visitors.TemplateReporter;
@@ -41,11 +38,13 @@ public class TemplateArtifactInstanceGenerator {
     var notPresentElements = getNotPresentElementsSet(groupedData, expectedElements);
     buildEmptyElementInstances(notPresentElements, templateSchemaArtifact, templateInstanceArtifactBuilder);
 
+    //generate JsonLdContext
+    contextGenerator.generateTemplateInstanceContext(templateSchemaArtifact, templateInstanceArtifactBuilder);
+
     return templateInstanceArtifactBuilder
         .withIsBasedOn(new URI(IS_BASED_ON.getField()))
         .withDescription(SCHEMA_DESCRIPTION.getField())
         .withName(SCHEMA_NAME.getField())
-        .withJsonLdContext(contextGenerator.generateTemplateInstanceContext(templateSchemaArtifact))
         .build();
   }
 
@@ -172,10 +171,13 @@ public class TemplateArtifactInstanceGenerator {
             Map<String, FieldInstanceArtifact> attributeValueFieldInstances = new HashMap<>();
             if(values != null){
               for (var value: values){
-                attributeValueFieldInstances.put(value,
-                    FieldInstanceArtifact.builder().
-                        withJsonLdValue(spreadsheetData.get(value)).
-                        build());
+                var spreadsheetValue = spreadsheetData.get(value);
+                if(spreadsheetValue != null && !spreadsheetValue.equals("")){
+                  attributeValueFieldInstances.put(value,
+                      FieldInstanceArtifact.builder().
+                          withJsonLdValue(spreadsheetValue).
+                          build());
+                }
               }
             }
             elementInstanceBuilder.withAttributeValueFieldInstances(expectedField, attributeValueFieldInstances);
@@ -208,17 +210,16 @@ public class TemplateArtifactInstanceGenerator {
         };
 
         //Build nested child element
-        //Since radx-rad spreadsheet don't have fields that maps to nested element
+        //Since RADx-rad spreadsheet don't have fields that maps to nested element
         //directly build empty nested element
         for(var childElement : childElements){
           buildSingleEmptyElementInstance(childElement, templateSchemaArtifact, elementInstanceBuilder, "/" + elementName + "/" + childElement);
         }
 
-        //Add context for each elementInstance
-        elementInstanceBuilder.withJsonLdContext(
-            contextGenerator.generateElementInstanceContext(
-                templateSchemaArtifact.getElementSchemaArtifact(elementName)
-            ));
+        //Add JsonLdContext for each elementInstance
+        contextGenerator.generateElementInstanceContext(
+            templateSchemaArtifact.getElementSchemaArtifact(elementName),
+            elementInstanceBuilder);
 
         //Before add to elementInstanceArtifact list, check if all fields are empty, if yes, return an empty element
 //        elementInstanceArtifacts.add(
@@ -251,7 +252,7 @@ public class TemplateArtifactInstanceGenerator {
    */
   private void buildEmptyElementInstances(Set<String> notPresentElements,
                                                                       TemplateSchemaArtifact templateSchemaArtifact,
-                                                                      TemplateInstanceArtifact.Builder templateInstanceBuilder){
+                                                                      TemplateInstanceArtifact.Builder templateInstanceBuilder) throws URISyntaxException {
     for(var elementName : notPresentElements){
       var isMultipleElement = templateSchemaArtifact.getElementSchemaArtifact(elementName).isMultiple();
       var elementInstanceBuilder = ElementInstanceArtifact.builder();
@@ -267,23 +268,30 @@ public class TemplateArtifactInstanceGenerator {
   private void buildSingleEmptyElementInstance(String elementName,
                                                                           TemplateSchemaArtifact templateSchemaArtifact,
                                                                           ElementInstanceArtifact.Builder elementInstanceBuilder,
-                                                                          String path){
+                                                                          String path) throws URISyntaxException {
     var elementSchemaArtifact = templateSchemaArtifact.getElementSchemaArtifact(elementName);
     var childFields = elementSchemaArtifact.getFieldNames();
 
+    //Add context
+    contextGenerator.generateElementInstanceContext(
+        templateSchemaArtifact.getElementSchemaArtifact(elementName),
+        elementInstanceBuilder);
+
+    //Add child field instances
     for(var expectedField : childFields){
       var specificationPath = "/" + expectedField;
       if(isAttributeValue(templateSchemaArtifact, specificationPath)){
         elementInstanceBuilder.withAttributeValueFieldInstances(expectedField, new HashMap<>());
       } else{
         if(templateSchemaArtifact.getElementSchemaArtifact(elementName).getFieldSchemaArtifact(expectedField).isMultiple()){
-          elementInstanceBuilder.withMultiInstanceFieldInstances(expectedField, List.of(buildEmptyFieldInstance()));
+          elementInstanceBuilder.withMultiInstanceFieldInstances(expectedField, List.of(buildEmptyFieldInstance(elementSchemaArtifact, expectedField)));
         } else{
-          elementInstanceBuilder.withSingleInstanceFieldInstance(expectedField, buildEmptyFieldInstance());
+          elementInstanceBuilder.withSingleInstanceFieldInstance(expectedField, buildEmptyFieldInstance(elementSchemaArtifact, expectedField));
         }
       }
     }
 
+    //Add child element instances
     var childElements = elementSchemaArtifact.getElementNames();
     for (var childElement : childElements){
       if (elementSchemaArtifact.getElementSchemaArtifact(childElement).isMultiple()){
@@ -296,8 +304,23 @@ public class TemplateArtifactInstanceGenerator {
     }
   }
 
-  private FieldInstanceArtifact buildEmptyFieldInstance(){
-    return FieldInstanceArtifact.builder().build();
+  private FieldInstanceArtifact buildEmptyFieldInstance(ElementSchemaArtifact elementSchemaArtifact, String field) throws URISyntaxException {
+    var inputType = elementSchemaArtifact.getFieldSchemaArtifact(field).fieldUi().inputType();
+    if (inputType.isLink()){
+      return FieldInstanceArtifact.builder().withJsonLdId(null).build();
+    } else if (inputType.isNumeric()) {
+      return FieldInstanceArtifact.builder()
+          .withJsonLdType(new URI("xsd:decimal"))
+          .withJsonLdValue(null)
+          .build();
+    } else if (inputType.isTemporal()) {
+      return FieldInstanceArtifact.builder()
+          .withJsonLdType(new URI("xsd:dateTime"))
+          .withJsonLdValue(null)
+          .build();
+    } else {
+      return FieldInstanceArtifact.builder().withJsonLdValue(null).build();
+    }
   }
 
   private boolean isAttributeValue(TemplateSchemaArtifact templateSchemaArtifact, String specificationPath){
