@@ -20,7 +20,7 @@ public class SpreadsheetReader {
       if(currentRow != null){
         var field = currentRow.getCell(0);
         var value = currentRow.getCell(1);
-        if (field != null && value != null) {
+        if (field != null && !field.getStringCellValue().equals("") && value!=null) {
           fieldValues.put(field.getStringCellValue(), getCellValueAsString(value));
         }
       }

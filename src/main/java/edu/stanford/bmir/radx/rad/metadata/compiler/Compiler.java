@@ -4,9 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.apache.commons.cli.*;
 import org.metadatacenter.artifacts.model.renderer.JsonSchemaArtifactRenderer;
-import org.springframework.boot.CommandLineRunner;
 
-import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -21,6 +19,7 @@ public class Compiler {
   private static final RADxRadGenerator radxRadGenerator = new RADxRadGenerator();
   private static final CedarInstanceGenerator cedarInstanceGenerator = new CedarInstanceGenerator();
   private static final JsonSchemaArtifactRenderer jsonSchemaArtifactRenderer = new JsonSchemaArtifactRenderer();
+  private static final TemplateArtifactInstanceGenerator templateArtifactInstanceGenerator = new TemplateArtifactInstanceGenerator();
   private static final ObjectMapper mapper = new ObjectMapper();
 
   public static void main(String[] args) throws Exception {
@@ -43,6 +42,7 @@ public class Compiler {
                 // For each file, generate a report in the specified output directory
                 try {
                   String outputFileName = getOutputFileName(file);
+//                  hardCodeTransform(spreadSheetFile, outputDirectory.resolve(outputFileName));
                   transform(spreadSheetFile, outputDirectory.resolve(outputFileName));
                 } catch (Exception e) {
                   System.err.println("Error processing file " + file + ": " + e.getMessage());
@@ -52,6 +52,7 @@ public class Compiler {
       } else if (Files.exists(spreadSheetFile)) {
         String outputFileName = getOutputFileName(spreadSheetFile);
         transform(spreadSheetFile, outputDirectory.resolve(outputFileName));
+//        hardCodeTransform(spreadSheetFile, outputDirectory.resolve(outputFileName));
       } else {
         throw new FileNotFoundException("Spreadsheet path not found: " + spreadSheetFile);
       }
@@ -61,11 +62,24 @@ public class Compiler {
 
   }
 
-  private static void transform(Path spreadSheetFile, Path outputFile) throws IOException, URISyntaxException {
+  private static void hardCodeTransform(Path spreadsheetFile, Path outputFile) throws IOException, URISyntaxException {
     var templateNode = mapper.readTree(Compiler.class.getClassLoader().getResource("RADxMetadataSpecification.json"));
-    var spreadSheetData = spreadsheetReader.readRadxRadSpreadsheet(spreadSheetFile.toString());
+    var spreadSheetData = spreadsheetReader.readRadxRadSpreadsheet(spreadsheetFile.toString());
     var radxRadMetadata = radxRadGenerator.generateRADxRadMetadata(spreadSheetData);
     var templateInstanceArtifact = cedarInstanceGenerator.generateTemplate(radxRadMetadata, templateNode);
+    ObjectNode templateInstanceRendering = jsonSchemaArtifactRenderer.renderTemplateInstanceArtifact(templateInstanceArtifact);
+    mapper.writeValue(outputFile.toFile(), templateInstanceRendering);
+  }
+
+  private static void transform(Path spreadsheetFile, Path outputFile) throws IOException, URISyntaxException {
+    var templateNode = mapper.readTree(Compiler.class.getClassLoader().getResource("RADxMetadataSpecification.json"));
+    var spreadsheetData = spreadsheetReader.readRadxRadSpreadsheet(spreadsheetFile.toString());
+    var spreadSheet2template = spreadsheetReader.readSpreadsheet2Template(
+        Compiler.class.getClassLoader().getResource("spreadsheet2template.xlsx").getPath()
+    );
+    var templateInstanceArtifact = templateArtifactInstanceGenerator.generateTemplateArtifactInstance(
+        spreadsheetData,spreadSheet2template, templateNode
+    );
     ObjectNode templateInstanceRendering = jsonSchemaArtifactRenderer.renderTemplateInstanceArtifact(templateInstanceArtifact);
     mapper.writeValue(outputFile.toFile(), templateInstanceRendering);
   }

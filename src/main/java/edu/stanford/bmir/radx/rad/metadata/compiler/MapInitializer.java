@@ -18,8 +18,8 @@ public class MapInitializer {
     controlledTermsMap.put("Project Leader", projectLeaderUri);
     controlledTermsMap.put("Created", createdUri);
     controlledTermsMap.put("URL", urlUri);
+    //TODO MESH
+    controlledTermsMap.put("biosensor system, SARS-CoV-2, saliva, electrochemical sensing, diagnostic, vulnerable areas, low-cost", urlUri);
     return controlledTermsMap;
   }
-
-
 }
