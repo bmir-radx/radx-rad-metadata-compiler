@@ -14,7 +14,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class ContextGenerator {
-  public void generateTemplateInstanceContext(TemplateSchemaArtifact templateSchemaArtifact,
+  public static void generateTemplateInstanceContext(TemplateSchemaArtifact templateSchemaArtifact,
                                               TemplateInstanceArtifact.Builder templateInstanceArtifactBuilder) {
     var context = templateSchemaArtifact.getChildPropertyUris();
     for(Map.Entry<String, URI> entry : context.entrySet()){
@@ -22,7 +22,7 @@ public class ContextGenerator {
     }
   }
 
-  public void generateElementInstanceContext(ElementSchemaArtifact elementSchemaArtifact,
+  public static void generateElementInstanceContext(ElementSchemaArtifact elementSchemaArtifact,
                                              ElementInstanceArtifact.Builder elementInstanceArtifactBuilder){
     var context = elementSchemaArtifact.getChildPropertyUris();
     for(Map.Entry<String, URI> entry : context.entrySet()){

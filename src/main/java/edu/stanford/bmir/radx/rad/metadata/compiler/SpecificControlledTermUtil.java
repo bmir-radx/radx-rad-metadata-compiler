@@ -1,10 +1,14 @@
 package edu.stanford.bmir.radx.rad.metadata.compiler;
 
+import org.metadatacenter.artifacts.model.core.Artifact;
 import org.metadatacenter.artifacts.model.core.ElementInstanceArtifact;
+import org.metadatacenter.artifacts.model.core.ElementSchemaArtifact;
 import org.metadatacenter.artifacts.model.core.FieldInstanceArtifact;
 
+import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URL;
 import java.util.List;
 import java.util.Map;
 
@@ -16,6 +20,7 @@ public class SpecificControlledTermUtil {
   private final static String ror = "ROR";
   private final static String url = "URL";
   private final static String created = "Created";
+  private static final ArtifactInstanceBuilder artifactInstanceBuilder = new ArtifactInstanceBuilder();
 
   /***
    * This method aims to set RADx-rad specific controlled term fields
@@ -30,12 +35,15 @@ public class SpecificControlledTermUtil {
       ElementInstanceArtifact.Builder elementInstanceArtifactBuilder,
       String elementName,
       String expectedField,
-      Map<String, List<String>> fields) throws URISyntaxException {
+      Map<String, List<String>> fields,
+      ElementSchemaArtifact elementSchemaArtifact) throws URISyntaxException {
+
+    var isMultiple = elementSchemaArtifact.getFieldSchemaArtifact(expectedField).isMultiple();
 
     var controlledTermMap = MapInitializer.createControlledTermsMap();
     String rorPrefix = controlledTermMap.get(ror);
     //If the element instance has value, then set specific controlled term fields
-    if(isNonEmptyValue(fields)){
+    if(isNonEmptyElement(fields)){
       if ((elementName.equals(DATA_FILE_CONTRIBUTORS.getField()) && expectedField.equals(CONTRIBUTOR_TYPE.getField())) ||
           (elementName.equals(DATA_FILE_CREATORS.getField()) && expectedField.equals(CREATOR_TYPE.getField()))){
         elementInstanceArtifactBuilder.withSingleInstanceFieldInstance(expectedField,
@@ -98,17 +106,29 @@ public class SpecificControlledTermUtil {
                 .withJsonLdId(new URI(controlledTermMap.get(created)))
                 .withLabel(created)
                 .build());
-      } else{
+      } else if (elementName.equals(DATA_FILE_PARENT_STUDIES.getField())
+          && expectedField.equals(STUDY_IDENTIFIER_SCHEME.getField())
+          && fields.containsKey(STUDY_IDENTIFIER.getField())
+          && isValidURL(fields.get(STUDY_IDENTIFIER.getField()).get(0))) {
         elementInstanceArtifactBuilder.withSingleInstanceFieldInstance(expectedField,
-            FieldInstanceArtifact.builder().build());
+            FieldInstanceArtifact.builder()
+                .withJsonLdId(new URI(controlledTermMap.get(url)))
+                .withLabel(url)
+                .build());
+      } else{
+//        elementInstanceArtifactBuilder.withSingleInstanceFieldInstance(expectedField,
+//            FieldInstanceArtifact.builder().build());
+
+        artifactInstanceBuilder.buildEmptyFieldInstance(elementSchemaArtifact, expectedField, isMultiple, elementInstanceArtifactBuilder);
       }
     } else{
-      elementInstanceArtifactBuilder.withSingleInstanceFieldInstance(expectedField,
-          FieldInstanceArtifact.builder().build());
+//      elementInstanceArtifactBuilder.withSingleInstanceFieldInstance(expectedField,
+//          FieldInstanceArtifact.builder().build());
+      artifactInstanceBuilder.buildEmptyFieldInstance(elementSchemaArtifact, expectedField, isMultiple, elementInstanceArtifactBuilder);
     }
   }
 
-  private static boolean isNonEmptyValue(Map<String, List<String>> fields){
+  private static boolean isNonEmptyElement(Map<String, List<String>> fields){
     for(Map.Entry<String, List<String>> entry : fields.entrySet()){
       for(var value : entry.getValue()){
         if (value != null){
@@ -117,5 +137,17 @@ public class SpecificControlledTermUtil {
       }
     }
     return false;
+  }
+
+  private static boolean isValidURL(String url){
+    if(url == null){
+      return false;
+    }
+    try{
+      new URL(url);
+      return true;
+    } catch (MalformedURLException e){
+      return false;
+    }
   }
 }

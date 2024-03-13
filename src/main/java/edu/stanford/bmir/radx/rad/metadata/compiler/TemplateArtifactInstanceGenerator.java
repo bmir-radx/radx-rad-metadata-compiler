@@ -3,9 +3,7 @@ package edu.stanford.bmir.radx.rad.metadata.compiler;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.metadatacenter.artifacts.model.core.*;
-import org.metadatacenter.artifacts.model.core.fields.constraints.ValueConstraints;
 import org.metadatacenter.artifacts.model.reader.JsonSchemaArtifactReader;
-import org.metadatacenter.artifacts.model.visitors.TemplateReporter;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -16,11 +14,9 @@ import java.util.regex.Pattern;
 import static edu.stanford.bmir.radx.rad.metadata.compiler.RadxSpecificationMetadataConstant.*;
 
 public class TemplateArtifactInstanceGenerator {
-  private static final String XSD_IRI = "http://www.w3.org/2001/XMLSchema#";
-  private static final String XSD_PREFIX = "xsd:";
-  private static final Pattern FIELD_PATTERN = Pattern.compile("^(?!study_include_prospective_or_retrospective_human_samples)(.+?)_?(\\d*)$");
-  private ContextGenerator contextGenerator = new ContextGenerator();
-  private EmptyArtifactChecker emptyArtifactChecker = new EmptyArtifactChecker();
+  private final Pattern FIELD_PATTERN = Pattern.compile("^(?!study_include_prospective_or_retrospective_human_samples)(.+?)_?(\\d*)$");
+  private final ArtifactInstanceBuilder artifactInstanceBuilder = new ArtifactInstanceBuilder();
+  private final EmptyArtifactChecker emptyArtifactChecker = new EmptyArtifactChecker();
 
   public TemplateInstanceArtifact generateTemplateArtifactInstance(Map<String, String> spreadsheetData, Map<String, FieldArtifact> spreadsheet2template, JsonNode templateNode) throws URISyntaxException {
     //read templateContent using cedar-artifact-library
@@ -32,14 +28,17 @@ public class TemplateArtifactInstanceGenerator {
 
     //generate elements that have values in the spreadsheet
     var templateInstanceArtifactBuilder = TemplateInstanceArtifact.builder();
-    buildElementsWithValues(groupedData, templateSchemaArtifact, templateInstanceArtifactBuilder, spreadsheetData);
+    artifactInstanceBuilder.buildElementInstancesWithValues(groupedData, templateSchemaArtifact, templateInstanceArtifactBuilder, spreadsheetData);
 
     //generate elements that does not contained in the spreadsheet
     var notPresentElements = getNotPresentElementsSet(groupedData, expectedElements);
-    buildEmptyElementInstances(notPresentElements, templateSchemaArtifact, templateInstanceArtifactBuilder);
+    artifactInstanceBuilder.buildEmptyElementInstances(notPresentElements, templateSchemaArtifact, templateInstanceArtifactBuilder);
 
     //generate JsonLdContext
-    contextGenerator.generateTemplateInstanceContext(templateSchemaArtifact, templateInstanceArtifactBuilder);
+    ContextGenerator.generateTemplateInstanceContext(templateSchemaArtifact, templateInstanceArtifactBuilder);
+
+    //generate JsonLdId
+    IdGenerator.generateTemplateId(templateInstanceArtifactBuilder);
 
     return templateInstanceArtifactBuilder
         .withIsBasedOn(new URI(IS_BASED_ON.getField()))
@@ -85,7 +84,7 @@ public class TemplateArtifactInstanceGenerator {
         var field = spreadsheet2template.get(spreadsheetField).field();
         var specificationPath = "/" + element + "/" + field;
 
-        if(isAttributeValue(templateSchemaArtifact, specificationPath)){
+        if(AttributeValueFieldUtil.isAttributeValue(templateSchemaArtifact, specificationPath)){
           groupedData.computeIfAbsent(element, k -> new HashMap<>())
               .computeIfAbsent(1, k -> new HashMap<>())
               .computeIfAbsent(field, k -> new ArrayList<>())
@@ -101,231 +100,10 @@ public class TemplateArtifactInstanceGenerator {
     return groupedData;
   }
 
-  private FieldInstanceArtifact buildFieldInstance(Optional<ValueConstraints> valueConstraints, Map<String, List<String>> fields, String expectedField) throws URISyntaxException {
-    var controlledTermsMap = MapInitializer.createControlledTermsMap();
-    var fieldInstanceBuilder = FieldInstanceArtifact.builder();
-    var value = fields.get(expectedField).get(0);
-
-    if(valueConstraints.isPresent()){
-
-      if(valueConstraints.get().isLinkValueConstraint()){
-        if(value != null){
-          fieldInstanceBuilder.withJsonLdId(new URI(value));
-        }
-      } else if (valueConstraints.get().isControlledTermValueConstraint()) {
-        if(value != null) {
-          fieldInstanceBuilder.withLabel(value);
-          fieldInstanceBuilder.withJsonLdId(new URI(controlledTermsMap.get(value)));
-        }
-      } else if (valueConstraints.get().isTemporalValueConstraint()) {
-        if(value != null) {
-          var type = valueConstraints.get().asTemporalValueConstraints().temporalType().toString();
-          fieldInstanceBuilder.withJsonLdValue(value);
-          fieldInstanceBuilder.withJsonLdType(new URI(type));
-        }
-      } else{
-        if(value != null){
-          fieldInstanceBuilder.withJsonLdValue(value);
-        }
-      }
-      //TODO: add other field input field
-    }
-
-    return  fieldInstanceBuilder.build();
-  }
-
-  /***
-   * Build elements that have values in the spreadsheet
-   * @return
-   */
-  private void buildElementsWithValues(Map<String, Map<Integer, Map<String, List<String>>>> groupedData,
-                                                                   TemplateSchemaArtifact templateSchemaArtifact,
-                                                                   TemplateInstanceArtifact.Builder templateInstanceArtifactBuilder,
-                                                                   Map<String, String> spreadsheetData) throws URISyntaxException {
-
-    for (Map.Entry<String, Map<Integer, Map<String, List<String>>>> entry : groupedData.entrySet()) {
-      var elementName = entry.getKey();
-      var instances = entry.getValue();
-      var childFields = templateSchemaArtifact.getElementSchemaArtifact(elementName).getFieldNames();
-      var childElements = templateSchemaArtifact.getElementSchemaArtifact(elementName).getElementNames();
-      var isMultipleElement = templateSchemaArtifact.getElementSchemaArtifact(elementName).isMultiple();
-      List<ElementInstanceArtifact> elementInstanceArtifacts = new ArrayList<>();
-
-      for(Map.Entry<Integer, Map<String, List<String>>> instanceEntry : instances.entrySet()){
-        var fields = instanceEntry.getValue();
-        var elementInstanceBuilder = ElementInstanceArtifact.builder();
-
-        for(var expectedField : childFields){
-          var expectedFieldValueConstraint = templateSchemaArtifact.getElementSchemaArtifact(elementName).getFieldSchemaArtifact(expectedField).valueConstraints();
-
-          var isMultipleField = false;
-          if(expectedFieldValueConstraint.isPresent()){
-            isMultipleField = expectedFieldValueConstraint.get().multipleChoice();
-          }
-
-          //check if field is an attribute value type
-          //if yes, build attribute value fields, otherwise, build regular fields
-          var specificationPath = "/" + elementName + "/" + expectedField;
-          if(isAttributeValue(templateSchemaArtifact, specificationPath)){
-            var values = fields.get(expectedField);
-            Map<String, FieldInstanceArtifact> attributeValueFieldInstances = new HashMap<>();
-            if(values != null){
-              for (var value: values){
-                var spreadsheetValue = spreadsheetData.get(value);
-                if(spreadsheetValue != null && !spreadsheetValue.equals("")){
-                  attributeValueFieldInstances.put(value,
-                      FieldInstanceArtifact.builder().
-                          withJsonLdValue(spreadsheetValue).
-                          build());
-                }
-              }
-            }
-            elementInstanceBuilder.withAttributeValueFieldInstances(expectedField, attributeValueFieldInstances);
-
-          } else{
-            // if the field in the template has the corresponding field in the spreadsheet, then need to retrieve data from spreadsheet
-            // otherwise, build an empty fieldArtifactInstance
-            if (fields.containsKey(expectedField)){
-              FieldInstanceArtifact fieldInstance;
-              try {
-                fieldInstance = buildFieldInstance(expectedFieldValueConstraint, fields, expectedField);
-              } catch (URISyntaxException e) {
-                throw new RuntimeException(e);
-              }
-              if(isMultipleField){
-                elementInstanceBuilder.withMultiInstanceFieldInstances(expectedField, List.of(fieldInstance));
-              } else{
-                elementInstanceBuilder.withSingleInstanceFieldInstance(expectedField, fieldInstance);
-              }
-            } else{
-              if(isMultipleField){
-                elementInstanceBuilder.withMultiInstanceFieldInstances(expectedField, List.of(FieldInstanceArtifact.builder().build()));
-              } else{
-                //Add values to RADx-rad specific controlled terms fields or add an empty field entry
-                SpecificControlledTermUtil.addSpecificControlledTerms(elementInstanceBuilder, elementName, expectedField, fields);
-              }
-            }
-          }
-
-        };
-
-        //Build nested child element
-        //Since RADx-rad spreadsheet don't have fields that maps to nested element
-        //directly build empty nested element
-        for(var childElement : childElements){
-          buildSingleEmptyElementInstance(childElement, templateSchemaArtifact, elementInstanceBuilder, "/" + elementName + "/" + childElement);
-        }
-
-        //Add JsonLdContext for each elementInstance
-        contextGenerator.generateElementInstanceContext(
-            templateSchemaArtifact.getElementSchemaArtifact(elementName),
-            elementInstanceBuilder);
-
-        //Before add to elementInstanceArtifact list, check if all fields are empty, if yes, return an empty element
-//        elementInstanceArtifacts.add(
-//            emptyArtifactChecker.getOrEmptyElementInstanceArtifact(elementInstanceBuilder.build())
-//        );
-        elementInstanceArtifacts.add(elementInstanceBuilder.build());
-      };
-
-      if(isMultipleElement){
-        templateInstanceArtifactBuilder.withMultiInstanceElementInstances(elementName, elementInstanceArtifacts);
-      } else{
-        templateInstanceArtifactBuilder.withElementInstance(elementName, elementInstanceArtifacts.get(0));
-      }
-    };
-  }
-
   private Set<String> getNotPresentElementsSet(Map<String, Map<Integer, Map<String, List<String>>>> groupedData, List<String> expectedElements){
     var presentElements = groupedData.keySet();
     Set<String> difference = new HashSet<>(expectedElements);
     difference.removeAll(presentElements);
     return difference;
-  }
-
-  /***
-   * Build Elements that does not have value in spreadsheet
-   * @param notPresentElements
-   * @param templateSchemaArtifact
-   * @param templateInstanceBuilder
-   * @return
-   */
-  private void buildEmptyElementInstances(Set<String> notPresentElements,
-                                                                      TemplateSchemaArtifact templateSchemaArtifact,
-                                                                      TemplateInstanceArtifact.Builder templateInstanceBuilder) throws URISyntaxException {
-    for(var elementName : notPresentElements){
-      var isMultipleElement = templateSchemaArtifact.getElementSchemaArtifact(elementName).isMultiple();
-      var elementInstanceBuilder = ElementInstanceArtifact.builder();
-      if(isMultipleElement){
-        templateInstanceBuilder.withMultiInstanceElementInstances(elementName, List.of(elementInstanceBuilder.build()));
-      } else{
-          buildSingleEmptyElementInstance(elementName, templateSchemaArtifact, elementInstanceBuilder, "/" + elementName);
-          templateInstanceBuilder.withElementInstance(elementName, elementInstanceBuilder.build());
-      }
-    }
-  }
-
-  private void buildSingleEmptyElementInstance(String elementName,
-                                                                          TemplateSchemaArtifact templateSchemaArtifact,
-                                                                          ElementInstanceArtifact.Builder elementInstanceBuilder,
-                                                                          String path) throws URISyntaxException {
-    var elementSchemaArtifact = templateSchemaArtifact.getElementSchemaArtifact(elementName);
-    var childFields = elementSchemaArtifact.getFieldNames();
-
-    //Add context
-    contextGenerator.generateElementInstanceContext(
-        templateSchemaArtifact.getElementSchemaArtifact(elementName),
-        elementInstanceBuilder);
-
-    //Add child field instances
-    for(var expectedField : childFields){
-      var specificationPath = "/" + expectedField;
-      if(isAttributeValue(templateSchemaArtifact, specificationPath)){
-        elementInstanceBuilder.withAttributeValueFieldInstances(expectedField, new HashMap<>());
-      } else{
-        if(templateSchemaArtifact.getElementSchemaArtifact(elementName).getFieldSchemaArtifact(expectedField).isMultiple()){
-          elementInstanceBuilder.withMultiInstanceFieldInstances(expectedField, List.of(buildEmptyFieldInstance(elementSchemaArtifact, expectedField)));
-        } else{
-          elementInstanceBuilder.withSingleInstanceFieldInstance(expectedField, buildEmptyFieldInstance(elementSchemaArtifact, expectedField));
-        }
-      }
-    }
-
-    //Add child element instances
-    var childElements = elementSchemaArtifact.getElementNames();
-    for (var childElement : childElements){
-      if (elementSchemaArtifact.getElementSchemaArtifact(childElement).isMultiple()){
-        elementInstanceBuilder
-            .withMultiInstanceElementInstances(childElement,
-                List.of(ElementInstanceArtifact.builder().build()));
-      } else {
-        buildSingleEmptyElementInstance(childElement, templateSchemaArtifact, elementInstanceBuilder, path + "/" + childElement);
-      }
-    }
-  }
-
-  private FieldInstanceArtifact buildEmptyFieldInstance(ElementSchemaArtifact elementSchemaArtifact, String field) throws URISyntaxException {
-    var inputType = elementSchemaArtifact.getFieldSchemaArtifact(field).fieldUi().inputType();
-    if (inputType.isLink()){
-      return FieldInstanceArtifact.builder().withJsonLdId(null).build();
-    } else if (inputType.isNumeric()) {
-      return FieldInstanceArtifact.builder()
-          .withJsonLdType(new URI("xsd:decimal"))
-          .withJsonLdValue(null)
-          .build();
-    } else if (inputType.isTemporal()) {
-      return FieldInstanceArtifact.builder()
-          .withJsonLdType(new URI("xsd:dateTime"))
-          .withJsonLdValue(null)
-          .build();
-    } else {
-      return FieldInstanceArtifact.builder().withJsonLdValue(null).build();
-    }
-  }
-
-  private boolean isAttributeValue(TemplateSchemaArtifact templateSchemaArtifact, String specificationPath){
-    var templateReporter = new TemplateReporter(templateSchemaArtifact);
-    var attributeValueInstanceArtifact = templateReporter.getFieldSchema(specificationPath);
-    return attributeValueInstanceArtifact.map(fieldSchemaArtifact -> fieldSchemaArtifact.fieldUi().isAttributeValue()).orElse(false);
   }
 }
