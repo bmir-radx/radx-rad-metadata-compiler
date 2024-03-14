@@ -50,7 +50,7 @@ public class SpecificControlledTermUtil {
         elementInstanceArtifactBuilder.withSingleInstanceFieldInstance(expectedField,
             FieldInstanceArtifact.controlledTermFieldInstanceBuilder()
                 .withValue(new URI(controlledTermMap.get(person)))
-                .withPrefLabel(person)
+                .withLabel(person)
                 .build());
       } else if (elementName.equals(DATA_FILE_CONTRIBUTORS.getField())
           && expectedField.equals(CONTRIBUTOR_IDENTIFIER_SCHEME.getField())
@@ -59,7 +59,7 @@ public class SpecificControlledTermUtil {
         elementInstanceArtifactBuilder.withSingleInstanceFieldInstance(expectedField,
             FieldInstanceArtifact.controlledTermFieldInstanceBuilder()
                 .withValue(new URI(controlledTermMap.get(orcid)))
-                .withPrefLabel(orcid)
+                .withLabel(orcid)
                 .build());
       } else if (elementName.equals(DATA_FILE_CREATORS.getField())
           && expectedField.equals(CREATOR_IDENTIFIER_SCHEME.getField())
@@ -68,7 +68,7 @@ public class SpecificControlledTermUtil {
         elementInstanceArtifactBuilder.withSingleInstanceFieldInstance(expectedField,
             FieldInstanceArtifact.controlledTermFieldInstanceBuilder()
                 .withValue(new URI(controlledTermMap.get(orcid)))
-                .withPrefLabel(orcid)
+                .withLabel(orcid)
                 .build());
       } else if (elementName.equals(DATA_FILE_CONTRIBUTORS.getField())
           && expectedField.equals(CONTRIBUTOR_AFFILIATION_IDENTIFIER_SCHEME.getField())
@@ -78,7 +78,7 @@ public class SpecificControlledTermUtil {
         elementInstanceArtifactBuilder.withSingleInstanceFieldInstance(expectedField,
             FieldInstanceArtifact.controlledTermFieldInstanceBuilder()
                 .withValue(new URI(controlledTermMap.get(ror)))
-                .withPrefLabel(ror)
+                .withLabel(ror)
                 .build());
       } else if (elementName.equals(DATA_FILE_CREATORS.getField())
           && expectedField.equals(CREATOR_AFFILIATION_IDENTIFIER_SCHEME.getField())
@@ -87,7 +87,7 @@ public class SpecificControlledTermUtil {
         elementInstanceArtifactBuilder.withSingleInstanceFieldInstance(expectedField,
             FieldInstanceArtifact.controlledTermFieldInstanceBuilder()
                 .withValue(new URI(controlledTermMap.get(ror)))
-                .withPrefLabel(ror)
+                .withLabel(ror)
                 .build());
       } else if (elementName.equals(DATA_FILE_RELATED_RESOURCES.getField())
           && expectedField.equals(RELATED_RESOURCE_IDENTIFER_TYPE.getField())
@@ -96,7 +96,7 @@ public class SpecificControlledTermUtil {
         elementInstanceArtifactBuilder.withSingleInstanceFieldInstance(expectedField,
             FieldInstanceArtifact.controlledTermFieldInstanceBuilder()
                 .withValue(new URI(controlledTermMap.get(url)))
-                .withPrefLabel(url)
+                .withLabel(url)
                 .build());
       } else if (elementName.equals(DATA_FILE_DATES.getField())
           && expectedField.equals(EVENT_TYPE.getField())
@@ -105,7 +105,7 @@ public class SpecificControlledTermUtil {
         elementInstanceArtifactBuilder.withSingleInstanceFieldInstance(expectedField,
             FieldInstanceArtifact.controlledTermFieldInstanceBuilder()
                 .withValue(new URI(controlledTermMap.get(created)))
-                .withPrefLabel(created)
+                .withLabel(created)
                 .build());
       } else if (elementName.equals(DATA_FILE_PARENT_STUDIES.getField())
           && expectedField.equals(STUDY_IDENTIFIER_SCHEME.getField())
@@ -114,7 +114,7 @@ public class SpecificControlledTermUtil {
         elementInstanceArtifactBuilder.withSingleInstanceFieldInstance(expectedField,
             FieldInstanceArtifact.controlledTermFieldInstanceBuilder()
                 .withValue(new URI(controlledTermMap.get(url)))
-                .withPrefLabel(url)
+                .withLabel(url)
                 .build());
       } else{
 //        elementInstanceArtifactBuilder.withSingleInstanceFieldInstance(expectedField,

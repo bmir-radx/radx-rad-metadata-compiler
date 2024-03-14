@@ -123,7 +123,7 @@ public class ArtifactInstanceGenerator {
                 var spreadsheetValue = spreadsheetData.get(value);
                 if(spreadsheetValue != null && !spreadsheetValue.equals("")){
                   attributeValueFieldInstances.put(value,
-                      new ControlledTermGenerator().buildWithValue(value, expectedFieldValueConstraint));
+                      FieldInstanceArtifact.textFieldInstanceBuilder().withValue(spreadsheetValue).build());
                 }
               }
             }

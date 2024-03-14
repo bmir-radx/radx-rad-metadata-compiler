@@ -14,9 +14,8 @@ import java.util.regex.Pattern;
 import static edu.stanford.bmir.radx.rad.metadata.compiler.RadxSpecificationMetadataConstant.*;
 
 public class TemplateArtifactInstanceGenerator {
-  private final Pattern FIELD_PATTERN = Pattern.compile("^(?!study_include_prospective_or_retrospective_human_samples)(.+?)_?(\\d*)$");
+
   private final ArtifactInstanceGenerator artifactInstanceGenerator = new ArtifactInstanceGenerator();
-  private final EmptyArtifactChecker emptyArtifactChecker = new EmptyArtifactChecker();
 
   public TemplateInstanceArtifact generateTemplateArtifactInstance(Map<String, String> spreadsheetData, Map<String, FieldArtifact> spreadsheet2template, JsonNode templateNode) throws URISyntaxException {
     //read templateContent using cedar-artifact-library
@@ -24,7 +23,7 @@ public class TemplateArtifactInstanceGenerator {
     TemplateSchemaArtifact templateSchemaArtifact = jsonSchemaArtifactReader.readTemplateSchemaArtifact((ObjectNode) templateNode);
     var expectedElements = templateSchemaArtifact.getElementNames();
 
-    var groupedData = groupData(spreadsheetData, spreadsheet2template, templateSchemaArtifact);
+    var groupedData = SpreadsheetDataManager.groupData(spreadsheetData, spreadsheet2template, templateSchemaArtifact);
 
     //generate elements that have values in the spreadsheet
     var templateInstanceArtifactBuilder = TemplateInstanceArtifact.builder();
@@ -47,58 +46,6 @@ public class TemplateArtifactInstanceGenerator {
         .build();
   }
 
-  /***
-   * Group spreadsheet data in the following format:
-   * {
-   *   Element:{
-   *     index{
-   *       field1: [value],
-   *       field2: [value],
-   *       filed3(attribute-value): [spreadsheetField1, spreadsheetField2]
-   *     }
-   *   }
-   * }
-   * If field is attribute-value as field3, the list of values are keys of kay-value pairs.
-   * @param spreadsheetData
-   * @param spreadsheet2template
-   * @return
-   */
-  private Map<String, Map<Integer, Map<String, List<String>>>> groupData(
-    Map<String, String> spreadsheetData,
-    Map<String, FieldArtifact> spreadsheet2template,
-    TemplateSchemaArtifact templateSchemaArtifact){
-
-    Map<String, Map<Integer, Map<String, List<String>>>> groupedData = new HashMap<>();
-
-    for (Map.Entry<String, String> entry : spreadsheetData.entrySet()) {
-      String key = entry.getKey();
-      String value = entry.getValue();
-
-      Matcher matcher = FIELD_PATTERN.matcher(key);
-      if (matcher.find()) {
-        String spreadsheetField = matcher.group(1);
-        String indexStr = matcher.group(2);
-        Integer index = indexStr.isEmpty() ? 1 : Integer.parseInt(indexStr);
-
-        var element = spreadsheet2template.get(spreadsheetField).element();
-        var field = spreadsheet2template.get(spreadsheetField).field();
-        var specificationPath = "/" + element + "/" + field;
-
-        if(AttributeValueFieldUtil.isAttributeValue(templateSchemaArtifact, specificationPath)){
-          groupedData.computeIfAbsent(element, k -> new HashMap<>())
-              .computeIfAbsent(1, k -> new HashMap<>())
-              .computeIfAbsent(field, k -> new ArrayList<>())
-              .add(key);
-        } else{
-          groupedData.computeIfAbsent(element, k -> new HashMap<>())
-              .computeIfAbsent(index, k -> new HashMap<>())
-              .computeIfAbsent(field, k -> new ArrayList<>())
-              .add(value);
-        }
-      }
-    };
-    return groupedData;
-  }
 
   private Set<String> getNotPresentElementsSet(Map<String, Map<Integer, Map<String, List<String>>>> groupedData, List<String> expectedElements){
     var presentElements = groupedData.keySet();
