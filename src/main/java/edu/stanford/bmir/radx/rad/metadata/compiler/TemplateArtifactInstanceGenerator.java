@@ -15,7 +15,7 @@ import static edu.stanford.bmir.radx.rad.metadata.compiler.RadxSpecificationMeta
 
 public class TemplateArtifactInstanceGenerator {
   private final Pattern FIELD_PATTERN = Pattern.compile("^(?!study_include_prospective_or_retrospective_human_samples)(.+?)_?(\\d*)$");
-  private final ArtifactInstanceBuilder artifactInstanceBuilder = new ArtifactInstanceBuilder();
+  private final ArtifactInstanceGenerator artifactInstanceGenerator = new ArtifactInstanceGenerator();
   private final EmptyArtifactChecker emptyArtifactChecker = new EmptyArtifactChecker();
 
   public TemplateInstanceArtifact generateTemplateArtifactInstance(Map<String, String> spreadsheetData, Map<String, FieldArtifact> spreadsheet2template, JsonNode templateNode) throws URISyntaxException {
@@ -28,11 +28,11 @@ public class TemplateArtifactInstanceGenerator {
 
     //generate elements that have values in the spreadsheet
     var templateInstanceArtifactBuilder = TemplateInstanceArtifact.builder();
-    artifactInstanceBuilder.buildElementInstancesWithValues(groupedData, templateSchemaArtifact, templateInstanceArtifactBuilder, spreadsheetData);
+    artifactInstanceGenerator.buildElementInstancesWithValues(groupedData, templateSchemaArtifact, templateInstanceArtifactBuilder, spreadsheetData);
 
     //generate elements that does not contained in the spreadsheet
     var notPresentElements = getNotPresentElementsSet(groupedData, expectedElements);
-    artifactInstanceBuilder.buildEmptyElementInstances(notPresentElements, templateSchemaArtifact, templateInstanceArtifactBuilder);
+    artifactInstanceGenerator.buildEmptyElementInstances(notPresentElements, templateSchemaArtifact, templateInstanceArtifactBuilder);
 
     //generate JsonLdContext
     ContextGenerator.generateTemplateInstanceContext(templateSchemaArtifact, templateInstanceArtifactBuilder);

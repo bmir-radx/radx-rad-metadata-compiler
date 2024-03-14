@@ -1,6 +1,5 @@
 package edu.stanford.bmir.radx.rad.metadata.compiler;
 
-import org.metadatacenter.artifacts.model.core.Artifact;
 import org.metadatacenter.artifacts.model.core.ElementInstanceArtifact;
 import org.metadatacenter.artifacts.model.core.ElementSchemaArtifact;
 import org.metadatacenter.artifacts.model.core.FieldInstanceArtifact;
@@ -20,7 +19,7 @@ public class SpecificControlledTermUtil {
   private final static String ror = "ROR";
   private final static String url = "URL";
   private final static String created = "Created";
-  private static final ArtifactInstanceBuilder artifactInstanceBuilder = new ArtifactInstanceBuilder();
+  private static final ArtifactInstanceGenerator ARTIFACT_INSTANCE_GENERATOR = new ArtifactInstanceGenerator();
 
   /***
    * This method aims to set RADx-rad specific controlled term fields
@@ -38,7 +37,9 @@ public class SpecificControlledTermUtil {
       Map<String, List<String>> fields,
       ElementSchemaArtifact elementSchemaArtifact) throws URISyntaxException {
 
-    var isMultiple = elementSchemaArtifact.getFieldSchemaArtifact(expectedField).isMultiple();
+    var fieldSchemaArtifact = elementSchemaArtifact.getFieldSchemaArtifact(expectedField);
+    var isMultiple = fieldSchemaArtifact.isMultiple();
+    var inputType = fieldSchemaArtifact.fieldUi().inputType();
 
     var controlledTermMap = MapInitializer.createControlledTermsMap();
     String rorPrefix = controlledTermMap.get(ror);
@@ -47,27 +48,27 @@ public class SpecificControlledTermUtil {
       if ((elementName.equals(DATA_FILE_CONTRIBUTORS.getField()) && expectedField.equals(CONTRIBUTOR_TYPE.getField())) ||
           (elementName.equals(DATA_FILE_CREATORS.getField()) && expectedField.equals(CREATOR_TYPE.getField()))){
         elementInstanceArtifactBuilder.withSingleInstanceFieldInstance(expectedField,
-            FieldInstanceArtifact.builder()
-                .withJsonLdId(new URI(controlledTermMap.get(person)))
-                .withLabel(person)
+            FieldInstanceArtifact.controlledTermFieldInstanceBuilder()
+                .withValue(new URI(controlledTermMap.get(person)))
+                .withPrefLabel(person)
                 .build());
       } else if (elementName.equals(DATA_FILE_CONTRIBUTORS.getField())
           && expectedField.equals(CONTRIBUTOR_IDENTIFIER_SCHEME.getField())
           && fields.containsKey(CONTRIBUTOR_IDENTIFIER.getField())
           && fields.get(CONTRIBUTOR_IDENTIFIER.getField()).get(0)!= null){
         elementInstanceArtifactBuilder.withSingleInstanceFieldInstance(expectedField,
-            FieldInstanceArtifact.builder()
-                .withJsonLdId(new URI(controlledTermMap.get(orcid)))
-                .withLabel(orcid)
+            FieldInstanceArtifact.controlledTermFieldInstanceBuilder()
+                .withValue(new URI(controlledTermMap.get(orcid)))
+                .withPrefLabel(orcid)
                 .build());
       } else if (elementName.equals(DATA_FILE_CREATORS.getField())
           && expectedField.equals(CREATOR_IDENTIFIER_SCHEME.getField())
           && fields.containsKey(CREATOR_IDENTIFIER.getField())
           && fields.get(CREATOR_IDENTIFIER.getField()).get(0)!= null){
         elementInstanceArtifactBuilder.withSingleInstanceFieldInstance(expectedField,
-            FieldInstanceArtifact.builder()
-                .withJsonLdId(new URI(controlledTermMap.get(orcid)))
-                .withLabel(orcid)
+            FieldInstanceArtifact.controlledTermFieldInstanceBuilder()
+                .withValue(new URI(controlledTermMap.get(orcid)))
+                .withPrefLabel(orcid)
                 .build());
       } else if (elementName.equals(DATA_FILE_CONTRIBUTORS.getField())
           && expectedField.equals(CONTRIBUTOR_AFFILIATION_IDENTIFIER_SCHEME.getField())
@@ -75,56 +76,56 @@ public class SpecificControlledTermUtil {
           && fields.get(CONTRIBUTOR_AFFILIATION_IDENTIFIER.getField()).get(0) != null
           && fields.get(CONTRIBUTOR_AFFILIATION_IDENTIFIER.getField()).get(0).startsWith(rorPrefix)) {
         elementInstanceArtifactBuilder.withSingleInstanceFieldInstance(expectedField,
-            FieldInstanceArtifact.builder()
-                .withJsonLdId(new URI(controlledTermMap.get(ror)))
-                .withLabel(ror)
+            FieldInstanceArtifact.controlledTermFieldInstanceBuilder()
+                .withValue(new URI(controlledTermMap.get(ror)))
+                .withPrefLabel(ror)
                 .build());
       } else if (elementName.equals(DATA_FILE_CREATORS.getField())
           && expectedField.equals(CREATOR_AFFILIATION_IDENTIFIER_SCHEME.getField())
           && fields.containsKey(CREATOR_AFFILIATION_IDENTIFIER.getField())
           && fields.get(CREATOR_AFFILIATION_IDENTIFIER.getField()).get(0).startsWith(rorPrefix)) {
         elementInstanceArtifactBuilder.withSingleInstanceFieldInstance(expectedField,
-            FieldInstanceArtifact.builder()
-                .withJsonLdId(new URI(controlledTermMap.get(ror)))
-                .withLabel(ror)
+            FieldInstanceArtifact.controlledTermFieldInstanceBuilder()
+                .withValue(new URI(controlledTermMap.get(ror)))
+                .withPrefLabel(ror)
                 .build());
       } else if (elementName.equals(DATA_FILE_RELATED_RESOURCES.getField())
           && expectedField.equals(RELATED_RESOURCE_IDENTIFER_TYPE.getField())
           && fields.containsKey(RELATED_RESOURCE_IDENTIFER.getField())
           && fields.get(RELATED_RESOURCE_IDENTIFER.getField()).get(0) != null) {
         elementInstanceArtifactBuilder.withSingleInstanceFieldInstance(expectedField,
-            FieldInstanceArtifact.builder()
-                .withJsonLdId(new URI(controlledTermMap.get(url)))
-                .withLabel(url)
+            FieldInstanceArtifact.controlledTermFieldInstanceBuilder()
+                .withValue(new URI(controlledTermMap.get(url)))
+                .withPrefLabel(url)
                 .build());
       } else if (elementName.equals(DATA_FILE_DATES.getField())
           && expectedField.equals(EVENT_TYPE.getField())
           && fields.containsKey(DATE.getField())
           && fields.get(DATE.getField()).get(0) != null)  {
         elementInstanceArtifactBuilder.withSingleInstanceFieldInstance(expectedField,
-            FieldInstanceArtifact.builder()
-                .withJsonLdId(new URI(controlledTermMap.get(created)))
-                .withLabel(created)
+            FieldInstanceArtifact.controlledTermFieldInstanceBuilder()
+                .withValue(new URI(controlledTermMap.get(created)))
+                .withPrefLabel(created)
                 .build());
       } else if (elementName.equals(DATA_FILE_PARENT_STUDIES.getField())
           && expectedField.equals(STUDY_IDENTIFIER_SCHEME.getField())
           && fields.containsKey(STUDY_IDENTIFIER.getField())
           && isValidURL(fields.get(STUDY_IDENTIFIER.getField()).get(0))) {
         elementInstanceArtifactBuilder.withSingleInstanceFieldInstance(expectedField,
-            FieldInstanceArtifact.builder()
-                .withJsonLdId(new URI(controlledTermMap.get(url)))
-                .withLabel(url)
+            FieldInstanceArtifact.controlledTermFieldInstanceBuilder()
+                .withValue(new URI(controlledTermMap.get(url)))
+                .withPrefLabel(url)
                 .build());
       } else{
 //        elementInstanceArtifactBuilder.withSingleInstanceFieldInstance(expectedField,
 //            FieldInstanceArtifact.builder().build());
 
-        artifactInstanceBuilder.buildEmptyFieldInstance(elementSchemaArtifact, expectedField, isMultiple, elementInstanceArtifactBuilder);
+        ARTIFACT_INSTANCE_GENERATOR.buildEmptyFieldInstance(inputType, expectedField, isMultiple, elementInstanceArtifactBuilder);
       }
     } else{
 //      elementInstanceArtifactBuilder.withSingleInstanceFieldInstance(expectedField,
 //          FieldInstanceArtifact.builder().build());
-      artifactInstanceBuilder.buildEmptyFieldInstance(elementSchemaArtifact, expectedField, isMultiple, elementInstanceArtifactBuilder);
+      ARTIFACT_INSTANCE_GENERATOR.buildEmptyFieldInstance(inputType, expectedField, isMultiple, elementInstanceArtifactBuilder);
     }
   }
 
