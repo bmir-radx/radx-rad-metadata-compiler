@@ -5,7 +5,6 @@ import org.metadatacenter.artifacts.model.core.*;
 import org.metadatacenter.artifacts.model.core.fields.FieldInputType;
 import org.metadatacenter.artifacts.model.core.fields.constraints.ValueConstraints;
 
-import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.*;
 
@@ -127,7 +126,7 @@ public class ArtifactInstanceGenerator {
                 }
               }
             }
-            elementInstanceBuilder.withAttributeValueFieldInstances(expectedField, attributeValueFieldInstances);
+            elementInstanceBuilder.withAttributeValueFieldGroup(expectedField, attributeValueFieldInstances);
 
           } else{
             // if the expectedField in the template has the corresponding field in the spreadsheet, then need to retrieve data from spreadsheet
@@ -142,7 +141,7 @@ public class ArtifactInstanceGenerator {
               } else{
                 //Add values to RADx-rad specific controlled terms fields or add an empty field entry
                 var elementSchemaArtifact = templateSchemaArtifact.getElementSchemaArtifact(elementName);
-                SpecificControlledTermUtil.addSpecificControlledTerms(elementInstanceBuilder, elementName, expectedField, fields, elementSchemaArtifact);
+                RadxRadSpecificFieldHandler.addSpecificControlledTerms(elementInstanceBuilder, elementName, expectedField, fields, elementSchemaArtifact);
               }
             }
           }
@@ -174,7 +173,7 @@ public class ArtifactInstanceGenerator {
       if(isMultipleElement){
         templateInstanceArtifactBuilder.withMultiInstanceElementInstances(elementName, elementInstanceArtifacts);
       } else{
-        templateInstanceArtifactBuilder.withElementInstance(elementName, elementInstanceArtifacts.get(0));
+        templateInstanceArtifactBuilder.withSingleInstanceElementInstance(elementName, elementInstanceArtifacts.get(0));
       }
     };
   }
@@ -196,7 +195,7 @@ public class ArtifactInstanceGenerator {
         templateInstanceBuilder.withEmptyMultiInstanceElementInstances(elementName);
       } else{
         buildSingleEmptyElementInstance(elementName, templateSchemaArtifact, elementInstanceBuilder, "/" + elementName);
-        templateInstanceBuilder.withElementInstance(elementName, elementInstanceBuilder.build());
+        templateInstanceBuilder.withSingleInstanceElementInstance(elementName, elementInstanceBuilder.build());
       }
     }
   }
@@ -218,7 +217,7 @@ public class ArtifactInstanceGenerator {
     for(var expectedField : childFields){
       var specificationPath = path + "/" + expectedField;
       if(AttributeValueFieldUtil.isAttributeValue(templateSchemaArtifact, specificationPath)){
-        elementInstanceBuilder.withAttributeValueFieldInstances(expectedField, Collections.emptyMap());
+        elementInstanceBuilder.withAttributeValueFieldGroup(expectedField, Collections.emptyMap());
       } else{
         var fieldSchemaArtifact = elementSchemaArtifact.getFieldSchemaArtifact(expectedField);
         var inputType = fieldSchemaArtifact.fieldUi().inputType();

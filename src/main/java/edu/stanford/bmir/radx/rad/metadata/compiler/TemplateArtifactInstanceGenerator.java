@@ -8,9 +8,8 @@ import org.metadatacenter.artifacts.model.reader.JsonSchemaArtifactReader;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.*;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
+import static edu.stanford.bmir.radx.rad.metadata.compiler.RadxRadFieldsConstant.KEYWORDS;
 import static edu.stanford.bmir.radx.rad.metadata.compiler.RadxSpecificationMetadataConstant.*;
 
 public class TemplateArtifactInstanceGenerator {
@@ -25,9 +24,12 @@ public class TemplateArtifactInstanceGenerator {
 
     var groupedData = SpreadsheetDataManager.groupData(spreadsheetData, spreadsheet2template, templateSchemaArtifact);
 
-    //generate elements that have values in the spreadsheet
+    //generate elements that have mappings in the spreadsheet except Data File Subjects element
     var templateInstanceArtifactBuilder = TemplateInstanceArtifact.builder();
     artifactInstanceGenerator.buildElementInstancesWithValues(groupedData, templateSchemaArtifact, templateInstanceArtifactBuilder, spreadsheetData);
+
+    //generate Data File Subjects element
+    RadxRadSpecificFieldHandler.addDataFileSubjectsElement(spreadsheetData.get(KEYWORDS.getValue()), templateSchemaArtifact, templateInstanceArtifactBuilder);
 
     //generate elements that does not contained in the spreadsheet
     var notPresentElements = getNotPresentElementsSet(groupedData, expectedElements);
@@ -40,9 +42,9 @@ public class TemplateArtifactInstanceGenerator {
     IdGenerator.generateTemplateId(templateInstanceArtifactBuilder);
 
     return templateInstanceArtifactBuilder
-        .withIsBasedOn(new URI(IS_BASED_ON.getField()))
-        .withDescription(SCHEMA_DESCRIPTION.getField())
-        .withName(SCHEMA_NAME.getField())
+        .withIsBasedOn(new URI(IS_BASED_ON.getValue()))
+        .withDescription(SCHEMA_DESCRIPTION.getValue())
+        .withName(SCHEMA_NAME.getValue())
         .build();
   }
 
@@ -51,6 +53,7 @@ public class TemplateArtifactInstanceGenerator {
     var presentElements = groupedData.keySet();
     Set<String> difference = new HashSet<>(expectedElements);
     difference.removeAll(presentElements);
+    difference.remove(DATA_FILE_SUBJECTS.getValue());
     return difference;
   }
 }

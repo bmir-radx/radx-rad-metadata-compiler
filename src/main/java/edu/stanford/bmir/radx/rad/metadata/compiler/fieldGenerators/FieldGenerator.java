@@ -7,6 +7,9 @@ import java.net.URISyntaxException;
 import java.util.Optional;
 
 public interface FieldGenerator {
+  default FieldInstanceArtifact buildWithValue(String value) {
+    return buildWithValue(value, Optional.empty());
+  }
   FieldInstanceArtifact buildWithValue(String value, Optional<ValueConstraints> valueConstraints);
   FieldInstanceArtifact buildEmptyFieldInstanceArtifact();
 }

@@ -1,24 +1,26 @@
 package edu.stanford.bmir.radx.rad.metadata.compiler;
 
-import org.metadatacenter.artifacts.model.core.ElementInstanceArtifact;
-import org.metadatacenter.artifacts.model.core.ElementSchemaArtifact;
-import org.metadatacenter.artifacts.model.core.FieldInstanceArtifact;
+import edu.stanford.bmir.radx.rad.metadata.compiler.fieldGenerators.TextFieldGenerator;
+import org.metadatacenter.artifacts.model.core.*;
+import org.metadatacenter.artifacts.model.core.builders.FieldInstanceArtifactBuilder;
 
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
 import static edu.stanford.bmir.radx.rad.metadata.compiler.RadxSpecificationMetadataConstant.*;
 
-public class SpecificControlledTermUtil {
+public class RadxRadSpecificFieldHandler {
   private final static String person = "Person";
   private final static String orcid = "ORCiD";
   private final static String ror = "ROR";
   private final static String url = "URL";
   private final static String created = "Created";
+  private final static String meshUri =  "http://purl.bioontology.org/ontology/MESH";
   private static final ArtifactInstanceGenerator ARTIFACT_INSTANCE_GENERATOR = new ArtifactInstanceGenerator();
 
   /***
@@ -45,72 +47,72 @@ public class SpecificControlledTermUtil {
     String rorPrefix = controlledTermMap.get(ror);
     //If the element instance has value, then set specific controlled term fields
     if(isNonEmptyElement(fields)){
-      if ((elementName.equals(DATA_FILE_CONTRIBUTORS.getField()) && expectedField.equals(CONTRIBUTOR_TYPE.getField())) ||
-          (elementName.equals(DATA_FILE_CREATORS.getField()) && expectedField.equals(CREATOR_TYPE.getField()))){
+      if ((elementName.equals(DATA_FILE_CONTRIBUTORS.getValue()) && expectedField.equals(CONTRIBUTOR_TYPE.getValue())) ||
+          (elementName.equals(DATA_FILE_CREATORS.getValue()) && expectedField.equals(CREATOR_TYPE.getValue()))){
         elementInstanceArtifactBuilder.withSingleInstanceFieldInstance(expectedField,
             FieldInstanceArtifact.controlledTermFieldInstanceBuilder()
                 .withValue(new URI(controlledTermMap.get(person)))
                 .withLabel(person)
                 .build());
-      } else if (elementName.equals(DATA_FILE_CONTRIBUTORS.getField())
-          && expectedField.equals(CONTRIBUTOR_IDENTIFIER_SCHEME.getField())
-          && fields.containsKey(CONTRIBUTOR_IDENTIFIER.getField())
-          && fields.get(CONTRIBUTOR_IDENTIFIER.getField()).get(0)!= null){
+      } else if (elementName.equals(DATA_FILE_CONTRIBUTORS.getValue())
+          && expectedField.equals(CONTRIBUTOR_IDENTIFIER_SCHEME.getValue())
+          && fields.containsKey(CONTRIBUTOR_IDENTIFIER.getValue())
+          && fields.get(CONTRIBUTOR_IDENTIFIER.getValue()).get(0)!= null){
         elementInstanceArtifactBuilder.withSingleInstanceFieldInstance(expectedField,
             FieldInstanceArtifact.controlledTermFieldInstanceBuilder()
                 .withValue(new URI(controlledTermMap.get(orcid)))
                 .withLabel(orcid)
                 .build());
-      } else if (elementName.equals(DATA_FILE_CREATORS.getField())
-          && expectedField.equals(CREATOR_IDENTIFIER_SCHEME.getField())
-          && fields.containsKey(CREATOR_IDENTIFIER.getField())
-          && fields.get(CREATOR_IDENTIFIER.getField()).get(0)!= null){
+      } else if (elementName.equals(DATA_FILE_CREATORS.getValue())
+          && expectedField.equals(CREATOR_IDENTIFIER_SCHEME.getValue())
+          && fields.containsKey(CREATOR_IDENTIFIER.getValue())
+          && fields.get(CREATOR_IDENTIFIER.getValue()).get(0)!= null){
         elementInstanceArtifactBuilder.withSingleInstanceFieldInstance(expectedField,
             FieldInstanceArtifact.controlledTermFieldInstanceBuilder()
                 .withValue(new URI(controlledTermMap.get(orcid)))
                 .withLabel(orcid)
                 .build());
-      } else if (elementName.equals(DATA_FILE_CONTRIBUTORS.getField())
-          && expectedField.equals(CONTRIBUTOR_AFFILIATION_IDENTIFIER_SCHEME.getField())
-          && fields.containsKey(CONTRIBUTOR_AFFILIATION_IDENTIFIER.getField())
-          && fields.get(CONTRIBUTOR_AFFILIATION_IDENTIFIER.getField()).get(0) != null
-          && fields.get(CONTRIBUTOR_AFFILIATION_IDENTIFIER.getField()).get(0).startsWith(rorPrefix)) {
+      } else if (elementName.equals(DATA_FILE_CONTRIBUTORS.getValue())
+          && expectedField.equals(CONTRIBUTOR_AFFILIATION_IDENTIFIER_SCHEME.getValue())
+          && fields.containsKey(CONTRIBUTOR_AFFILIATION_IDENTIFIER.getValue())
+          && fields.get(CONTRIBUTOR_AFFILIATION_IDENTIFIER.getValue()).get(0) != null
+          && fields.get(CONTRIBUTOR_AFFILIATION_IDENTIFIER.getValue()).get(0).startsWith(rorPrefix)) {
         elementInstanceArtifactBuilder.withSingleInstanceFieldInstance(expectedField,
             FieldInstanceArtifact.controlledTermFieldInstanceBuilder()
                 .withValue(new URI(controlledTermMap.get(ror)))
                 .withLabel(ror)
                 .build());
-      } else if (elementName.equals(DATA_FILE_CREATORS.getField())
-          && expectedField.equals(CREATOR_AFFILIATION_IDENTIFIER_SCHEME.getField())
-          && fields.containsKey(CREATOR_AFFILIATION_IDENTIFIER.getField())
-          && fields.get(CREATOR_AFFILIATION_IDENTIFIER.getField()).get(0).startsWith(rorPrefix)) {
+      } else if (elementName.equals(DATA_FILE_CREATORS.getValue())
+          && expectedField.equals(CREATOR_AFFILIATION_IDENTIFIER_SCHEME.getValue())
+          && fields.containsKey(CREATOR_AFFILIATION_IDENTIFIER.getValue())
+          && fields.get(CREATOR_AFFILIATION_IDENTIFIER.getValue()).get(0).startsWith(rorPrefix)) {
         elementInstanceArtifactBuilder.withSingleInstanceFieldInstance(expectedField,
             FieldInstanceArtifact.controlledTermFieldInstanceBuilder()
                 .withValue(new URI(controlledTermMap.get(ror)))
                 .withLabel(ror)
                 .build());
-      } else if (elementName.equals(DATA_FILE_RELATED_RESOURCES.getField())
-          && expectedField.equals(RELATED_RESOURCE_IDENTIFER_TYPE.getField())
-          && fields.containsKey(RELATED_RESOURCE_IDENTIFER.getField())
-          && fields.get(RELATED_RESOURCE_IDENTIFER.getField()).get(0) != null) {
+      } else if (elementName.equals(DATA_FILE_RELATED_RESOURCES.getValue())
+          && expectedField.equals(RELATED_RESOURCE_IDENTIFER_TYPE.getValue())
+          && fields.containsKey(RELATED_RESOURCE_IDENTIFER.getValue())
+          && fields.get(RELATED_RESOURCE_IDENTIFER.getValue()).get(0) != null) {
         elementInstanceArtifactBuilder.withSingleInstanceFieldInstance(expectedField,
             FieldInstanceArtifact.controlledTermFieldInstanceBuilder()
                 .withValue(new URI(controlledTermMap.get(url)))
                 .withLabel(url)
                 .build());
-      } else if (elementName.equals(DATA_FILE_DATES.getField())
-          && expectedField.equals(EVENT_TYPE.getField())
-          && fields.containsKey(DATE.getField())
-          && fields.get(DATE.getField()).get(0) != null)  {
+      } else if (elementName.equals(DATA_FILE_DATES.getValue())
+          && expectedField.equals(EVENT_TYPE.getValue())
+          && fields.containsKey(DATE.getValue())
+          && fields.get(DATE.getValue()).get(0) != null)  {
         elementInstanceArtifactBuilder.withSingleInstanceFieldInstance(expectedField,
             FieldInstanceArtifact.controlledTermFieldInstanceBuilder()
                 .withValue(new URI(controlledTermMap.get(created)))
                 .withLabel(created)
                 .build());
-      } else if (elementName.equals(DATA_FILE_PARENT_STUDIES.getField())
-          && expectedField.equals(STUDY_IDENTIFIER_SCHEME.getField())
-          && fields.containsKey(STUDY_IDENTIFIER.getField())
-          && isValidURL(fields.get(STUDY_IDENTIFIER.getField()).get(0))) {
+      } else if (elementName.equals(DATA_FILE_PARENT_STUDIES.getValue())
+          && expectedField.equals(STUDY_IDENTIFIER_SCHEME.getValue())
+          && fields.containsKey(STUDY_IDENTIFIER.getValue())
+          && isValidURL(fields.get(STUDY_IDENTIFIER.getValue()).get(0))) {
         elementInstanceArtifactBuilder.withSingleInstanceFieldInstance(expectedField,
             FieldInstanceArtifact.controlledTermFieldInstanceBuilder()
                 .withValue(new URI(controlledTermMap.get(url)))
@@ -149,6 +151,45 @@ public class SpecificControlledTermUtil {
       return true;
     } catch (MalformedURLException e){
       return false;
+    }
+  }
+
+  public static void addDataFileSubjectsElement(String input, TemplateSchemaArtifact templateSchemaArtifact, TemplateInstanceArtifact.Builder templateInstanceArtifactBuilder) throws URISyntaxException {
+    if(input != null) {
+      var mesh = MeshCsvReader.readCSVToMap();
+      String[] keywords = input.split(",");
+      var elementInstances = new ArrayList<ElementInstanceArtifact>();
+      for(var keyword: keywords){
+        var elementInstanceArtifactBuilder = ElementInstanceArtifact.builder();
+        keyword = keyword.trim();
+
+        //add Data File Subjects/Subject Identifier
+        FieldInstanceArtifact subjectIdentifierField;
+        if (mesh.containsKey(keyword)){
+          var classId = mesh.get(keyword);
+          subjectIdentifierField = FieldInstanceArtifact.controlledTermFieldInstanceBuilder().withValue(new URI(classId)).withLabel(keyword).build();
+        } else{
+          subjectIdentifierField = FieldInstanceArtifact.controlledTermFieldInstanceBuilder().build();
+        }
+        elementInstanceArtifactBuilder.withSingleInstanceFieldInstance(SUBJECT_IDENTIFIER.getValue(), subjectIdentifierField);
+
+        //add Keyword
+        elementInstanceArtifactBuilder.withSingleInstanceFieldInstance(KEYWORD.getValue(), new TextFieldGenerator().buildWithValue(keyword));
+
+        //add Subject Identifier Scheme
+        elementInstanceArtifactBuilder.withSingleInstanceFieldInstance(SUBJECT_IDENTIFIER_SCHEME.getValue(), new TextFieldGenerator().buildWithValue(meshUri));
+
+        //add context
+        var elementSchemaArtifact = templateSchemaArtifact.getElementSchemaArtifact(DATA_FILE_SUBJECTS.getValue());
+        ContextGenerator.generateElementInstanceContext(elementSchemaArtifact, elementInstanceArtifactBuilder);
+
+        //add @id
+        IdGenerator.generateElementId(elementInstanceArtifactBuilder);
+
+        elementInstances.add(elementInstanceArtifactBuilder.build());
+      }
+
+      templateInstanceArtifactBuilder.withMultiInstanceElementInstances(DATA_FILE_SUBJECTS.getValue(), elementInstances);
     }
   }
 }
