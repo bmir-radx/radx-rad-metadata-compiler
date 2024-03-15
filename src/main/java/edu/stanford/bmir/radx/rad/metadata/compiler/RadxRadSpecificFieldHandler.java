@@ -40,8 +40,13 @@ public class RadxRadSpecificFieldHandler {
       ElementSchemaArtifact elementSchemaArtifact) throws URISyntaxException {
 
     var fieldSchemaArtifact = elementSchemaArtifact.getFieldSchemaArtifact(expectedField);
+    var valueConstraint = fieldSchemaArtifact.valueConstraints();
     var isMultiple = fieldSchemaArtifact.isMultiple();
     var inputType = fieldSchemaArtifact.fieldUi().inputType();
+    var fieldType = FieldType.getFieldType(inputType);
+    if(valueConstraint.isPresent() && valueConstraint.get().isControlledTermValueConstraint()){
+      fieldType = FieldType.CONTROLLED_TERM;
+    }
 
     var controlledTermMap = MapInitializer.createControlledTermsMap();
     String rorPrefix = controlledTermMap.get(ror);
@@ -72,25 +77,26 @@ public class RadxRadSpecificFieldHandler {
                 .withValue(new URI(controlledTermMap.get(orcid)))
                 .withLabel(orcid)
                 .build());
-      } else if (elementName.equals(DATA_FILE_CONTRIBUTORS.getValue())
-          && expectedField.equals(CONTRIBUTOR_AFFILIATION_IDENTIFIER_SCHEME.getValue())
-          && fields.containsKey(CONTRIBUTOR_AFFILIATION_IDENTIFIER.getValue())
-          && fields.get(CONTRIBUTOR_AFFILIATION_IDENTIFIER.getValue()).get(0) != null
-          && fields.get(CONTRIBUTOR_AFFILIATION_IDENTIFIER.getValue()).get(0).startsWith(rorPrefix)) {
-        elementInstanceArtifactBuilder.withSingleInstanceFieldInstance(expectedField,
-            FieldInstanceArtifact.controlledTermFieldInstanceBuilder()
-                .withValue(new URI(controlledTermMap.get(ror)))
-                .withLabel(ror)
-                .build());
-      } else if (elementName.equals(DATA_FILE_CREATORS.getValue())
-          && expectedField.equals(CREATOR_AFFILIATION_IDENTIFIER_SCHEME.getValue())
-          && fields.containsKey(CREATOR_AFFILIATION_IDENTIFIER.getValue())
-          && fields.get(CREATOR_AFFILIATION_IDENTIFIER.getValue()).get(0).startsWith(rorPrefix)) {
-        elementInstanceArtifactBuilder.withSingleInstanceFieldInstance(expectedField,
-            FieldInstanceArtifact.controlledTermFieldInstanceBuilder()
-                .withValue(new URI(controlledTermMap.get(ror)))
-                .withLabel(ror)
-                .build());
+//      } else if (elementName.equals(DATA_FILE_CONTRIBUTORS.getValue())
+//          && expectedField.equals(CONTRIBUTOR_AFFILIATION_IDENTIFIER_SCHEME.getValue())
+//          && fields.containsKey(CONTRIBUTOR_AFFILIATION_IDENTIFIER.getValue())
+//          && fields.get(CONTRIBUTOR_AFFILIATION_IDENTIFIER.getValue()).get(0) != null
+//          && fields.get(CONTRIBUTOR_AFFILIATION_IDENTIFIER.getValue()).get(0).startsWith(rorPrefix)) {
+//        elementInstanceArtifactBuilder.withSingleInstanceFieldInstance(expectedField,
+//            FieldInstanceArtifact.controlledTermFieldInstanceBuilder()
+//                .withValue(new URI(controlledTermMap.get(ror)))
+//                .withLabel(ror)
+//                .build());
+//      } else if (elementName.equals(DATA_FILE_CREATORS.getValue())
+//          && expectedField.equals(CREATOR_AFFILIATION_IDENTIFIER_SCHEME.getValue())
+//          && fields.containsKey(CREATOR_AFFILIATION_IDENTIFIER.getValue())
+//          && fields.get(CREATOR_AFFILIATION_IDENTIFIER.getValue()).get(0) != null
+//          && fields.get(CREATOR_AFFILIATION_IDENTIFIER.getValue()).get(0).startsWith(rorPrefix)) {
+//        elementInstanceArtifactBuilder.withSingleInstanceFieldInstance(expectedField,
+//            FieldInstanceArtifact.controlledTermFieldInstanceBuilder()
+//                .withValue(new URI(controlledTermMap.get(ror)))
+//                .withLabel(ror)
+//                .build());
       } else if (elementName.equals(DATA_FILE_RELATED_RESOURCES.getValue())
           && expectedField.equals(RELATED_RESOURCE_IDENTIFER_TYPE.getValue())
           && fields.containsKey(RELATED_RESOURCE_IDENTIFER.getValue())
@@ -119,15 +125,10 @@ public class RadxRadSpecificFieldHandler {
                 .withLabel(url)
                 .build());
       } else{
-//        elementInstanceArtifactBuilder.withSingleInstanceFieldInstance(expectedField,
-//            FieldInstanceArtifact.builder().build());
-
-        ARTIFACT_INSTANCE_GENERATOR.buildEmptyFieldInstance(inputType, expectedField, isMultiple, elementInstanceArtifactBuilder);
+        ARTIFACT_INSTANCE_GENERATOR.buildEmptyFieldInstance(fieldType, expectedField, isMultiple, elementInstanceArtifactBuilder);
       }
     } else{
-//      elementInstanceArtifactBuilder.withSingleInstanceFieldInstance(expectedField,
-//          FieldInstanceArtifact.builder().build());
-      ARTIFACT_INSTANCE_GENERATOR.buildEmptyFieldInstance(inputType, expectedField, isMultiple, elementInstanceArtifactBuilder);
+      ARTIFACT_INSTANCE_GENERATOR.buildEmptyFieldInstance(fieldType, expectedField, isMultiple, elementInstanceArtifactBuilder);
     }
   }
 

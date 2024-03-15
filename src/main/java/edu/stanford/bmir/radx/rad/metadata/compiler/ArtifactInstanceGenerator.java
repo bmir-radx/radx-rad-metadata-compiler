@@ -2,65 +2,49 @@ package edu.stanford.bmir.radx.rad.metadata.compiler;
 
 import edu.stanford.bmir.radx.rad.metadata.compiler.fieldGenerators.*;
 import org.metadatacenter.artifacts.model.core.*;
-import org.metadatacenter.artifacts.model.core.fields.FieldInputType;
 import org.metadatacenter.artifacts.model.core.fields.constraints.ValueConstraints;
 
 import java.net.URISyntaxException;
 import java.util.*;
 
 public class ArtifactInstanceGenerator {
-  private final Map<FieldInputType, FieldGenerator> fieldGenerators;
+  private final Map<FieldType, FieldGenerator> fieldGenerators;
 
   public ArtifactInstanceGenerator() {
-    fieldGenerators = Map.of(
-        FieldInputType.LINK, new LinkFieldGenerator(),
-        FieldInputType.TEXTFIELD, new TextFieldGenerator(),
-        FieldInputType.TEXTAREA, new TextAreaFieldGenerator(),
-        FieldInputType.NUMERIC, new NumericFieldGenerator(),
-        FieldInputType.TEMPORAL, new TemporalFieldGenerator(),
-        FieldInputType.RADIO, new RadioFieldGenerator(),
-        FieldInputType.PHONE_NUMBER, new PhoneNumberFieldGenerator(),
-        FieldInputType.EMAIL, new EmailGenerator(),
-        FieldInputType.CHECKBOX, new CheckBoxFieldGenerator(),
-        FieldInputType.LIST, new ListGenerator()
+    fieldGenerators = Map.ofEntries(
+        Map.entry(FieldType.LINK, new LinkFieldGenerator()),
+        Map.entry(FieldType.TEXTFIELD, new TextFieldGenerator()),
+        Map.entry(FieldType.TEXTAREA, new TextAreaFieldGenerator()),
+        Map.entry(FieldType.NUMERIC, new NumericFieldGenerator()),
+        Map.entry(FieldType.TEMPORAL, new TemporalFieldGenerator()),
+        Map.entry(FieldType.RADIO, new RadioFieldGenerator()),
+        Map.entry(FieldType.PHONE_NUMBER, new PhoneNumberFieldGenerator()),
+        Map.entry(FieldType.EMAIL, new EmailGenerator()),
+        Map.entry(FieldType.CHECKBOX, new CheckBoxFieldGenerator()),
+        Map.entry(FieldType.LIST, new ListGenerator()),
+        Map.entry(FieldType.CONTROLLED_TERM, new ControlledTermGenerator())
     );
   }
 
-  public void buildFieldInstanceWithValues(FieldInputType fieldInputType,
+  public void buildFieldInstanceWithValues(FieldType fieldType,
                                            Map<String, List<String>> fields,
                                            String expectedField,
                                            boolean isMultipleField,
                                            ElementInstanceArtifact.Builder elementInstanceArtifactBuilder,
-                                           Optional<ValueConstraints> valueConstraints) throws URISyntaxException {
+                                           Optional<ValueConstraints> valueConstraints) {
     var value = fields.get(expectedField).get(0);
-
-    FieldGenerator generator = fieldGenerators.get(fieldInputType);
-    FieldInstanceArtifact fieldInstanceArtifact = generator != null
-        ? generator.buildWithValue(value, valueConstraints)
-        : handleControlledTermField(Optional.of(value), valueConstraints);
-
+    FieldGenerator generator = fieldGenerators.get(fieldType);
+    var fieldInstanceArtifact = generator.buildWithValue(value, valueConstraints);
     updateElementInstanceWithFieldInstance(isMultipleField, elementInstanceArtifactBuilder, expectedField, fieldInstanceArtifact);
   }
 
-  public void buildEmptyFieldInstance(FieldInputType fieldInputType,
+  public void buildEmptyFieldInstance(FieldType fieldType,
                                       String expectedField,
                                       boolean isMultipleField,
-                                      ElementInstanceArtifact.Builder elementInstanceArtifactBuilder) throws URISyntaxException {
-
-
-    FieldGenerator generator = fieldGenerators.get(fieldInputType);
-    FieldInstanceArtifact fieldInstanceArtifact = generator != null
-        ? generator.buildEmptyFieldInstanceArtifact()
-        : handleControlledTermField(Optional.empty(), Optional.empty());
-
+                                      ElementInstanceArtifact.Builder elementInstanceArtifactBuilder){
+    FieldGenerator generator = fieldGenerators.get(fieldType);
+    FieldInstanceArtifact fieldInstanceArtifact = generator.buildEmptyFieldInstanceArtifact();
     updateElementInstanceWithFieldInstance(isMultipleField, elementInstanceArtifactBuilder, expectedField, fieldInstanceArtifact);
-  }
-
-  private FieldInstanceArtifact handleControlledTermField(Optional<String> value, Optional<ValueConstraints> valueConstraints) throws URISyntaxException {
-    if(valueConstraints.isPresent() && valueConstraints.get().isControlledTermValueConstraint() && value.isPresent()){
-      return new ControlledTermGenerator().buildWithValue(value.get(), valueConstraints);
-    }
-    return new ControlledTermGenerator().buildEmptyFieldInstanceArtifact();
   }
 
   private void updateElementInstanceWithFieldInstance(boolean isMultipleField, ElementInstanceArtifact.Builder elementInstanceArtifactBuilder, String expectedField, FieldInstanceArtifact fieldInstanceArtifact){
@@ -104,7 +88,10 @@ public class ArtifactInstanceGenerator {
         for(var expectedField : childFields){
           var fieldInstanceArtifact = templateSchemaArtifact.getElementSchemaArtifact(elementName).getFieldSchemaArtifact(expectedField);
           var expectedFieldValueConstraint = fieldInstanceArtifact.valueConstraints();
-          var expectedFieldType = fieldInstanceArtifact.fieldUi().inputType();
+          var expectedFieldType = FieldType.getFieldType(fieldInstanceArtifact.fieldUi().inputType());
+          if(expectedFieldValueConstraint.isPresent() && expectedFieldValueConstraint.get().isControlledTermValueConstraint()){
+            expectedFieldType = FieldType.CONTROLLED_TERM;
+          }
 
           var isMultipleField = false;
           if(expectedFieldValueConstraint.isPresent()){
@@ -129,12 +116,10 @@ public class ArtifactInstanceGenerator {
             elementInstanceBuilder.withAttributeValueFieldGroup(expectedField, attributeValueFieldInstances);
 
           } else{
-            // if the expectedField in the template has the corresponding field in the spreadsheet, then need to retrieve data from spreadsheet
+            // if the expectedField in the template has the mapping field in the spreadsheet, then need to retrieve data from spreadsheet
             // otherwise, build an empty fieldArtifactInstance
             if (fields.containsKey(expectedField)){
-              if(expectedFieldValueConstraint.isPresent()){
-                buildFieldInstanceWithValues(expectedFieldType, fields, expectedField, isMultipleField, elementInstanceBuilder, expectedFieldValueConstraint);
-              }
+              buildFieldInstanceWithValues(expectedFieldType, fields, expectedField, isMultipleField, elementInstanceBuilder, expectedFieldValueConstraint);
             } else{
               if(isMultipleField){
                 buildEmptyFieldInstance(expectedFieldType,expectedField, true, elementInstanceBuilder);
@@ -145,7 +130,6 @@ public class ArtifactInstanceGenerator {
               }
             }
           }
-
         };
 
         //Build nested child element
@@ -163,10 +147,6 @@ public class ArtifactInstanceGenerator {
         //Add @id
         IdGenerator.generateElementId(elementInstanceBuilder);
 
-        //Before add to elementInstanceArtifact list, check if all fields are empty, if yes, return an empty element
-//        elementInstanceArtifacts.add(
-//            emptyArtifactChecker.getOrEmptyElementInstanceArtifact(elementInstanceBuilder.build())
-//        );
         elementInstanceArtifacts.add(elementInstanceBuilder.build());
       };
 
@@ -220,7 +200,7 @@ public class ArtifactInstanceGenerator {
         elementInstanceBuilder.withAttributeValueFieldGroup(expectedField, Collections.emptyMap());
       } else{
         var fieldSchemaArtifact = elementSchemaArtifact.getFieldSchemaArtifact(expectedField);
-        var inputType = fieldSchemaArtifact.fieldUi().inputType();
+        var inputType = FieldType.getFieldType(fieldSchemaArtifact.fieldUi().inputType());
         var isMultiple = fieldSchemaArtifact.isMultiple();
         buildEmptyFieldInstance(inputType, expectedField, isMultiple, elementInstanceBuilder);
       }

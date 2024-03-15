@@ -5,6 +5,10 @@ import org.apache.poi.ss.usermodel.*;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -58,8 +62,12 @@ public class SpreadsheetReader {
       }
       case NUMERIC -> {
         if (DateUtil.isCellDateFormatted(cell)) {
-          // TODO Format date value as required
-          return cell.getDateCellValue().toString();
+          Date date = cell.getDateCellValue();
+          LocalDateTime localDateTime = date.toInstant()
+              .atZone(ZoneId.systemDefault())
+              .toLocalDateTime();
+          LocalDate localDate = localDateTime.toLocalDate();
+          return localDate.toString();
         } else {
           // Convert numeric value to String
 //          return Double.toString(cell.getNumericCellValue());
