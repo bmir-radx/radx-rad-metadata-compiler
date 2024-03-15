@@ -16,8 +16,6 @@ public class Compiler {
   private static final String SPREADSHEET_FILE_PATH = "s";
   private static final String OUTPUT_DIRECTORY_PATH = "o";
   private static final SpreadsheetReader spreadsheetReader = new SpreadsheetReader();
-  private static final RADxRadGenerator radxRadGenerator = new RADxRadGenerator();
-  private static final CedarInstanceGenerator cedarInstanceGenerator = new CedarInstanceGenerator();
   private static final JsonSchemaArtifactRenderer jsonSchemaArtifactRenderer = new JsonSchemaArtifactRenderer();
   private static final TemplateArtifactInstanceGenerator templateArtifactInstanceGenerator = new TemplateArtifactInstanceGenerator();
   private static final ObjectMapper mapper = new ObjectMapper();
@@ -42,7 +40,6 @@ public class Compiler {
                 // For each file, generate a report in the specified output directory
                 try {
                   String outputFileName = getOutputFileName(file);
-//                  hardCodeTransform(spreadSheetFile, outputDirectory.resolve(outputFileName));
                   transform(spreadSheetFile, outputDirectory.resolve(outputFileName));
                 } catch (Exception e) {
                   System.err.println("Error processing file " + file + ": " + e.getMessage());
@@ -52,7 +49,6 @@ public class Compiler {
       } else if (Files.exists(spreadSheetFile)) {
         String outputFileName = getOutputFileName(spreadSheetFile);
         transform(spreadSheetFile, outputDirectory.resolve(outputFileName));
-//        hardCodeTransform(spreadSheetFile, outputDirectory.resolve(outputFileName));
       } else {
         throw new FileNotFoundException("Spreadsheet path not found: " + spreadSheetFile);
       }
@@ -60,15 +56,6 @@ public class Compiler {
       Usage(options, e.getMessage());
     }
 
-  }
-
-  private static void hardCodeTransform(Path spreadsheetFile, Path outputFile) throws IOException, URISyntaxException {
-    var templateNode = mapper.readTree(Compiler.class.getClassLoader().getResource("RADxMetadataSpecification.json"));
-    var spreadSheetData = spreadsheetReader.readRadxRadSpreadsheet(spreadsheetFile.toString());
-    var radxRadMetadata = radxRadGenerator.generateRADxRadMetadata(spreadSheetData);
-    var templateInstanceArtifact = cedarInstanceGenerator.generateTemplate(radxRadMetadata, templateNode);
-    ObjectNode templateInstanceRendering = jsonSchemaArtifactRenderer.renderTemplateInstanceArtifact(templateInstanceArtifact);
-    mapper.writeValue(outputFile.toFile(), templateInstanceRendering);
   }
 
   private static void transform(Path spreadsheetFile, Path outputFile) throws IOException, URISyntaxException {
