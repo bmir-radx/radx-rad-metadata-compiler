@@ -2,7 +2,6 @@ package edu.stanford.bmir.radx.rad.metadata.compiler;
 
 import edu.stanford.bmir.radx.rad.metadata.compiler.fieldGenerators.TextFieldGenerator;
 import org.metadatacenter.artifacts.model.core.*;
-import org.metadatacenter.artifacts.model.core.builders.FieldInstanceArtifactBuilder;
 
 import java.net.MalformedURLException;
 import java.net.URI;
@@ -14,7 +13,7 @@ import java.util.Map;
 
 import static edu.stanford.bmir.radx.rad.metadata.compiler.RadxSpecificationMetadataConstant.*;
 
-public class RadxRadSpecificFieldHandler {
+public class RadxRadPrecisionFieldHandler {
   private final static String person = "Person";
   private final static String orcid = "ORCiD";
   private final static String ror = "ROR";

@@ -94,7 +94,7 @@ public class Compiler {
   }
 
   private static void Usage(Options options, String errorMessage){
-    String header = "RADx-Rad Metadata Compiler";
+    String header = "RADx-rad Metadata Compiler";
     HelpFormatter helpFormatter = new HelpFormatter();
     helpFormatter.printHelp(Compiler.class.getName(), header, options, errorMessage, true);
   }

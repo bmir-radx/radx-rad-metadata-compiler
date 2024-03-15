@@ -29,7 +29,7 @@ public class TemplateArtifactInstanceGenerator {
     artifactInstanceGenerator.buildElementInstancesWithValues(groupedData, templateSchemaArtifact, templateInstanceArtifactBuilder, spreadsheetData);
 
     //generate Data File Subjects element
-    RadxRadSpecificFieldHandler.addDataFileSubjectsElement(spreadsheetData.get(KEYWORDS.getValue()), templateSchemaArtifact, templateInstanceArtifactBuilder);
+    RadxRadPrecisionFieldHandler.addDataFileSubjectsElement(spreadsheetData.get(KEYWORDS.getValue()), templateSchemaArtifact, templateInstanceArtifactBuilder);
 
     //generate elements that does not contained in the spreadsheet
     var notPresentElements = getNotPresentElementsSet(groupedData, expectedElements);

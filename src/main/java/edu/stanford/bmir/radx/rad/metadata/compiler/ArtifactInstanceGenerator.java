@@ -126,7 +126,7 @@ public class ArtifactInstanceGenerator {
               } else{
                 //Add values to RADx-rad specific controlled terms fields or add an empty field entry
                 var elementSchemaArtifact = templateSchemaArtifact.getElementSchemaArtifact(elementName);
-                RadxRadSpecificFieldHandler.addSpecificControlledTerms(elementInstanceBuilder, elementName, expectedField, fields, elementSchemaArtifact);
+                RadxRadPrecisionFieldHandler.addSpecificControlledTerms(elementInstanceBuilder, elementName, expectedField, fields, elementSchemaArtifact);
               }
             }
           }
