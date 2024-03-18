@@ -8,9 +8,7 @@ import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 public class SpreadsheetReader {
   public Map<String, String> readRadxRadSpreadsheet(String pathToFile) throws IOException {
@@ -25,7 +23,9 @@ public class SpreadsheetReader {
         var field = currentRow.getCell(0);
         var value = currentRow.getCell(1);
         if (field != null && !field.getStringCellValue().equals("") && value!=null) {
-          fieldValues.put(field.getStringCellValue(), getCellValueAsString(value));
+          var metadata = getCellValueAsString(value);
+          if(metadata != null && !metadata.equals(""))
+          fieldValues.put(field.getStringCellValue(), metadata);
         }
       }
     }
@@ -33,11 +33,11 @@ public class SpreadsheetReader {
     return fieldValues;
   }
 
-  public Map<String, FieldArtifact> readSpreadsheet2Template(String pathToFile) throws IOException {
+  public Map<String, FieldPath> readSpreadsheet2Template(String pathToFile) throws IOException {
     FileInputStream excelFile = new FileInputStream(new File(pathToFile));
     Workbook workbook = WorkbookFactory.create(excelFile);
     Sheet datatypeSheet = workbook.getSheetAt(0);
-    Map<String, FieldArtifact> spreadsheet2Template = new HashMap<String, FieldArtifact>();
+    Map<String, FieldPath> spreadsheet2Template = new HashMap<String, FieldPath>();
 
     for (int rowIndex = 1; rowIndex <= datatypeSheet.getLastRowNum(); rowIndex++) {
       var currentRow = datatypeSheet.getRow(rowIndex);
@@ -47,12 +47,32 @@ public class SpreadsheetReader {
         var field = currentRow.getCell(2);
         if (radxRadfield != null) {
           spreadsheet2Template.put(radxRadfield.getStringCellValue(),
-              new FieldArtifact(element.getStringCellValue(), field.getStringCellValue()));
+              new FieldPath(element.getStringCellValue(), field.getStringCellValue()));
         }
       }
     }
     workbook.close();
     return spreadsheet2Template;
+  }
+
+  public Map<String, String> readSpreadsheet2templatePath(String pathToFile) throws IOException {
+    FileInputStream excelFile = new FileInputStream(pathToFile);
+    Workbook workbook = WorkbookFactory.create(excelFile);
+    Sheet datatypeSheet = workbook.getSheetAt(0);
+    Map<String, String> template2Spreadsheet = new HashMap<String, String>();
+
+    for (int rowIndex = 1; rowIndex <= datatypeSheet.getLastRowNum(); rowIndex++) {
+      var currentRow = datatypeSheet.getRow(rowIndex);
+      if (currentRow != null) {
+        var radxRadfield = currentRow.getCell(0);
+        var path = currentRow.getCell(1);
+        if (radxRadfield != null) {
+          template2Spreadsheet.put(radxRadfield.getStringCellValue(), path.getStringCellValue());
+        }
+      }
+    }
+    workbook.close();
+    return template2Spreadsheet;
   }
 
   private String getCellValueAsString(Cell cell){

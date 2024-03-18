@@ -12,33 +12,19 @@ public class SpreadsheetDataManager {
   private final static Pattern FIELD_PATTERN = Pattern.compile("^(?!study_include_prospective_or_retrospective_human_samples)(.+?)_?(\\d*)$");
   private final static String FIRST_NAME_PATTERN = "^(pi|creator)_firstname_\\d+$";
   private final static String MIDDLE_NAME_PATTERN = "^(pi|creator)_middlename_\\d+$";
-  /***
-   * Group spreadsheet data in the following format:
-   * {
-   *   Element:{
-   *     index{
-   *       field1: [value],
-   *       field2: [value],
-   *       filed3(attribute-value): [spreadsheetField1, spreadsheetField2]
-   *     }
-   *   }
-   * }
-   * If field is attribute-value as field3, the list of values are keys of kay-value pairs.
-   * @param spreadsheetData
-   * @param spreadsheet2template
-   * @return
-   */
-  public static Map<String, Map<Integer, Map<String, List<String>>>> groupData(
-      Map<String, String> spreadsheetData,
-      Map<String, FieldArtifact> spreadsheet2template,
-      TemplateSchemaArtifact templateSchemaArtifact){
+  public final static Map<String, List<String>> attributeValueMap = new HashMap<>(); //path-> List<spreadsheet fields>
+  public final static Map<String, Map<Integer, String>> groupedData = new HashMap<>(); //{path->{index: value}}
+  public final static Map<String, Integer> elementInstanceCounts = new HashMap<>(); //{element: instances counts }
 
-    Map<String, Map<Integer, Map<String, List<String>>>> groupedData = new HashMap<>();
+  public static void groupData(Map<String, String> spreadsheetData,
+                                Map<String, String> spreadsheet2templatePath,
+                                TemplateSchemaArtifact templateSchemaArtifact){
 
     for (Map.Entry<String, String> entry : spreadsheetData.entrySet()) {
       String key = entry.getKey();
       String value = entry.getValue();
 
+      //skip keywords value which needs precision handling
       if(!Objects.equals(key, KEYWORDS.getValue())){
         Matcher matcher = FIELD_PATTERN.matcher(key);
         if (matcher.find()) {
@@ -49,16 +35,17 @@ public class SpreadsheetDataManager {
           var isFirstName = key.matches(FIRST_NAME_PATTERN);
           var isMiddleName = key.matches(MIDDLE_NAME_PATTERN);
 
-          var element = spreadsheet2template.get(spreadsheetField).element();
-          var field = spreadsheet2template.get(spreadsheetField).field();
-          var specificationPath = "/" + element + "/" + field;
+          var path = spreadsheet2templatePath.get(spreadsheetField);
 
-          if(AttributeValueFieldUtil.isAttributeValue(templateSchemaArtifact, specificationPath)){
-            groupedData.computeIfAbsent(element, k -> new HashMap<>())
-                .computeIfAbsent(1, k -> new HashMap<>())
-                .computeIfAbsent(field, k -> new ArrayList<>())
-                .add(key);
+          //If it is attribute-value type, add to attributeValueMap
+          if(AttributeValueFieldUtil.isAttributeValue(templateSchemaArtifact, path)){
+            attributeValueMap.computeIfAbsent(path, k -> new ArrayList<>()).add(key);
           } else{
+            //update element instances counts
+            //TODO: need to update Map<String, Integer> elementInstanceCounts, add childElement: counts to map as well!!!
+            var element = path.split("/")[1];
+            elementInstanceCounts.merge(element, index, Math::max);
+
             //Special handling for Contributor|Creator Given Name Fields
             if(isFirstName && value != null){
               String middleNameKey = key.replace("firstname", "middlename");
@@ -66,18 +53,14 @@ public class SpreadsheetDataManager {
               value = value + " " + middleNameValue;
             }
 
-            // Skip adding to groupedData if it's a middle name field by itself
+            // Skip adding to groupedData if it's a middle name field
             if(!isMiddleName){
-              groupedData.computeIfAbsent(element, k -> new HashMap<>())
-                  .computeIfAbsent(index, k -> new HashMap<>())
-                  .computeIfAbsent(field, k -> new ArrayList<>())
-                  .add(value);
+              groupedData.computeIfAbsent(path, k -> new HashMap<>())
+                  .put(index, value);
             }
           }
         }
       }
     };
-    return groupedData;
   }
-
 }

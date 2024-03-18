@@ -20,23 +20,27 @@ public class RadxRadPrecisionFieldHandler {
   private final static String url = "URL";
   private final static String created = "Created";
   private final static String meshUri =  "http://purl.bioontology.org/ontology/MESH";
-  private static final ArtifactInstanceGenerator ARTIFACT_INSTANCE_GENERATOR = new ArtifactInstanceGenerator();
+  private final static String contributorIdentifierPath = "/Data File Contributors/Contributor Identifier";
+  private final static String creatorIdentifierPath = "/Data File Creators/Creator Identifier";
+  private final static String relatedResourceIdentifierPath = "/Data File Related Resources/Related Resource Identifier";
+  private final static String datePath = "/Data File Dates/Date";
+  private final static String studyIdentifierPath = "/Data File Parent Studies/Study Identifier";
+  private static final FieldInstanceArtifactGenerator fieldInstanceArtifactGenerator = new FieldInstanceArtifactGenerator();
 
   /***
    * This method aims to set RADx-rad specific controlled term fields
    * such as set Contributor Type to Person
    * It adds empty field entry if it is not a specific controlled term fields
-   * @param elementInstanceArtifactBuilder
-   * @param elementName
-   * @param fields
-   * @return
    */
   public static void addSpecificControlledTerms(
       ElementInstanceArtifact.Builder elementInstanceArtifactBuilder,
       String elementName,
       String expectedField,
-      Map<String, List<String>> fields,
-      ElementSchemaArtifact elementSchemaArtifact) throws URISyntaxException {
+      ElementSchemaArtifact elementSchemaArtifact,
+      String path,
+      Map<String, Map<Integer, String>> groupedData,
+      Map<String, Integer> elementInstanceCounts,
+      int i) throws URISyntaxException {
 
     var fieldSchemaArtifact = elementSchemaArtifact.getFieldSchemaArtifact(expectedField);
     var valueConstraint = fieldSchemaArtifact.valueConstraints();
@@ -48,9 +52,9 @@ public class RadxRadPrecisionFieldHandler {
     }
 
     var controlledTermMap = MapInitializer.createControlledTermsMap();
-    String rorPrefix = controlledTermMap.get(ror);
     //If the element instance has value, then set specific controlled term fields
-    if(isNonEmptyElement(fields)){
+//    if(!isEmptyElementInstance(elementSchemaArtifact, path, groupedData, elementInstanceCounts, i)){
+    if(!isEmptyElementInstance(elementInstanceCounts, elementName, elementSchemaArtifact)){
       if ((elementName.equals(DATA_FILE_CONTRIBUTORS.getValue()) && expectedField.equals(CONTRIBUTOR_TYPE.getValue())) ||
           (elementName.equals(DATA_FILE_CREATORS.getValue()) && expectedField.equals(CREATOR_TYPE.getValue()))){
         elementInstanceArtifactBuilder.withSingleInstanceFieldInstance(expectedField,
@@ -60,8 +64,8 @@ public class RadxRadPrecisionFieldHandler {
                 .build());
       } else if (elementName.equals(DATA_FILE_CONTRIBUTORS.getValue())
           && expectedField.equals(CONTRIBUTOR_IDENTIFIER_SCHEME.getValue())
-          && fields.containsKey(CONTRIBUTOR_IDENTIFIER.getValue())
-          && fields.get(CONTRIBUTOR_IDENTIFIER.getValue()).get(0)!= null){
+          && groupedData.containsKey(contributorIdentifierPath)
+          && groupedData.get(contributorIdentifierPath).get(i)!= null){
         elementInstanceArtifactBuilder.withSingleInstanceFieldInstance(expectedField,
             FieldInstanceArtifact.controlledTermFieldInstanceBuilder()
                 .withValue(new URI(controlledTermMap.get(orcid)))
@@ -69,37 +73,17 @@ public class RadxRadPrecisionFieldHandler {
                 .build());
       } else if (elementName.equals(DATA_FILE_CREATORS.getValue())
           && expectedField.equals(CREATOR_IDENTIFIER_SCHEME.getValue())
-          && fields.containsKey(CREATOR_IDENTIFIER.getValue())
-          && fields.get(CREATOR_IDENTIFIER.getValue()).get(0)!= null){
+          && groupedData.containsKey(creatorIdentifierPath)
+          && groupedData.get(creatorIdentifierPath).get(i)!= null){
         elementInstanceArtifactBuilder.withSingleInstanceFieldInstance(expectedField,
             FieldInstanceArtifact.controlledTermFieldInstanceBuilder()
                 .withValue(new URI(controlledTermMap.get(orcid)))
                 .withLabel(orcid)
                 .build());
-//      } else if (elementName.equals(DATA_FILE_CONTRIBUTORS.getValue())
-//          && expectedField.equals(CONTRIBUTOR_AFFILIATION_IDENTIFIER_SCHEME.getValue())
-//          && fields.containsKey(CONTRIBUTOR_AFFILIATION_IDENTIFIER.getValue())
-//          && fields.get(CONTRIBUTOR_AFFILIATION_IDENTIFIER.getValue()).get(0) != null
-//          && fields.get(CONTRIBUTOR_AFFILIATION_IDENTIFIER.getValue()).get(0).startsWith(rorPrefix)) {
-//        elementInstanceArtifactBuilder.withSingleInstanceFieldInstance(expectedField,
-//            FieldInstanceArtifact.controlledTermFieldInstanceBuilder()
-//                .withValue(new URI(controlledTermMap.get(ror)))
-//                .withLabel(ror)
-//                .build());
-//      } else if (elementName.equals(DATA_FILE_CREATORS.getValue())
-//          && expectedField.equals(CREATOR_AFFILIATION_IDENTIFIER_SCHEME.getValue())
-//          && fields.containsKey(CREATOR_AFFILIATION_IDENTIFIER.getValue())
-//          && fields.get(CREATOR_AFFILIATION_IDENTIFIER.getValue()).get(0) != null
-//          && fields.get(CREATOR_AFFILIATION_IDENTIFIER.getValue()).get(0).startsWith(rorPrefix)) {
-//        elementInstanceArtifactBuilder.withSingleInstanceFieldInstance(expectedField,
-//            FieldInstanceArtifact.controlledTermFieldInstanceBuilder()
-//                .withValue(new URI(controlledTermMap.get(ror)))
-//                .withLabel(ror)
-//                .build());
       } else if (elementName.equals(DATA_FILE_RELATED_RESOURCES.getValue())
           && expectedField.equals(RELATED_RESOURCE_IDENTIFER_TYPE.getValue())
-          && fields.containsKey(RELATED_RESOURCE_IDENTIFER.getValue())
-          && fields.get(RELATED_RESOURCE_IDENTIFER.getValue()).get(0) != null) {
+          && groupedData.containsKey(relatedResourceIdentifierPath)
+          && groupedData.get(relatedResourceIdentifierPath).get(i) != null) {
         elementInstanceArtifactBuilder.withSingleInstanceFieldInstance(expectedField,
             FieldInstanceArtifact.controlledTermFieldInstanceBuilder()
                 .withValue(new URI(controlledTermMap.get(url)))
@@ -107,8 +91,8 @@ public class RadxRadPrecisionFieldHandler {
                 .build());
       } else if (elementName.equals(DATA_FILE_DATES.getValue())
           && expectedField.equals(EVENT_TYPE.getValue())
-          && fields.containsKey(DATE.getValue())
-          && fields.get(DATE.getValue()).get(0) != null)  {
+          && groupedData.containsKey(datePath)
+          && groupedData.get(datePath).get(i) != null)  {
         elementInstanceArtifactBuilder.withSingleInstanceFieldInstance(expectedField,
             FieldInstanceArtifact.controlledTermFieldInstanceBuilder()
                 .withValue(new URI(controlledTermMap.get(created)))
@@ -116,30 +100,44 @@ public class RadxRadPrecisionFieldHandler {
                 .build());
       } else if (elementName.equals(DATA_FILE_PARENT_STUDIES.getValue())
           && expectedField.equals(STUDY_IDENTIFIER_SCHEME.getValue())
-          && fields.containsKey(STUDY_IDENTIFIER.getValue())
-          && isValidURL(fields.get(STUDY_IDENTIFIER.getValue()).get(0))) {
+          && groupedData.containsKey(studyIdentifierPath)
+          && isValidURL(groupedData.get(studyIdentifierPath).get(i))) {
         elementInstanceArtifactBuilder.withSingleInstanceFieldInstance(expectedField,
             FieldInstanceArtifact.controlledTermFieldInstanceBuilder()
                 .withValue(new URI(controlledTermMap.get(url)))
                 .withLabel(url)
                 .build());
       } else{
-        ARTIFACT_INSTANCE_GENERATOR.buildEmptyFieldInstance(fieldType, expectedField, isMultiple, elementInstanceArtifactBuilder);
+        var fieldInstanceArtifact = fieldInstanceArtifactGenerator.buildEmptyFieldInstance(fieldType);
+        buildWithFieldInstanceArtifact(elementInstanceArtifactBuilder, fieldInstanceArtifact, expectedField, isMultiple);
       }
     } else{
-      ARTIFACT_INSTANCE_GENERATOR.buildEmptyFieldInstance(fieldType, expectedField, isMultiple, elementInstanceArtifactBuilder);
+      var fieldInstanceArtifact = fieldInstanceArtifactGenerator.buildEmptyFieldInstance(fieldType);
+      buildWithFieldInstanceArtifact(elementInstanceArtifactBuilder, fieldInstanceArtifact, expectedField, isMultiple);
     }
   }
 
-  private static boolean isNonEmptyElement(Map<String, List<String>> fields){
-    for(Map.Entry<String, List<String>> entry : fields.entrySet()){
-      for(var value : entry.getValue()){
-        if (value != null){
-          return true;
-        }
+  private static void buildWithFieldInstanceArtifact(ElementInstanceArtifact.Builder elementInstanceArtifactBuilder, FieldInstanceArtifact fieldInstanceArtifact, String fieldName, boolean isMultiple){
+    if(isMultiple){
+      elementInstanceArtifactBuilder.withMultiInstanceFieldInstances(fieldName, List.of(fieldInstanceArtifact));
+    } else{
+      elementInstanceArtifactBuilder.withSingleInstanceFieldInstance(fieldName, fieldInstanceArtifact);
+    }
+  }
+
+  private static boolean isEmptyElementInstance(Map<String, Integer> elementInstanceCounts, String element, ElementSchemaArtifact elementSchemaArtifact){
+    if(elementInstanceCounts.containsKey(element)){
+      return false;
+    }
+
+    var childElements = elementSchemaArtifact.getElementNames();
+    for (var childElement : childElements){
+      var childElementSchemaArtifact = elementSchemaArtifact.getElementSchemaArtifact(childElement);
+      if(!isEmptyElementInstance(elementInstanceCounts, childElement, childElementSchemaArtifact)){
+        return false;
       }
     }
-    return false;
+    return true;
   }
 
   private static boolean isValidURL(String url){
@@ -168,6 +166,7 @@ public class RadxRadPrecisionFieldHandler {
         if (mesh.containsKey(keyword)){
           var classId = mesh.get(keyword);
           subjectIdentifierField = FieldInstanceArtifact.controlledTermFieldInstanceBuilder().withValue(new URI(classId)).withLabel(keyword).build();
+
         } else{
           subjectIdentifierField = FieldInstanceArtifact.controlledTermFieldInstanceBuilder().build();
         }
