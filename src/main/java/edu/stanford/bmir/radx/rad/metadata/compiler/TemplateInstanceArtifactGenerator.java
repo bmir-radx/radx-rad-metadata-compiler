@@ -15,9 +15,8 @@ import static edu.stanford.bmir.radx.rad.metadata.compiler.RadxSpecificationMeta
 public class TemplateInstanceArtifactGenerator {
 
   private final ElementInstanceArtifactGenerator elementInstanceArtifactGenerator = new ElementInstanceArtifactGenerator();
-  private final FieldInstanceArtifactGenerator fieldInstanceArtifactGenerator = new FieldInstanceArtifactGenerator();
 
-  public TemplateInstanceArtifact generateTemplateArtifactInstance(Map<String, String> spreadsheetData, Map<String, FieldPath> spreadsheet2template, JsonNode templateNode) throws URISyntaxException {
+  public TemplateInstanceArtifact generateTemplateArtifactInstance(Map<String, String> spreadsheetData, Map<String, String> spreadsheet2templatePath, JsonNode templateNode) throws URISyntaxException {
     //read templateContent using cedar-artifact-library
     JsonSchemaArtifactReader jsonSchemaArtifactReader = new JsonSchemaArtifactReader();
     TemplateSchemaArtifact templateSchemaArtifact = jsonSchemaArtifactReader.readTemplateSchemaArtifact((ObjectNode) templateNode);
@@ -25,8 +24,11 @@ public class TemplateInstanceArtifactGenerator {
     var templateInstanceArtifactBuilder = TemplateInstanceArtifact.builder();
 
     var elements = templateSchemaArtifact.getElementNames();
-    var groupedData = SpreadsheetDataManager.groupData(spreadsheetData, spreadsheet2template, templateSchemaArtifact);
-    var mappedElements = groupedData.keySet();
+    SpreadsheetDataManager.groupData(spreadsheetData, spreadsheet2templatePath, templateSchemaArtifact);
+    var attributeValueMap = SpreadsheetDataManager.attributeValueMap;
+    var elementInstanceCounts = SpreadsheetDataManager.elementInstanceCounts;
+    var groupedData = SpreadsheetDataManager.groupedData;
+    var mappedElements = elementInstanceCounts.keySet();
 
     for(var childElement : elements){
       if(childElement.equals(DATA_FILE_SUBJECTS.getValue())){
@@ -36,7 +38,7 @@ public class TemplateInstanceArtifactGenerator {
         var childElementSchemaArtifact = templateSchemaArtifact.getElementSchemaArtifact(childElement);
         var isChildElementMultiple = childElementSchemaArtifact.isMultiple();
         if (mappedElements.contains(childElement)){
-          var childElementInstanceArtifacts = elementInstanceArtifactGenerator.generateElementInstanceWithValue(childElement, groupedData, childElementSchemaArtifact, templateSchemaArtifact, spreadsheetData, "");
+          var childElementInstanceArtifacts = elementInstanceArtifactGenerator.generateElementInstanceWithValue(childElement, attributeValueMap, groupedData, elementInstanceCounts, childElementSchemaArtifact, templateSchemaArtifact, spreadsheetData, "");
           if(isChildElementMultiple){
             templateInstanceArtifactBuilder.withMultiInstanceElementInstances(childElement, childElementInstanceArtifacts);
           } else{
@@ -46,7 +48,7 @@ public class TemplateInstanceArtifactGenerator {
           if(isChildElementMultiple){
             templateInstanceArtifactBuilder.withEmptyMultiInstanceElementInstances(childElement);
           } else{
-            var elementInstanceArtifact = elementInstanceArtifactGenerator.buildSingleEmptyElementInstance(childElement, templateSchemaArtifact, "/" + childElement);
+            var elementInstanceArtifact = elementInstanceArtifactGenerator.buildSingleEmptyElementInstance(childElement, childElementSchemaArtifact, templateSchemaArtifact, "/" + childElement);
             templateInstanceArtifactBuilder.withSingleInstanceElementInstance(childElement, elementInstanceArtifact);
           }
         }
