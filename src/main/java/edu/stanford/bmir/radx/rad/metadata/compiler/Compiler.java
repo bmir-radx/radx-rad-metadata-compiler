@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Objects;
 import java.util.stream.Stream;
 
 public class Compiler {
@@ -61,11 +62,11 @@ public class Compiler {
   private static void transform(Path spreadsheetFile, Path outputFile) throws IOException, URISyntaxException {
     var templateNode = mapper.readTree(Compiler.class.getClassLoader().getResource("RADxMetadataSpecification.json"));
     var spreadsheetData = spreadsheetReader.readRadxRadSpreadsheet(spreadsheetFile.toString());
-    var spreadSheet2template = spreadsheetReader.readSpreadsheet2Template(
-        Compiler.class.getClassLoader().getResource("spreadsheet2template.xlsx").getPath()
+    var spreadSheet2templatePath = spreadsheetReader.readSpreadsheet2templatePath(
+        Objects.requireNonNull(Compiler.class.getClassLoader().getResource("spreadsheet2templatePath.xlsx")).getPath()
     );
     var templateInstanceArtifact = templateArtifactInstanceGenerator.generateTemplateArtifactInstance(
-        spreadsheetData,spreadSheet2template, templateNode
+        spreadsheetData,spreadSheet2templatePath, templateNode
     );
     ObjectNode templateInstanceRendering = jsonSchemaArtifactRenderer.renderTemplateInstanceArtifact(templateInstanceArtifact);
     mapper.writeValue(outputFile.toFile(), templateInstanceRendering);
