@@ -30,7 +30,7 @@ public class SpreadsheetDataManager {
    */
   public static Map<String, Map<Integer, Map<String, List<String>>>> groupData(
       Map<String, String> spreadsheetData,
-      Map<String, FieldArtifact> spreadsheet2template,
+      Map<String, FieldPath> spreadsheet2template,
       TemplateSchemaArtifact templateSchemaArtifact){
 
     Map<String, Map<Integer, Map<String, List<String>>>> groupedData = new HashMap<>();

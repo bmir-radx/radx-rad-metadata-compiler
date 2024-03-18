@@ -20,7 +20,8 @@ public class RadxRadPrecisionFieldHandler {
   private final static String url = "URL";
   private final static String created = "Created";
   private final static String meshUri =  "http://purl.bioontology.org/ontology/MESH";
-  private static final ArtifactInstanceGenerator ARTIFACT_INSTANCE_GENERATOR = new ArtifactInstanceGenerator();
+  private static final ElementInstanceArtifactGenerator ARTIFACT_INSTANCE_GENERATOR = new ElementInstanceArtifactGenerator();
+  private static final FieldInstanceArtifactGenerator fieldInstanceArtifactGenerator = new FieldInstanceArtifactGenerator();
 
   /***
    * This method aims to set RADx-rad specific controlled term fields
@@ -76,26 +77,6 @@ public class RadxRadPrecisionFieldHandler {
                 .withValue(new URI(controlledTermMap.get(orcid)))
                 .withLabel(orcid)
                 .build());
-//      } else if (elementName.equals(DATA_FILE_CONTRIBUTORS.getValue())
-//          && expectedField.equals(CONTRIBUTOR_AFFILIATION_IDENTIFIER_SCHEME.getValue())
-//          && fields.containsKey(CONTRIBUTOR_AFFILIATION_IDENTIFIER.getValue())
-//          && fields.get(CONTRIBUTOR_AFFILIATION_IDENTIFIER.getValue()).get(0) != null
-//          && fields.get(CONTRIBUTOR_AFFILIATION_IDENTIFIER.getValue()).get(0).startsWith(rorPrefix)) {
-//        elementInstanceArtifactBuilder.withSingleInstanceFieldInstance(expectedField,
-//            FieldInstanceArtifact.controlledTermFieldInstanceBuilder()
-//                .withValue(new URI(controlledTermMap.get(ror)))
-//                .withLabel(ror)
-//                .build());
-//      } else if (elementName.equals(DATA_FILE_CREATORS.getValue())
-//          && expectedField.equals(CREATOR_AFFILIATION_IDENTIFIER_SCHEME.getValue())
-//          && fields.containsKey(CREATOR_AFFILIATION_IDENTIFIER.getValue())
-//          && fields.get(CREATOR_AFFILIATION_IDENTIFIER.getValue()).get(0) != null
-//          && fields.get(CREATOR_AFFILIATION_IDENTIFIER.getValue()).get(0).startsWith(rorPrefix)) {
-//        elementInstanceArtifactBuilder.withSingleInstanceFieldInstance(expectedField,
-//            FieldInstanceArtifact.controlledTermFieldInstanceBuilder()
-//                .withValue(new URI(controlledTermMap.get(ror)))
-//                .withLabel(ror)
-//                .build());
       } else if (elementName.equals(DATA_FILE_RELATED_RESOURCES.getValue())
           && expectedField.equals(RELATED_RESOURCE_IDENTIFER_TYPE.getValue())
           && fields.containsKey(RELATED_RESOURCE_IDENTIFER.getValue())
@@ -124,10 +105,20 @@ public class RadxRadPrecisionFieldHandler {
                 .withLabel(url)
                 .build());
       } else{
-        ARTIFACT_INSTANCE_GENERATOR.buildEmptyFieldInstance(fieldType, expectedField, isMultiple, elementInstanceArtifactBuilder);
+        var fieldInstanceArtifact = fieldInstanceArtifactGenerator.buildEmptyFieldInstance(fieldType);
+        buildWithFieldInstanceArtifact(elementInstanceArtifactBuilder, fieldInstanceArtifact, expectedField, isMultiple);
       }
     } else{
-      ARTIFACT_INSTANCE_GENERATOR.buildEmptyFieldInstance(fieldType, expectedField, isMultiple, elementInstanceArtifactBuilder);
+      var fieldInstanceArtifact = fieldInstanceArtifactGenerator.buildEmptyFieldInstance(fieldType);
+      buildWithFieldInstanceArtifact(elementInstanceArtifactBuilder, fieldInstanceArtifact, expectedField, isMultiple);
+    }
+  }
+
+  private static void buildWithFieldInstanceArtifact(ElementInstanceArtifact.Builder elementInstanceArtifactBuilder, FieldInstanceArtifact fieldInstanceArtifact, String fieldName, boolean isMultiple){
+    if(isMultiple){
+      elementInstanceArtifactBuilder.withMultiInstanceFieldInstances(fieldName, List.of(fieldInstanceArtifact));
+    } else{
+      elementInstanceArtifactBuilder.withSingleInstanceFieldInstance(fieldName, fieldInstanceArtifact);
     }
   }
 

@@ -17,7 +17,7 @@ public class Compiler {
   private static final String OUTPUT_DIRECTORY_PATH = "o";
   private static final SpreadsheetReader spreadsheetReader = new SpreadsheetReader();
   private static final JsonSchemaArtifactRenderer jsonSchemaArtifactRenderer = new JsonSchemaArtifactRenderer();
-  private static final TemplateArtifactInstanceGenerator templateArtifactInstanceGenerator = new TemplateArtifactInstanceGenerator();
+  private static final TemplateInstanceArtifactGenerator templateArtifactInstanceGenerator = new TemplateInstanceArtifactGenerator();
   private static final ObjectMapper mapper = new ObjectMapper();
 
   public static void main(String[] args) throws Exception {

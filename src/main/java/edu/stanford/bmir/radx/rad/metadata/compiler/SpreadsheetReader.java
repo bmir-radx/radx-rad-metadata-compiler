@@ -8,9 +8,7 @@ import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 public class SpreadsheetReader {
   public Map<String, String> readRadxRadSpreadsheet(String pathToFile) throws IOException {
@@ -33,11 +31,11 @@ public class SpreadsheetReader {
     return fieldValues;
   }
 
-  public Map<String, FieldArtifact> readSpreadsheet2Template(String pathToFile) throws IOException {
+  public Map<String, FieldPath> readSpreadsheet2Template(String pathToFile) throws IOException {
     FileInputStream excelFile = new FileInputStream(new File(pathToFile));
     Workbook workbook = WorkbookFactory.create(excelFile);
     Sheet datatypeSheet = workbook.getSheetAt(0);
-    Map<String, FieldArtifact> spreadsheet2Template = new HashMap<String, FieldArtifact>();
+    Map<String, FieldPath> spreadsheet2Template = new HashMap<String, FieldPath>();
 
     for (int rowIndex = 1; rowIndex <= datatypeSheet.getLastRowNum(); rowIndex++) {
       var currentRow = datatypeSheet.getRow(rowIndex);
@@ -47,7 +45,7 @@ public class SpreadsheetReader {
         var field = currentRow.getCell(2);
         if (radxRadfield != null) {
           spreadsheet2Template.put(radxRadfield.getStringCellValue(),
-              new FieldArtifact(element.getStringCellValue(), field.getStringCellValue()));
+              new FieldPath(element.getStringCellValue(), field.getStringCellValue()));
         }
       }
     }
