@@ -41,19 +41,13 @@ public class RadxRadPrecisionFieldHandler {
       String elementName,
       String expectedField,
       ElementSchemaArtifact elementSchemaArtifact,
-      String path,
       Map<String, Map<Integer, String>> groupedData,
       Map<String, Integer> elementInstanceCounts,
-      int i) throws URISyntaxException {
+      int i){
 
     var fieldSchemaArtifact = elementSchemaArtifact.getFieldSchemaArtifact(expectedField);
-    var valueConstraint = fieldSchemaArtifact.valueConstraints();
     var isMultiple = fieldSchemaArtifact.isMultiple();
-    var inputType = fieldSchemaArtifact.fieldUi().inputType();
-    var fieldType = FieldType.getFieldType(inputType);
-    if(valueConstraint.isPresent() && valueConstraint.get().isControlledTermValueConstraint()){
-      fieldType = FieldType.CONTROLLED_TERM;
-    }
+    var fieldType = FieldType.getFieldType(fieldSchemaArtifact);
 
     var controlledTermMap = MapInitializer.createControlledTermsMap();
     //If the element instance has value, then set specific controlled term fields
@@ -62,34 +56,6 @@ public class RadxRadPrecisionFieldHandler {
           (elementName.equals(DATA_FILE_CREATORS.getValue()) && expectedField.equals(CREATOR_TYPE.getValue()))){
         elementInstanceArtifactBuilder.withSingleInstanceFieldInstance(expectedField,
             fieldInstanceArtifactGenerator.buildFieldInstanceWithValues(fieldType, person, Optional.empty()));
-      } else if (elementName.equals(DATA_FILE_CONTRIBUTORS.getValue())
-          && expectedField.equals(CONTRIBUTOR_AFFILIATION_IDENTIFIER_SCHEME.getValue())
-          && groupedData.containsKey(contributorAffiliationIdPath)) {
-        var url = groupedData.get(contributorAffiliationIdPath).get(i);
-        if(isValidURL(url)){
-          var rorPrefix = controlledTermMap.get(ror);
-          FieldInstanceArtifact fieldInstanceArtifact;
-          if (url.startsWith(rorPrefix)){
-            fieldInstanceArtifact = fieldInstanceArtifactGenerator.buildFieldInstanceWithValues(fieldType, ror, Optional.empty());
-          } else{
-            fieldInstanceArtifact = fieldInstanceArtifactGenerator.buildFieldInstanceWithValues(fieldType, uei, Optional.empty());
-          }
-          elementInstanceArtifactBuilder.withSingleInstanceFieldInstance(expectedField, fieldInstanceArtifact);
-        }
-      } else if (elementName.equals(DATA_FILE_CREATORS.getValue())
-          && expectedField.equals(CREATOR_AFFILIATION_IDENTIFIER_SCHEME.getValue())
-          && groupedData.containsKey(creatorAffiliationIdPath)) {
-        var url = groupedData.get(creatorAffiliationIdPath).get(i);
-        if(isValidURL(url)){
-          var rorPrefix = controlledTermMap.get(ror);
-          FieldInstanceArtifact fieldInstanceArtifact;
-          if (url.startsWith(rorPrefix)){
-            fieldInstanceArtifact = fieldInstanceArtifactGenerator.buildFieldInstanceWithValues(fieldType, ror, Optional.empty());
-          } else{
-            fieldInstanceArtifact = fieldInstanceArtifactGenerator.buildFieldInstanceWithValues(fieldType, uei, Optional.empty());
-          }
-          elementInstanceArtifactBuilder.withSingleInstanceFieldInstance(expectedField, fieldInstanceArtifact);
-        }
       } else if (elementName.equals(DATA_FILE_CONTRIBUTORS.getValue())
           && expectedField.equals(CONTRIBUTOR_IDENTIFIER_SCHEME.getValue())
           && groupedData.containsKey(contributorIdentifierPath)

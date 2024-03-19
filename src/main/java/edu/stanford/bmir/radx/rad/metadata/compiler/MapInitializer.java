@@ -12,7 +12,7 @@ public class MapInitializer {
   private static final String urlUri = "http://vocab.fairdatacollective.org/gdmt/URL";
   private final static String meshUri =  "http://purl.bioontology.org/ontology/MESH";
   //TODO: need to update
-  private final static String ueiUri = "https://ror.org/";
+  private final static String ueiUri = "https://uei.org/";
   private final static String contactPiUri = "https://w3id.org/gdmt/ContactPI";
   private final static String coPiUri = "https://w3id.org/gdmt/CoPI";
   private final static String dataPiUri = "https://w3id.org/gdmt/DataPI";

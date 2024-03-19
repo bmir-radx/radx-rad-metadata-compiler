@@ -1,6 +1,7 @@
 package edu.stanford.bmir.radx.rad.metadata.compiler;
 
 import com.fasterxml.jackson.annotation.JsonValue;
+import org.metadatacenter.artifacts.model.core.FieldSchemaArtifact;
 import org.metadatacenter.artifacts.model.core.fields.FieldInputType;
 
 import java.util.HashMap;
@@ -55,7 +56,16 @@ public enum FieldType {
     typeMapping.put(FieldInputType.YOUTUBE, YOUTUBE);
   }
 
-  public static FieldType getFieldType(FieldInputType inputType) {
-    return typeMapping.get(inputType);
+//  public static FieldType getFieldType(FieldInputType inputType) {
+//    return typeMapping.get(inputType);
+//  }
+
+  public static FieldType getFieldType(FieldSchemaArtifact fieldSchemaArtifact){
+    var expectedFieldValueConstraint = fieldSchemaArtifact.valueConstraints();
+    var expectedFieldType = typeMapping.get(fieldSchemaArtifact.fieldUi().inputType());
+    if (expectedFieldValueConstraint.isPresent() && expectedFieldValueConstraint.get().isControlledTermValueConstraint()) {
+      expectedFieldType = FieldType.CONTROLLED_TERM;
+    }
+    return expectedFieldType;
   }
 }
