@@ -10,6 +10,10 @@ public class MapInitializer {
   private static final String projectLeaderUri = "http://vocab.fairdatacollective.org/gdmt/ProjectLeader";
   private static final String createdUri = "http://vocab.fairdatacollective.org/gdmt/Created";
   private static final String urlUri = "http://vocab.fairdatacollective.org/gdmt/URL";
+  private final static String meshUri =  "http://purl.bioontology.org/ontology/MESH";
+  //TODO: need to update
+  private final static String ueiUri = "https://ror.org/";
+
   public static Map<String, String> createControlledTermsMap(){
     Map<String, String> controlledTermsMap = new HashMap<>();
     controlledTermsMap.put("Person", personUri);
@@ -18,7 +22,7 @@ public class MapInitializer {
     controlledTermsMap.put("Project Leader", projectLeaderUri);
     controlledTermsMap.put("Created", createdUri);
     controlledTermsMap.put("URL", urlUri);
-    //TODO MESH
+    controlledTermsMap.put("MESH", meshUri);
     controlledTermsMap.put("biosensor system, SARS-CoV-2, saliva, electrochemical sensing, diagnostic, vulnerable areas, low-cost", urlUri);
     return controlledTermsMap;
   }
