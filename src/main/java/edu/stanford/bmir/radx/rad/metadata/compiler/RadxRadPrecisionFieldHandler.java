@@ -10,6 +10,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import static edu.stanford.bmir.radx.rad.metadata.compiler.RadxSpecificationMetadataConstant.*;
 
@@ -17,11 +18,14 @@ public class RadxRadPrecisionFieldHandler {
   private final static String person = "Person";
   private final static String orcid = "ORCiD";
   private final static String ror = "ROR";
+  private final static String uei = "UEI";
   private final static String url = "URL";
   private final static String created = "Created";
   private final static String meshUri =  "http://purl.bioontology.org/ontology/MESH";
   private final static String contributorIdentifierPath = "/Data File Contributors/Contributor Identifier";
+  private final static String contributorAffiliationIdPath = "/Data File Contributors/Contributor Affiliation Identifier";
   private final static String creatorIdentifierPath = "/Data File Creators/Creator Identifier";
+  private final static String creatorAffiliationIdPath = "/Data File Creators/Creator Affiliation Identifier";
   private final static String relatedResourceIdentifierPath = "/Data File Related Resources/Related Resource Identifier";
   private final static String datePath = "/Data File Dates/Date";
   private final static String studyIdentifierPath = "/Data File Parent Studies/Study Identifier";
@@ -37,76 +41,51 @@ public class RadxRadPrecisionFieldHandler {
       String elementName,
       String expectedField,
       ElementSchemaArtifact elementSchemaArtifact,
-      String path,
       Map<String, Map<Integer, String>> groupedData,
       Map<String, Integer> elementInstanceCounts,
-      int i) throws URISyntaxException {
+      int i){
 
     var fieldSchemaArtifact = elementSchemaArtifact.getFieldSchemaArtifact(expectedField);
-    var valueConstraint = fieldSchemaArtifact.valueConstraints();
     var isMultiple = fieldSchemaArtifact.isMultiple();
-    var inputType = fieldSchemaArtifact.fieldUi().inputType();
-    var fieldType = FieldType.getFieldType(inputType);
-    if(valueConstraint.isPresent() && valueConstraint.get().isControlledTermValueConstraint()){
-      fieldType = FieldType.CONTROLLED_TERM;
-    }
+    var fieldType = FieldType.getFieldType(fieldSchemaArtifact);
 
     var controlledTermMap = MapInitializer.createControlledTermsMap();
     //If the element instance has value, then set specific controlled term fields
-//    if(!isEmptyElementInstance(elementSchemaArtifact, path, groupedData, elementInstanceCounts, i)){
     if(!isEmptyElementInstance(elementInstanceCounts, elementName, elementSchemaArtifact)){
       if ((elementName.equals(DATA_FILE_CONTRIBUTORS.getValue()) && expectedField.equals(CONTRIBUTOR_TYPE.getValue())) ||
           (elementName.equals(DATA_FILE_CREATORS.getValue()) && expectedField.equals(CREATOR_TYPE.getValue()))){
         elementInstanceArtifactBuilder.withSingleInstanceFieldInstance(expectedField,
-            FieldInstanceArtifact.controlledTermFieldInstanceBuilder()
-                .withValue(new URI(controlledTermMap.get(person)))
-                .withLabel(person)
-                .build());
+            fieldInstanceArtifactGenerator.buildFieldInstanceWithValues(fieldType, person, Optional.empty()));
       } else if (elementName.equals(DATA_FILE_CONTRIBUTORS.getValue())
           && expectedField.equals(CONTRIBUTOR_IDENTIFIER_SCHEME.getValue())
           && groupedData.containsKey(contributorIdentifierPath)
           && groupedData.get(contributorIdentifierPath).get(i)!= null){
         elementInstanceArtifactBuilder.withSingleInstanceFieldInstance(expectedField,
-            FieldInstanceArtifact.controlledTermFieldInstanceBuilder()
-                .withValue(new URI(controlledTermMap.get(orcid)))
-                .withLabel(orcid)
-                .build());
+            fieldInstanceArtifactGenerator.buildFieldInstanceWithValues(fieldType, orcid, Optional.empty()));
       } else if (elementName.equals(DATA_FILE_CREATORS.getValue())
           && expectedField.equals(CREATOR_IDENTIFIER_SCHEME.getValue())
           && groupedData.containsKey(creatorIdentifierPath)
           && groupedData.get(creatorIdentifierPath).get(i)!= null){
         elementInstanceArtifactBuilder.withSingleInstanceFieldInstance(expectedField,
-            FieldInstanceArtifact.controlledTermFieldInstanceBuilder()
-                .withValue(new URI(controlledTermMap.get(orcid)))
-                .withLabel(orcid)
-                .build());
+            fieldInstanceArtifactGenerator.buildFieldInstanceWithValues(fieldType, orcid, Optional.empty()));
       } else if (elementName.equals(DATA_FILE_RELATED_RESOURCES.getValue())
           && expectedField.equals(RELATED_RESOURCE_IDENTIFER_TYPE.getValue())
           && groupedData.containsKey(relatedResourceIdentifierPath)
           && groupedData.get(relatedResourceIdentifierPath).get(i) != null) {
         elementInstanceArtifactBuilder.withSingleInstanceFieldInstance(expectedField,
-            FieldInstanceArtifact.controlledTermFieldInstanceBuilder()
-                .withValue(new URI(controlledTermMap.get(url)))
-                .withLabel(url)
-                .build());
+            fieldInstanceArtifactGenerator.buildFieldInstanceWithValues(fieldType, url, Optional.empty()));
       } else if (elementName.equals(DATA_FILE_DATES.getValue())
           && expectedField.equals(EVENT_TYPE.getValue())
           && groupedData.containsKey(datePath)
           && groupedData.get(datePath).get(i) != null)  {
         elementInstanceArtifactBuilder.withSingleInstanceFieldInstance(expectedField,
-            FieldInstanceArtifact.controlledTermFieldInstanceBuilder()
-                .withValue(new URI(controlledTermMap.get(created)))
-                .withLabel(created)
-                .build());
+            fieldInstanceArtifactGenerator.buildFieldInstanceWithValues(fieldType, created, Optional.empty()));
       } else if (elementName.equals(DATA_FILE_PARENT_STUDIES.getValue())
           && expectedField.equals(STUDY_IDENTIFIER_SCHEME.getValue())
           && groupedData.containsKey(studyIdentifierPath)
           && isValidURL(groupedData.get(studyIdentifierPath).get(i))) {
         elementInstanceArtifactBuilder.withSingleInstanceFieldInstance(expectedField,
-            FieldInstanceArtifact.controlledTermFieldInstanceBuilder()
-                .withValue(new URI(controlledTermMap.get(url)))
-                .withLabel(url)
-                .build());
+            fieldInstanceArtifactGenerator.buildFieldInstanceWithValues(fieldType, url, Optional.empty()));
       } else{
         var fieldInstanceArtifact = fieldInstanceArtifactGenerator.buildEmptyFieldInstance(fieldType);
         buildWithFieldInstanceArtifact(elementInstanceArtifactBuilder, fieldInstanceArtifact, expectedField, isMultiple);

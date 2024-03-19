@@ -29,32 +29,15 @@ public class ElementInstanceArtifactGenerator {
         var currentPath = path + "/" + currentElement + "/" + expectedField;
         var fieldSchemaArtifact = elementSchemaArtifact.getFieldSchemaArtifact(expectedField);
         var expectedFieldValueConstraint = fieldSchemaArtifact.valueConstraints();
-        var expectedFieldType = FieldType.getFieldType(fieldSchemaArtifact.fieldUi().inputType());
-        if (expectedFieldValueConstraint.isPresent() && expectedFieldValueConstraint.get().isControlledTermValueConstraint()) {
-          expectedFieldType = FieldType.CONTROLLED_TERM;
-        }
-
-        var isMultipleField = false;
-        if (expectedFieldValueConstraint.isPresent()) {
-          isMultipleField = expectedFieldValueConstraint.get().multipleChoice();
-        }
+        var expectedFieldType = FieldType.getFieldType(fieldSchemaArtifact);
+        var isMultipleField = fieldSchemaArtifact.isMultiple();
 
         //check if field is an attribute value type
         //if yes, build attribute value fields, otherwise, build regular fields
         if (attributeValueMap.containsKey(currentPath)) {
           var spreadsheetFields = attributeValueMap.get(currentPath);
-          Map<String, FieldInstanceArtifact> attributeValueFieldInstances = new HashMap<>();
-          if (spreadsheetFields != null) {
-            for (var spreadsheetField : spreadsheetFields) {
-              var spreadsheetValue = spreadsheetData.get(spreadsheetField);
-              if (spreadsheetValue != null && !spreadsheetValue.equals("")) {
-                attributeValueFieldInstances.put(spreadsheetField,
-                    FieldInstanceArtifact.textFieldInstanceBuilder().withValue(spreadsheetValue).build());
-              }
-            }
-          }
+          var attributeValueFieldInstances = fieldInstanceArtifactGenerator.buildAttributeValueField(spreadsheetData, spreadsheetFields);
           elementInstanceBuilder.withAttributeValueFieldGroup(expectedField, attributeValueFieldInstances);
-
         } else {
           // if the expectedField in the template has the mapping field in the spreadsheet, then need to retrieve data from spreadsheet
           // otherwise, build an empty fieldArtifactInstance
@@ -73,7 +56,7 @@ public class ElementInstanceArtifactGenerator {
               elementInstanceBuilder.withMultiInstanceFieldInstances(expectedField, List.of(fieldInstanceArtifact));
             } else {
               //Add values to RADx-rad specific controlled terms fields or add an empty field entry
-              RadxRadPrecisionFieldHandler.addSpecificControlledTerms(elementInstanceBuilder, currentElement, expectedField, elementSchemaArtifact, currentPath, groupedData, elementInstanceCounts, i);
+              RadxRadPrecisionFieldHandler.addSpecificControlledTerms(elementInstanceBuilder, currentElement, expectedField, elementSchemaArtifact, groupedData, elementInstanceCounts, i);
             }
           }
         }
@@ -89,10 +72,8 @@ public class ElementInstanceArtifactGenerator {
 
       //Add @id
       IdGenerator.generateElementId(elementInstanceBuilder);
-
       elementInstanceArtifacts.add(elementInstanceBuilder.build());
     }
-
     return elementInstanceArtifacts;
   }
 
@@ -147,7 +128,7 @@ public class ElementInstanceArtifactGenerator {
         elementInstanceBuilder.withAttributeValueFieldGroup(expectedField, Collections.emptyMap());
       } else{
         var fieldSchemaArtifact = elementSchemaArtifact.getFieldSchemaArtifact(expectedField);
-        var inputType = FieldType.getFieldType(fieldSchemaArtifact.fieldUi().inputType());
+        var inputType = FieldType.getFieldType(fieldSchemaArtifact);
         var isMultiple = fieldSchemaArtifact.isMultiple();
         var fieldInstanceArtifact = fieldInstanceArtifactGenerator.buildEmptyFieldInstance(inputType);
         if(isMultiple){

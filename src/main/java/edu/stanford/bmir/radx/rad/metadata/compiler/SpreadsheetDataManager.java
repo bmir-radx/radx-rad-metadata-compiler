@@ -42,7 +42,7 @@ public class SpreadsheetDataManager {
             attributeValueMap.computeIfAbsent(path, k -> new ArrayList<>()).add(key);
           } else{
             //update element instances counts
-            //TODO: need to update Map<String, Integer> elementInstanceCounts, add childElement: counts to map as well!!!
+            //TODO: need to update Map<String, Integer> elementInstanceCounts, add childElement: counts to map as well
             var element = path.split("/")[1];
             elementInstanceCounts.merge(element, index, Math::max);
 
@@ -59,6 +59,9 @@ public class SpreadsheetDataManager {
                   .put(index, value);
             }
           }
+        } else{ // precision handling for field "study_include_prospective_or_retrospective_human_samples - effective_Feb_2021"
+          var path = spreadsheet2templatePath.get(key);
+          attributeValueMap.computeIfAbsent(path, k -> new ArrayList<>()).add(key);
         }
       }
     };

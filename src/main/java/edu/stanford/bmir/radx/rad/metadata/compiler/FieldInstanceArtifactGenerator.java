@@ -1,9 +1,13 @@
 package edu.stanford.bmir.radx.rad.metadata.compiler;
 
 import edu.stanford.bmir.radx.rad.metadata.compiler.fieldGenerators.*;
+import org.metadatacenter.artifacts.model.core.ElementSchemaArtifact;
 import org.metadatacenter.artifacts.model.core.FieldInstanceArtifact;
+import org.metadatacenter.artifacts.model.core.FieldSchemaArtifact;
 import org.metadatacenter.artifacts.model.core.fields.constraints.ValueConstraints;
 
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -31,8 +35,22 @@ public class FieldInstanceArtifactGenerator {
     return generator.buildWithValue(value, valueConstraints);
   }
 
-  public FieldInstanceArtifact buildEmptyFieldInstance(FieldType fieldType){
+  public FieldInstanceArtifact buildEmptyFieldInstance(FieldType fieldType) {
     FieldGenerator generator = fieldGenerators.get(fieldType);
     return generator.buildEmptyFieldInstanceArtifact();
+  }
+
+  public Map<String, FieldInstanceArtifact> buildAttributeValueField(Map<String, String> spreadsheetData, List<String> spreadsheetFields) {
+    Map<String, FieldInstanceArtifact> attributeValueFieldInstances = new HashMap<>();
+    if (spreadsheetFields != null) {
+      for (var spreadsheetField : spreadsheetFields) {
+        var spreadsheetValue = spreadsheetData.get(spreadsheetField);
+        if (spreadsheetValue != null && !spreadsheetValue.equals("")) {
+          attributeValueFieldInstances.put(spreadsheetField,
+              fieldGenerators.get(FieldType.TEXTFIELD).buildWithValue(spreadsheetValue));
+        }
+      }
+    }
+    return attributeValueFieldInstances;
   }
 }
