@@ -15,7 +15,7 @@ public class SpreadsheetReader {
     FileInputStream excelFile = new FileInputStream(new File(pathToFile));
     Workbook workbook = WorkbookFactory.create(excelFile);
     Sheet datatypeSheet = workbook.getSheetAt(0);
-    Map<String, String> fieldValues = new HashMap<String, String>();
+    Map<String, String> spreadsheetData = new HashMap<String, String>();
 
     for (int rowIndex = 1; rowIndex <= datatypeSheet.getLastRowNum(); rowIndex++) {
       var currentRow = datatypeSheet.getRow(rowIndex);
@@ -24,35 +24,14 @@ public class SpreadsheetReader {
         var value = currentRow.getCell(1);
         if (field != null && !field.getStringCellValue().equals("") && value!=null) {
           var metadata = getCellValueAsString(value);
-          if(metadata != null && !metadata.equals(""))
-          fieldValues.put(field.getStringCellValue(), metadata);
+          if(metadata != null && !metadata.equals("")){
+            spreadsheetData.put(field.getStringCellValue(), metadata);
+          }
         }
       }
     }
     workbook.close();
-    return fieldValues;
-  }
-
-  public Map<String, FieldPath> readSpreadsheet2Template(String pathToFile) throws IOException {
-    FileInputStream excelFile = new FileInputStream(new File(pathToFile));
-    Workbook workbook = WorkbookFactory.create(excelFile);
-    Sheet datatypeSheet = workbook.getSheetAt(0);
-    Map<String, FieldPath> spreadsheet2Template = new HashMap<String, FieldPath>();
-
-    for (int rowIndex = 1; rowIndex <= datatypeSheet.getLastRowNum(); rowIndex++) {
-      var currentRow = datatypeSheet.getRow(rowIndex);
-      if (currentRow != null) {
-        var radxRadfield = currentRow.getCell(0);
-        var element = currentRow.getCell(1);
-        var field = currentRow.getCell(2);
-        if (radxRadfield != null) {
-          spreadsheet2Template.put(radxRadfield.getStringCellValue(),
-              new FieldPath(element.getStringCellValue(), field.getStringCellValue()));
-        }
-      }
-    }
-    workbook.close();
-    return spreadsheet2Template;
+    return spreadsheetData;
   }
 
   public Map<String, String> readSpreadsheet2templatePath(String pathToFile) throws IOException {
