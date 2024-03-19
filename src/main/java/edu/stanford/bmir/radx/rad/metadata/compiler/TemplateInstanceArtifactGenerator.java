@@ -15,6 +15,7 @@ import static edu.stanford.bmir.radx.rad.metadata.compiler.RadxSpecificationMeta
 public class TemplateInstanceArtifactGenerator {
 
   private final ElementInstanceArtifactGenerator elementInstanceArtifactGenerator = new ElementInstanceArtifactGenerator();
+  private final FieldInstanceArtifactGenerator fieldInstanceArtifactGenerator = new FieldInstanceArtifactGenerator();
 
   public TemplateInstanceArtifact generateTemplateArtifactInstance(Map<String, String> spreadsheetData, Map<String, String> spreadsheet2templatePath, JsonNode templateNode) throws URISyntaxException {
     //read templateContent using cedar-artifact-library
@@ -30,6 +31,7 @@ public class TemplateInstanceArtifactGenerator {
     var groupedData = SpreadsheetDataManager.groupedData;
     var mappedElements = elementInstanceCounts.keySet();
 
+    //Build child element instances artifacts
     for(var childElement : elements){
       if(childElement.equals(DATA_FILE_SUBJECTS.getValue())){
         //generate Data File Subjects element
@@ -52,6 +54,30 @@ public class TemplateInstanceArtifactGenerator {
             templateInstanceArtifactBuilder.withSingleInstanceElementInstance(childElement, elementInstanceArtifact);
           }
         }
+      }
+    }
+
+    //Build chile field instances artifacts
+    var childFields = templateSchemaArtifact.getFieldNames();
+    for(var childField : childFields) {
+      var childFieldSchemaArtifact = templateSchemaArtifact.getFieldSchemaArtifact(childField);
+      var childFieldType = FieldType.getFieldType(childFieldSchemaArtifact);
+      var childValueConstraints = childFieldSchemaArtifact.valueConstraints();
+      var isChildFieldMultiple = childFieldSchemaArtifact.isMultiple();
+      var currentPath = "/" + childField;
+      FieldInstanceArtifact fieldInstanceArtifact;
+      if (groupedData.containsKey(currentPath)) { // Build field instance with value
+        //TODO handling multiple instances if needed
+        var value = groupedData.get(currentPath).get(1);
+        fieldInstanceArtifact = fieldInstanceArtifactGenerator.buildFieldInstanceWithValues(childFieldType, value, childValueConstraints);
+      } else { // build Empty field instance
+        fieldInstanceArtifact = fieldInstanceArtifactGenerator.buildEmptyFieldInstance(childFieldType);
+      }
+
+      if (isChildFieldMultiple) {
+        templateInstanceArtifactBuilder.withMultiInstanceFieldInstances(childField, List.of(fieldInstanceArtifact));
+      } else {
+        templateInstanceArtifactBuilder.withSingleInstanceFieldInstance(childField, fieldInstanceArtifact);
       }
     }
 
