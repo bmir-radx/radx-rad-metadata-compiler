@@ -13,17 +13,24 @@ public class MapInitializer {
   private final static String meshUri =  "http://purl.bioontology.org/ontology/MESH";
   //TODO: need to update
   private final static String ueiUri = "https://ror.org/";
+  private final static String contactPiUri = "http://vocab.fairdatacollective.org/gdmt/ProjectLeader";
+  private final static String coPiUri = "http://vocab.fairdatacollective.org/gdmt/ProjectLeader";
+  private final static String dataPiUri = "http://vocab.fairdatacollective.org/gdmt/ProjectLeader";
+
 
   public static Map<String, String> createControlledTermsMap(){
     Map<String, String> controlledTermsMap = new HashMap<>();
     controlledTermsMap.put("Person", personUri);
     controlledTermsMap.put("ORCiD", orcidUri);
     controlledTermsMap.put("ROR", rorUri);
+    controlledTermsMap.put("UEI", ueiUri);
     controlledTermsMap.put("Project Leader", projectLeaderUri);
     controlledTermsMap.put("Created", createdUri);
     controlledTermsMap.put("URL", urlUri);
     controlledTermsMap.put("MESH", meshUri);
-    controlledTermsMap.put("biosensor system, SARS-CoV-2, saliva, electrochemical sensing, diagnostic, vulnerable areas, low-cost", urlUri);
+    controlledTermsMap.put("Contact PI", contactPiUri);
+    controlledTermsMap.put("Co PI", coPiUri);
+    controlledTermsMap.put("Data PI", dataPiUri);
     return controlledTermsMap;
   }
 }
