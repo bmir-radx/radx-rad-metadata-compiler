@@ -13,9 +13,9 @@ public class MapInitializer {
   private final static String meshUri =  "http://purl.bioontology.org/ontology/MESH";
   //TODO: need to update
   private final static String ueiUri = "https://ror.org/";
-  private final static String contactPiUri = "http://vocab.fairdatacollective.org/gdmt/ProjectLeader";
-  private final static String coPiUri = "http://vocab.fairdatacollective.org/gdmt/ProjectLeader";
-  private final static String dataPiUri = "http://vocab.fairdatacollective.org/gdmt/ProjectLeader";
+  private final static String contactPiUri = "https://w3id.org/gdmt/ContactPI";
+  private final static String coPiUri = "https://w3id.org/gdmt/CoPI";
+  private final static String dataPiUri = "https://w3id.org/gdmt/DataPI";
 
 
   public static Map<String, String> createControlledTermsMap(){
