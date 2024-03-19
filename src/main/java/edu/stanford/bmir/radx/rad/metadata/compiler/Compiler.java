@@ -41,7 +41,7 @@ public class Compiler {
                 // For each file, generate a report in the specified output directory
                 try {
                   String outputFileName = getOutputFileName(file);
-                  transform(spreadSheetFile, outputDirectory.resolve(outputFileName));
+                  transform(file, outputDirectory.resolve(outputFileName));
                 } catch (Exception e) {
                   System.err.println("Error processing file " + file + ": " + e.getMessage());
                 }
@@ -56,7 +56,6 @@ public class Compiler {
     } catch (ParseException e){
       Usage(options, e.getMessage());
     }
-
   }
 
   private static void transform(Path spreadsheetFile, Path outputFile) throws IOException, URISyntaxException {

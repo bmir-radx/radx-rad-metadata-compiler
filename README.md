@@ -11,24 +11,34 @@ Get a copy of the latest code:
 
     git clone https://github.com/bmir-radx/radx-rad-metadata-compiler.git
 
-Change into the radx-rad-metadata-complier directory:
+Change into the `radx-rad-metadata-compiler` directory:
 
     cd radx-rad-metadata-compiler
 
-The build it with Maven:
+Then, build it with Maven:
 
     mvn clean install
 
 ## Usage
-The compiler can be executed through Maven's Exec:java joal.
-Navigate to the Application Directory
+First, navigate to the Application Directory
 
     cd radx-rad-metadata-compiler
 
-Then, using the following Maven command to transform your spreadsheet to JSON-LD. You need to specify the paths to your spreadsheet file, and the output file where transformed metadata will be saved.
-The input spreadsheet path could be a file path or a directory path. If it is a directory path, it will transform all spreadsheets in that directory. So, please make sure that non-relavant spreadsheet are removed before doing so.
+To transform your spreadsheet to JSON-LD, use the following Maven command. 
 ```
-    mvn exec:java 
-      -Dexec.args="-s <input_spreadsheet_path> 
-                   -o <output_transformed_metadata_path> 
+mvn exec:java 
+  -Dexec.args="-s <input_spreadsheet_path> 
+               -o <output_transformed_metadata_directory>"
+```
+You need to specify the paths to your input spreadsheet file and the output directory where the transformed metadata will be saved. The input spreadsheet path can be either a file path or a directory path. If it is a directory path, the tool will transform all spreadsheets within that directory. Therefore, please ensure that any non-relevant spreadsheets are removed beforehand.
+
+### Transforming Multiple Spreadsheets
+e.g., for transforming all spreadsheets stored in a folder named radx-rad-spreadsheets, and saving all transformed metadata in a folder named radx-rad-output, use the command:
+```
+mvn exec:java -Dexec.args="-s ../radx-rad-spreadsheets -o ../radx-rad-output"
+```
+### Transforming a Single Spreadsheet
+For transforming a single spreadsheet RADxRadExampleSheet.xlsx to the JSON-LD format:
+```
+mvn exec:java -Dexec.args="-s ../RADxRadExampleSheet.xlsx -o ../radx-rad-output"
 ```
