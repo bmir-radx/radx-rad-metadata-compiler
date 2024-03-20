@@ -59,7 +59,7 @@ public class TemplateInstanceArtifactGenerator {
       }
     }
 
-    //Build chile field instances artifacts
+    //Build child field instances artifacts
     var childFields = templateSchemaArtifact.getFieldNames();
     for(var childField : childFields) {
       var childFieldSchemaArtifact = templateSchemaArtifact.getFieldSchemaArtifact(childField);

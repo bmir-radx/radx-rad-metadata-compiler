@@ -13,9 +13,8 @@ public class MapInitializer {
   private final static String meshUri =  "http://purl.bioontology.org/ontology/MESH";
   //TODO: need to update
   private final static String ueiUri = "https://uei.org/";
-  private final static String pi = "https://w3id.org/gdmt/PI";
+  private final static String piUri = "https://w3id.org/gdmt/PI";
   private final static String contactPiUri = "https://w3id.org/gdmt/ContactPI";
-  private final static String coPiUri = "https://w3id.org/gdmt/CoPI";
   private final static String dataPiUri = "https://w3id.org/gdmt/DataPI";
 
 
@@ -29,9 +28,9 @@ public class MapInitializer {
     controlledTermsMap.put("Created", createdUri);
     controlledTermsMap.put("URL", urlUri);
     controlledTermsMap.put("MESH", meshUri);
-    controlledTermsMap.put("Contact PI", contactPiUri);
-    controlledTermsMap.put("Co PI", coPiUri);
-    controlledTermsMap.put("Data PI", dataPiUri);
+    controlledTermsMap.put("contact-PI", contactPiUri);
+    controlledTermsMap.put("data-PI", dataPiUri);
+    controlledTermsMap.put("PI", piUri);
     return controlledTermsMap;
   }
 }
