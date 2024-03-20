@@ -42,7 +42,7 @@ public class TemplateInstanceArtifactGenerator {
         var childElementSchemaArtifact = templateSchemaArtifact.getElementSchemaArtifact(childElement);
         var isChildElementMultiple = childElementSchemaArtifact.isMultiple();
         if (mappedElements.contains(childElement)){
-          var childElementInstanceArtifacts = elementInstanceArtifactGenerator.generateElementInstanceWithValue(childElement, childElementSchemaArtifact, templateSchemaArtifact, spreadsheetData, "");
+          var childElementInstanceArtifacts = elementInstanceArtifactGenerator.generateElementInstanceWithValue(childElement, "", childElementSchemaArtifact, templateSchemaArtifact, spreadsheetData);
           if(isChildElementMultiple){
             templateInstanceArtifactBuilder.withMultiInstanceElementInstances(childElement, childElementInstanceArtifacts);
           } else{

@@ -8,14 +8,10 @@ import java.util.*;
 public class ElementInstanceArtifactGenerator {
   private final FieldInstanceArtifactGenerator fieldInstanceArtifactGenerator = new FieldInstanceArtifactGenerator();
 
-  public List<ElementInstanceArtifact> generateElementInstanceWithValue(String currentElement,
-//                                                               Map<String, List<String>> attributeValueMap,
-//                                                               Map<String, Map<Integer, String>> groupedData,
-//                                                               Map<String, Integer> elementInstanceCounts,
+  public List<ElementInstanceArtifact> generateElementInstanceWithValue(String currentElement, String path,
                                                                ElementSchemaArtifact elementSchemaArtifact,
                                                                TemplateSchemaArtifact templateSchemaArtifact,
-                                                               Map<String, String> spreadsheetData,
-                                                                String path) throws URISyntaxException {
+                                                               Map<String, String> spreadsheetData) throws URISyntaxException {
 
     var attributeValueMap = SpreadsheetDataManager.attributeValueMap;
     var elementInstanceCounts = SpreadsheetDataManager.elementInstanceCounts;
@@ -93,7 +89,7 @@ public class ElementInstanceArtifactGenerator {
       var isChildElementMultiple = childElementSchemaArtifact.isMultiple();
       //build element that has mapping in radx rad spreadsheet
       if (mappedElements.contains(childElement)){
-        var childElementInstanceArtifacts = generateElementInstanceWithValue(childElement, childElementSchemaArtifact, templateSchemaArtifact, spreadsheetData, path);
+        var childElementInstanceArtifacts = generateElementInstanceWithValue(childElement, path, childElementSchemaArtifact, templateSchemaArtifact, spreadsheetData);
         if(isChildElementMultiple){
           elementInstanceBuilder.withMultiInstanceElementInstances(childElement, childElementInstanceArtifacts);
         } else{
