@@ -8,15 +8,14 @@ import java.util.*;
 public class ElementInstanceArtifactGenerator {
   private final FieldInstanceArtifactGenerator fieldInstanceArtifactGenerator = new FieldInstanceArtifactGenerator();
 
-  public List<ElementInstanceArtifact> generateElementInstanceWithValue(String currentElement,
-                                                               Map<String, List<String>> attributeValueMap,
-                                                               Map<String, Map<Integer, String>> groupedData,
-                                                               Map<String, Integer> elementInstanceCounts,
+  public List<ElementInstanceArtifact> generateElementInstanceWithValue(String currentElement, String path,
                                                                ElementSchemaArtifact elementSchemaArtifact,
                                                                TemplateSchemaArtifact templateSchemaArtifact,
-                                                               Map<String, String> spreadsheetData,
-                                                                String path) throws URISyntaxException {
+                                                               Map<String, String> spreadsheetData) throws URISyntaxException {
 
+    var attributeValueMap = SpreadsheetDataManager.attributeValueMap;
+    var elementInstanceCounts = SpreadsheetDataManager.elementInstanceCounts;
+    var groupedData = SpreadsheetDataManager.groupedData;
     var childFields = elementSchemaArtifact.getFieldNames();
     var instanceCount = elementInstanceCounts.get(currentElement);
 
@@ -63,7 +62,7 @@ public class ElementInstanceArtifactGenerator {
       }
 
       //Build nested child element
-      buildWithElementInstances(attributeValueMap, groupedData, spreadsheetData, elementInstanceCounts,  elementSchemaArtifact, templateSchemaArtifact, elementInstanceBuilder, path + "/" + currentElement);
+      buildWithElementInstances(spreadsheetData, elementSchemaArtifact, templateSchemaArtifact, elementInstanceBuilder, path + "/" + currentElement);
 
       //Add JsonLdContext for each elementInstance
       ContextGenerator.generateElementInstanceContext(
@@ -77,22 +76,20 @@ public class ElementInstanceArtifactGenerator {
     return elementInstanceArtifacts;
   }
 
-  private void buildWithElementInstances(Map<String, List<String>> attributeValueMap,
-                                         Map<String, Map<Integer, String>> groupedData,
-                                         Map<String, String> spreadsheetData,
-                                         Map<String, Integer> elementInstanceCounts,
+  private void buildWithElementInstances(Map<String, String> spreadsheetData,
                                          ElementSchemaArtifact currentElementSchemaArtifact,
                                          TemplateSchemaArtifact templateSchemaArtifact,
                                          ElementInstanceArtifact.Builder elementInstanceBuilder,
                                          String path) throws URISyntaxException {
     var childElements = currentElementSchemaArtifact.getElementNames();
+    var elementInstanceCounts = SpreadsheetDataManager.elementInstanceCounts;
     var mappedElements = elementInstanceCounts.keySet();
     for (var childElement : childElements) {
       var childElementSchemaArtifact = currentElementSchemaArtifact.getElementSchemaArtifact(childElement);
       var isChildElementMultiple = childElementSchemaArtifact.isMultiple();
       //build element that has mapping in radx rad spreadsheet
       if (mappedElements.contains(childElement)){
-        var childElementInstanceArtifacts = generateElementInstanceWithValue(childElement, attributeValueMap, groupedData, elementInstanceCounts, childElementSchemaArtifact, templateSchemaArtifact, spreadsheetData, path);
+        var childElementInstanceArtifacts = generateElementInstanceWithValue(childElement, path, childElementSchemaArtifact, templateSchemaArtifact, spreadsheetData);
         if(isChildElementMultiple){
           elementInstanceBuilder.withMultiInstanceElementInstances(childElement, childElementInstanceArtifacts);
         } else{
@@ -102,14 +99,13 @@ public class ElementInstanceArtifactGenerator {
         if(isChildElementMultiple){
           elementInstanceBuilder.withEmptyMultiInstanceElementInstances(childElement);
         } else{
-          buildSingleEmptyElementInstance(childElement, childElementSchemaArtifact, templateSchemaArtifact, path + "/" + childElement);
+          buildSingleEmptyElementInstance(childElementSchemaArtifact, templateSchemaArtifact, path + "/" + childElement);
         }
       }
     }
   }
 
-  public ElementInstanceArtifact buildSingleEmptyElementInstance(String elementName,
-                                               ElementSchemaArtifact elementSchemaArtifact,
+  public ElementInstanceArtifact buildSingleEmptyElementInstance(ElementSchemaArtifact elementSchemaArtifact,
                                                TemplateSchemaArtifact templateSchemaArtifact,
                                                String path) throws URISyntaxException {
     var elementInstanceBuilder = ElementInstanceArtifact.builder();
@@ -146,7 +142,7 @@ public class ElementInstanceArtifactGenerator {
       if (childElementSchemaArtifact.isMultiple()){
         elementInstanceBuilder.withEmptyMultiInstanceElementInstances(childElement);
       } else {
-        var emptyElementInstanceArtifact = buildSingleEmptyElementInstance(childElement, childElementSchemaArtifact, templateSchemaArtifact, path + "/" + childElement);
+        var emptyElementInstanceArtifact = buildSingleEmptyElementInstance(childElementSchemaArtifact, templateSchemaArtifact, path + "/" + childElement);
         elementInstanceBuilder.withSingleInstanceElementInstance(childElement, emptyElementInstanceArtifact);
       }
     }

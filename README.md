@@ -30,7 +30,9 @@ mvn exec:java
   -Dexec.args="-s <input_spreadsheet_path> 
                -o <output_transformed_metadata_directory>"
 ```
-You need to specify the paths to your input spreadsheet file and the output directory where the transformed metadata will be saved. The input spreadsheet path can be either a file path or a directory path. If it is a directory path, the tool will transform all spreadsheets within that directory. Therefore, please ensure that any non-relevant spreadsheets are removed beforehand.
+You need to specify the paths to your input spreadsheet file and the output directory where the transformed metadata will be saved. 
+
+The input spreadsheet path can be either a file path or a directory path. If it is a directory path, the tool will transform all spreadsheets within that directory. Therefore, please ensure that any non-relevant spreadsheets are removed beforehand.
 
 ### Transforming Multiple Spreadsheets
 e.g., for transforming all spreadsheets stored in a folder named radx-rad-spreadsheets, and saving all transformed metadata in a folder named radx-rad-output, use the command:
