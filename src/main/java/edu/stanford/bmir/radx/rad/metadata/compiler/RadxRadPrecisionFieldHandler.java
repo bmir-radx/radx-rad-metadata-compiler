@@ -49,7 +49,6 @@ public class RadxRadPrecisionFieldHandler {
     var isMultiple = fieldSchemaArtifact.isMultiple();
     var fieldType = FieldType.getFieldType(fieldSchemaArtifact);
 
-    var controlledTermMap = MapInitializer.createControlledTermsMap();
     //If the element instance has value, then set specific controlled term fields
     if(!isEmptyElementInstance(elementInstanceCounts, elementName, elementSchemaArtifact)){
       if ((elementName.equals(DATA_FILE_CONTRIBUTORS.getValue()) && expectedField.equals(CONTRIBUTOR_TYPE.getValue())) ||
@@ -86,6 +85,10 @@ public class RadxRadPrecisionFieldHandler {
           && isValidURL(groupedData.get(studyIdentifierPath).get(i))) {
         elementInstanceArtifactBuilder.withSingleInstanceFieldInstance(expectedField,
             fieldInstanceArtifactGenerator.buildFieldInstanceWithValues(fieldType, url, Optional.empty()));
+      } else if(elementName.equals(DATA_FILE_TITLES.getValue())
+          && expectedField.equals(LANGUAGE.getValue())){
+        elementInstanceArtifactBuilder.withSingleInstanceFieldInstance(expectedField,
+            fieldInstanceArtifactGenerator.buildFieldInstanceWithValues(fieldType, "en", Optional.empty()));
       } else{
         var fieldInstanceArtifact = fieldInstanceArtifactGenerator.buildEmptyFieldInstance(fieldType);
         buildWithFieldInstanceArtifact(elementInstanceArtifactBuilder, fieldInstanceArtifact, expectedField, isMultiple);
