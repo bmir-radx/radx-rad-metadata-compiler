@@ -1,5 +1,6 @@
 package edu.stanford.bmir.radx.rad.metadata.compiler;
 
+import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.apache.commons.cli.*;
@@ -16,6 +17,8 @@ import java.util.stream.Stream;
 public class Compiler {
   private static final String SPREADSHEET_FILE_PATH = "s";
   private static final String OUTPUT_DIRECTORY_PATH = "o";
+  private static final String TEMPLATE_PATH = "t";
+  private static final String MAPPING_SPREADSHEET_PATH = "m";
   private static final SpreadsheetReader spreadsheetReader = new SpreadsheetReader();
   private static final JsonSchemaArtifactRenderer jsonSchemaArtifactRenderer = new JsonSchemaArtifactRenderer();
   private static final TemplateInstanceArtifactGenerator templateArtifactInstanceGenerator = new TemplateInstanceArtifactGenerator();
@@ -29,6 +32,8 @@ public class Compiler {
       CommandLine command = commandLineParser.parse(options, args);
       Path spreadSheetFile = Path.of(command.getOptionValue(SPREADSHEET_FILE_PATH));
       Path outputDirectory = Path.of(command.getOptionValue(OUTPUT_DIRECTORY_PATH));
+      Path template = Path.of(command.getOptionValue(TEMPLATE_PATH));
+      Path mappingSpreadsheet = Path.of(command.getOptionValue(MAPPING_SPREADSHEET_PATH));
       if (!Files.exists(outputDirectory)) {
         Files.createDirectories(outputDirectory);
       }
@@ -41,7 +46,7 @@ public class Compiler {
                 // For each file, generate a report in the specified output directory
                 try {
                   String outputFileName = getOutputFileName(file);
-                  transform(file, outputDirectory.resolve(outputFileName));
+                  transform(file, outputDirectory.resolve(outputFileName), template, mappingSpreadsheet);
                 } catch (Exception e) {
                   System.err.println("Error processing file " + file + ": " + e.getMessage());
                 }
@@ -49,7 +54,7 @@ public class Compiler {
         }
       } else if (Files.exists(spreadSheetFile)) {
         String outputFileName = getOutputFileName(spreadSheetFile);
-        transform(spreadSheetFile, outputDirectory.resolve(outputFileName));
+        transform(spreadSheetFile, outputDirectory.resolve(outputFileName), template, mappingSpreadsheet);
       } else {
         throw new FileNotFoundException("Spreadsheet path not found: " + spreadSheetFile);
       }
@@ -58,12 +63,14 @@ public class Compiler {
     }
   }
 
-  private static void transform(Path spreadsheetFile, Path outputFile) throws IOException, URISyntaxException {
-    var templateNode = mapper.readTree(Compiler.class.getClassLoader().getResource("RADxMetadataSpecification.json"));
+  private static void transform(Path spreadsheetFile, Path outputFile, Path template, Path mappingSpreadsheet) throws IOException, URISyntaxException {
+//    var templateNode = mapper.readTree(Compiler.class.getClassLoader().getResource("RADxMetadataSpecification.json"));
+    var templateNode = mapper.readTree(template.toFile());
     var spreadsheetData = spreadsheetReader.readRadxRadSpreadsheet(spreadsheetFile.toString());
-    var spreadSheet2templatePath = spreadsheetReader.readSpreadsheet2templatePath(
-        Objects.requireNonNull(Compiler.class.getClassLoader().getResource("spreadsheet2templatePath.xlsx")).getPath()
-    );
+//    var spreadSheet2templatePath = spreadsheetReader.readSpreadsheet2templatePath(
+//        Objects.requireNonNull(Compiler.class.getClassLoader().getResource("spreadsheet2templatePath.xlsx")).getPath()
+//    );
+    var spreadSheet2templatePath = spreadsheetReader.readSpreadsheet2templatePath(mappingSpreadsheet.toString());
     var templateInstanceArtifact = templateArtifactInstanceGenerator.generateTemplateArtifactInstance(
         spreadsheetData,spreadSheet2templatePath, templateNode
     );
@@ -88,8 +95,24 @@ public class Compiler {
         .hasArg()
         .build();
 
+    Option templatePathOption = Option.builder(TEMPLATE_PATH)
+        .argName("RADx-Metadata-Specification-path")
+        .desc("RADx Metadata Specification Path")
+        .required(true)
+        .hasArg()
+        .build();
+
+    Option mappingPathOption = Option.builder(MAPPING_SPREADSHEET_PATH)
+        .argName("spreadsheet-to-template-mapping-path")
+        .desc("Spreadsheet2templatePath mapping spreadsheet path")
+        .required(true)
+        .hasArg()
+        .build();
+
     options.addOption(spreadsheetFilePathOption);
     options.addOption(outputDirectoryPathOption);
+    options.addOption(templatePathOption);
+    options.addOption(mappingPathOption);
     return options;
   }
 
