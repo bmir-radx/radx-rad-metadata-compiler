@@ -67,6 +67,12 @@ public class RadxRadPrecisionFieldHandler {
           && groupedData.get(creatorIdentifierPath).get(i)!= null){
         elementInstanceArtifactBuilder.withSingleInstanceFieldInstance(expectedField,
             fieldInstanceArtifactGenerator.buildFieldInstanceWithValues(fieldType, orcid, Optional.empty()));
+      } else if (elementName.equals(DATA_FILE_CREATORS.getValue())
+          && expectedField.equals(CREATOR_AFFILIATION_IDENTIFIER_SCHEME.getValue())
+          && groupedData.containsKey(creatorAffiliationIdPath)
+          && groupedData.get(creatorAffiliationIdPath).get(i)!= null){
+        elementInstanceArtifactBuilder.withSingleInstanceFieldInstance(expectedField,
+            fieldInstanceArtifactGenerator.buildFieldInstanceWithValues(fieldType, ror, Optional.empty()));
       } else if (elementName.equals(DATA_FILE_RELATED_RESOURCES.getValue())
           && expectedField.equals(RELATED_RESOURCE_IDENTIFER_TYPE.getValue())
           && groupedData.containsKey(relatedResourceIdentifierPath)
@@ -171,6 +177,8 @@ public class RadxRadPrecisionFieldHandler {
       }
 
       templateInstanceArtifactBuilder.withMultiInstanceElementInstances(DATA_FILE_SUBJECTS.getValue(), elementInstances);
+    } else { //empty keywords input
+      templateInstanceArtifactBuilder.withEmptyMultiInstanceElementInstances(DATA_FILE_SUBJECTS.getValue());
     }
   }
 }
