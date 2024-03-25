@@ -46,7 +46,8 @@ public class SpreadsheetReader {
         var radxRadfield = currentRow.getCell(0);
         var path = currentRow.getCell(1);
         if (radxRadfield != null) {
-          template2Spreadsheet.put(radxRadfield.getStringCellValue(), path.getStringCellValue());
+          var cleanedPath = cleanPathString(path.getStringCellValue());
+          template2Spreadsheet.put(radxRadfield.getStringCellValue(), cleanedPath);
         }
       }
     }
@@ -87,5 +88,18 @@ public class SpreadsheetReader {
         return null;
       }
     }
+  }
+
+  private String cleanPathString(String templatePath){
+    String[] paths = templatePath.split("/");
+    StringBuilder cleanedPath = new StringBuilder();
+
+    for(String path: paths){
+      String stripedPath = path.strip();
+      if(!stripedPath.isEmpty()){
+        cleanedPath.append("/" + stripedPath);
+      }
+    }
+    return cleanedPath.toString();
   }
 }
