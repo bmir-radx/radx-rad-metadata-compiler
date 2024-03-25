@@ -55,7 +55,7 @@ public class ElementInstanceArtifactGenerator {
               elementInstanceBuilder.withMultiInstanceFieldInstances(expectedField, List.of(fieldInstanceArtifact));
             } else {
               //Add values to RADx-rad specific controlled terms fields or add an empty field entry
-              RadxRadPrecisionFieldHandler.addSpecificControlledTerms(elementInstanceBuilder, currentElement, expectedField, elementSchemaArtifact, groupedData, elementInstanceCounts, i);
+              RadxRadPrecisionFieldHandler.addSpecificFields(elementInstanceBuilder, currentElement, expectedField, elementSchemaArtifact, groupedData, elementInstanceCounts, i);
             }
           }
         }
@@ -122,6 +122,8 @@ public class ElementInstanceArtifactGenerator {
       var specificationPath = path + "/" + expectedField;
       if(AttributeValueFieldUtil.isAttributeValue(templateSchemaArtifact, specificationPath)){
         elementInstanceBuilder.withAttributeValueFieldGroup(expectedField, Collections.emptyMap());
+      } else if (RadxRadPrecisionFieldHandler.isPrimaryLanguageField(specificationPath)) { //Add default value to primary language
+        RadxRadPrecisionFieldHandler.addPrimaryLanguage(specificationPath, expectedField, elementInstanceBuilder);
       } else{
         var fieldSchemaArtifact = elementSchemaArtifact.getFieldSchemaArtifact(expectedField);
         var inputType = FieldType.getFieldType(fieldSchemaArtifact);
