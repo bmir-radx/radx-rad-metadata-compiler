@@ -15,6 +15,14 @@ public class ControlledTermGenerator implements FieldGenerator{
     var fieldInstanceArtifactBuilder = FieldInstanceArtifact.controlledTermFieldInstanceBuilder();
     FieldInstanceArtifact fieldInstanceArtifact;
     if(value != null){
+      // Precision handling for co-PI, contact-PI, and data-PI
+      String piRegex = "(?i)co[- ]?PI";
+      String contactPiRegex = "(?i)contact[- ]?PI";
+      String dataPiRegex = "(?i)data[- ]?PI";
+      value = value.replaceAll(piRegex, "PI");
+      value = value.replaceAll(contactPiRegex, "contact-PI");
+      value = value.replaceAll(dataPiRegex, "data-PI");
+
       try{
         var URI = MapInitializer.createControlledTermsMap().get(value);
         fieldInstanceArtifact = fieldInstanceArtifactBuilder
