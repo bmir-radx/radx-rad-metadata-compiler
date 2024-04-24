@@ -1,6 +1,7 @@
 package edu.stanford.bmir.radx.rad.metadata.compiler.fieldGenerators;
 
 import org.metadatacenter.artifacts.model.core.FieldInstanceArtifact;
+import org.metadatacenter.artifacts.model.core.NumericFieldInstance;
 import org.metadatacenter.artifacts.model.core.fields.XsdNumericDatatype;
 import org.metadatacenter.artifacts.model.core.fields.constraints.ValueConstraints;
 
@@ -17,7 +18,7 @@ public class NumericFieldGenerator implements FieldGenerator{
       numberType = XsdNumericDatatype.DOUBLE;
     }
 
-    var fieldInstanceArtifactBuilder = FieldInstanceArtifact.numericFieldInstanceBuilder();
+    var fieldInstanceArtifactBuilder = NumericFieldInstance.builder();
     FieldInstanceArtifact fieldInstanceArtifact;
     if(value != null){
       fieldInstanceArtifact = fieldInstanceArtifactBuilder
@@ -34,6 +35,6 @@ public class NumericFieldGenerator implements FieldGenerator{
 
   @Override
   public FieldInstanceArtifact buildEmptyFieldInstanceArtifact() {
-    return FieldInstanceArtifact.numericFieldInstanceBuilder().build();
+    return NumericFieldInstance.builder().build();
   }
 }

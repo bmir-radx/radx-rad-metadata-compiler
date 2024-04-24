@@ -1,6 +1,7 @@
 package edu.stanford.bmir.radx.rad.metadata.compiler.fieldGenerators;
 
 import org.metadatacenter.artifacts.model.core.FieldInstanceArtifact;
+import org.metadatacenter.artifacts.model.core.TemporalFieldInstance;
 import org.metadatacenter.artifacts.model.core.fields.XsdTemporalDatatype;
 import org.metadatacenter.artifacts.model.core.fields.constraints.ValueConstraints;
 
@@ -16,7 +17,7 @@ public class TemporalFieldGenerator implements FieldGenerator{
       temporalType = XsdTemporalDatatype.DATETIME;
     }
 
-    var fieldInstanceArtifactBuilder = FieldInstanceArtifact.temporalFieldInstanceBuilder();
+    var fieldInstanceArtifactBuilder = TemporalFieldInstance.builder();
     FieldInstanceArtifact fieldInstanceArtifact;
     if(value != null){
       fieldInstanceArtifact = fieldInstanceArtifactBuilder
@@ -32,6 +33,6 @@ public class TemporalFieldGenerator implements FieldGenerator{
 
   @Override
   public FieldInstanceArtifact buildEmptyFieldInstanceArtifact() {
-    return FieldInstanceArtifact.temporalFieldInstanceBuilder().build();
+    return TemporalFieldInstance.builder().build();
   }
 }

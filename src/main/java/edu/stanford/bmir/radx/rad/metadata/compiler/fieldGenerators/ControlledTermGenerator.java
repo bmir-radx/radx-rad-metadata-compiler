@@ -1,6 +1,7 @@
 package edu.stanford.bmir.radx.rad.metadata.compiler.fieldGenerators;
 
 import edu.stanford.bmir.radx.rad.metadata.compiler.MapInitializer;
+import org.metadatacenter.artifacts.model.core.ControlledTermFieldInstance;
 import org.metadatacenter.artifacts.model.core.FieldInstanceArtifact;
 import org.metadatacenter.artifacts.model.core.fields.constraints.ValueConstraints;
 
@@ -12,7 +13,7 @@ import java.util.Optional;
 public class ControlledTermGenerator implements FieldGenerator{
   @Override
   public FieldInstanceArtifact buildWithValue(String value, Optional<ValueConstraints> valueConstraints) {
-    var fieldInstanceArtifactBuilder = FieldInstanceArtifact.controlledTermFieldInstanceBuilder();
+    var fieldInstanceArtifactBuilder = ControlledTermFieldInstance.builder();
     FieldInstanceArtifact fieldInstanceArtifact;
     if(value != null){
       // Precision handling for co-PI, contact-PI, and data-PI
@@ -42,6 +43,6 @@ public class ControlledTermGenerator implements FieldGenerator{
 
   @Override
   public FieldInstanceArtifact buildEmptyFieldInstanceArtifact() {
-    return FieldInstanceArtifact.controlledTermFieldInstanceBuilder().build();
+    return ControlledTermFieldInstance.builder().build();
   }
 }

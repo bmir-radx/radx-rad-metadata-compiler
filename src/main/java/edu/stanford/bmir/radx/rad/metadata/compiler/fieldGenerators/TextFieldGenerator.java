@@ -1,6 +1,7 @@
 package edu.stanford.bmir.radx.rad.metadata.compiler.fieldGenerators;
 
 import org.metadatacenter.artifacts.model.core.FieldInstanceArtifact;
+import org.metadatacenter.artifacts.model.core.TextFieldInstance;
 import org.metadatacenter.artifacts.model.core.ValidationHelper;
 import org.metadatacenter.artifacts.model.core.fields.constraints.ValueConstraints;
 
@@ -9,7 +10,7 @@ import java.util.Optional;
 public class TextFieldGenerator implements FieldGenerator{
   @Override
   public FieldInstanceArtifact buildWithValue(String value, Optional<ValueConstraints> valueConstraints) {
-    var fieldInstanceArtifactBuilder = FieldInstanceArtifact.textFieldInstanceBuilder();
+    var fieldInstanceArtifactBuilder = TextFieldInstance.builder();
     FieldInstanceArtifact fieldInstanceArtifact;
     if(value != null){
       fieldInstanceArtifact = fieldInstanceArtifactBuilder
@@ -23,6 +24,6 @@ public class TextFieldGenerator implements FieldGenerator{
 
   @Override
   public FieldInstanceArtifact buildEmptyFieldInstanceArtifact() {
-    return FieldInstanceArtifact.textFieldInstanceBuilder().build();
+    return TextFieldInstance.builder().build();
   }
 }

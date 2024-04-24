@@ -42,11 +42,20 @@ public class ElementInstanceArtifactGenerator {
           // otherwise, build an empty fieldArtifactInstance
           FieldInstanceArtifact fieldInstanceArtifact;
           if (groupedData.containsKey(currentPath)) {
-            var value = groupedData.get(currentPath).get(i);
-            fieldInstanceArtifact = fieldInstanceArtifactGenerator.buildFieldInstanceWithValues(expectedFieldType, value, expectedFieldValueConstraint);
             if(isMultipleField){
-              elementInstanceBuilder.withMultiInstanceFieldInstances(expectedField, List.of(fieldInstanceArtifact));
+              // build field instance one by one, explicitly for creator/contributor ids
+              var valueSet = groupedData.get(currentPath).get(i);
+              var fieldInstanceArtifactList = new ArrayList<FieldInstanceArtifact>();
+              for(var j=0; j < valueSet.size(); j ++){
+                var currentValue = valueSet.get(j);
+                fieldInstanceArtifact = fieldInstanceArtifactGenerator.buildFieldInstanceWithValues(expectedFieldType, currentValue, expectedFieldValueConstraint);
+                fieldInstanceArtifactList.add(fieldInstanceArtifact);
+              }
+              elementInstanceBuilder.withMultiInstanceFieldInstances(expectedField, fieldInstanceArtifactList);
+
             } else{
+              var value = groupedData.get(currentPath).get(i).get(0);
+              fieldInstanceArtifact = fieldInstanceArtifactGenerator.buildFieldInstanceWithValues(expectedFieldType, value, expectedFieldValueConstraint);
               elementInstanceBuilder.withSingleInstanceFieldInstance(expectedField, fieldInstanceArtifact);
             }
           } else {
@@ -97,7 +106,7 @@ public class ElementInstanceArtifactGenerator {
         }
       } else{ // build empty element
         if(isChildElementMultiple){
-          elementInstanceBuilder.withEmptyMultiInstanceElementInstances(childElement);
+          elementInstanceBuilder.withMultiInstanceElementInstances(childElement, Collections.emptyList());
         } else{
           buildSingleEmptyElementInstance(childElementSchemaArtifact, templateSchemaArtifact, path + "/" + childElement);
         }
@@ -122,15 +131,13 @@ public class ElementInstanceArtifactGenerator {
       var specificationPath = path + "/" + expectedField;
       if(AttributeValueFieldUtil.isAttributeValue(templateSchemaArtifact, specificationPath)){
         elementInstanceBuilder.withAttributeValueFieldGroup(expectedField, Collections.emptyMap());
-      } else if (RadxRadPrecisionFieldHandler.isPrimaryLanguageField(specificationPath)) { //Add default value to primary language
-        RadxRadPrecisionFieldHandler.addPrimaryLanguage(specificationPath, expectedField, elementInstanceBuilder);
       } else{
         var fieldSchemaArtifact = elementSchemaArtifact.getFieldSchemaArtifact(expectedField);
         var inputType = FieldType.getFieldType(fieldSchemaArtifact);
         var isMultiple = fieldSchemaArtifact.isMultiple();
         var fieldInstanceArtifact = fieldInstanceArtifactGenerator.buildEmptyFieldInstance(inputType);
         if(isMultiple){
-          elementInstanceBuilder.withEmptyMultiInstanceFieldInstances(expectedField);
+          elementInstanceBuilder.withMultiInstanceFieldInstances(expectedField, Collections.emptyList());
         } else{
           elementInstanceBuilder.withSingleInstanceFieldInstance(expectedField, fieldInstanceArtifact);
         }
@@ -142,7 +149,7 @@ public class ElementInstanceArtifactGenerator {
     for (var childElement : childElements){
       var childElementSchemaArtifact = elementSchemaArtifact.getElementSchemaArtifact(childElement);
       if (childElementSchemaArtifact.isMultiple()){
-        elementInstanceBuilder.withEmptyMultiInstanceElementInstances(childElement);
+        elementInstanceBuilder.withMultiInstanceElementInstances(childElement, Collections.emptyList());
       } else {
         var emptyElementInstanceArtifact = buildSingleEmptyElementInstance(childElementSchemaArtifact, templateSchemaArtifact, path + "/" + childElement);
         elementInstanceBuilder.withSingleInstanceElementInstance(childElement, emptyElementInstanceArtifact);

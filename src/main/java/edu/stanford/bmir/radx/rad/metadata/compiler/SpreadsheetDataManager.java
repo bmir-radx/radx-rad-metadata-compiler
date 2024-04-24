@@ -13,7 +13,7 @@ public class SpreadsheetDataManager {
   private final static String FIRST_NAME_PATTERN = "^(pi|creator)_firstname_\\d+$";
   private final static String MIDDLE_NAME_PATTERN = "^(pi|creator)_middlename_\\d+$";
   public final static Map<String, List<String>> attributeValueMap = new HashMap<>(); //path-> List<spreadsheet fields>
-  public final static Map<String, Map<Integer, String>> groupedData = new HashMap<>(); //{path->{index: value}}
+  public final static Map<String, Map<Integer, List<String>>> groupedData = new HashMap<>(); //{path->{index: [value1, value2]}}
   public final static Map<String, Integer> elementInstanceCounts = new HashMap<>(); //{element: instances counts }
 
   public static void groupData(Map<String, String> spreadsheetData,
@@ -41,7 +41,7 @@ public class SpreadsheetDataManager {
           if(AttributeValueFieldUtil.isAttributeValue(templateSchemaArtifact, path)){
             attributeValueMap.computeIfAbsent(path, k -> new ArrayList<>()).add(key);
           } else{
-            //update element instances counts
+            //Update element instances counts
             //TODO: need to update Map<String, Integer> elementInstanceCounts, add childElement: counts to map as well
             var element = path.split("/")[1];
             elementInstanceCounts.merge(element, index, Math::max);
@@ -56,7 +56,8 @@ public class SpreadsheetDataManager {
             // Skip adding to groupedData if it's a middle name field
             if(!isMiddleName){
               groupedData.computeIfAbsent(path, k -> new HashMap<>())
-                  .put(index, value);
+                  .computeIfAbsent(index, k -> new ArrayList<>())
+                  .add(value);
             }
           }
         } else{ // precision handling for field "study_include_prospective_or_retrospective_human_samples - effective_Feb_2021"

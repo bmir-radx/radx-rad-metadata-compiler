@@ -50,7 +50,7 @@ public class TemplateInstanceArtifactGenerator {
           }
         } else{ // build empty element
           if(isChildElementMultiple){
-            templateInstanceArtifactBuilder.withEmptyMultiInstanceElementInstances(childElement);
+            templateInstanceArtifactBuilder.withMultiInstanceElementInstances(childElement, Collections.emptyList());
           } else{
             var elementInstanceArtifact = elementInstanceArtifactGenerator.buildSingleEmptyElementInstance(childElementSchemaArtifact, templateSchemaArtifact, "/" + childElement);
             templateInstanceArtifactBuilder.withSingleInstanceElementInstance(childElement, elementInstanceArtifact);
@@ -69,17 +69,30 @@ public class TemplateInstanceArtifactGenerator {
       var currentPath = "/" + childField;
       FieldInstanceArtifact fieldInstanceArtifact;
       if (groupedData.containsKey(currentPath)) { // Build field instance with value
-        //TODO handling multiple instances if needed
-        var value = groupedData.get(currentPath).get(1);
-        fieldInstanceArtifact = fieldInstanceArtifactGenerator.buildFieldInstanceWithValues(childFieldType, value, childValueConstraints);
+        if(isChildFieldMultiple){
+          var valueSet = groupedData.get(currentPath).get(1);
+          var fieldInstanceArtifactList = new ArrayList<FieldInstanceArtifact>();
+          for(var i=0; i<valueSet.size(); i++){
+            var currentValue = valueSet.get(i);
+            fieldInstanceArtifact = fieldInstanceArtifactGenerator.buildFieldInstanceWithValues(childFieldType, currentValue, childValueConstraints);
+            fieldInstanceArtifactList.add(fieldInstanceArtifact);
+          }
+          templateInstanceArtifactBuilder.withMultiInstanceFieldInstances(childField, fieldInstanceArtifactList);
+        } else{
+          var value = groupedData.get(currentPath).get(1).get(0);
+          fieldInstanceArtifact = fieldInstanceArtifactGenerator.buildFieldInstanceWithValues(childFieldType, value, childValueConstraints);
+          templateInstanceArtifactBuilder.withSingleInstanceFieldInstance(childField, fieldInstanceArtifact);
+        }
+      } else if (RadxRadPrecisionFieldHandler.isPrimaryLanguageField(currentPath)) { //Set default value for language
+        fieldInstanceArtifact = fieldInstanceArtifactGenerator.buildFieldInstanceWithValues(childFieldType, "en", Optional.empty());
+        templateInstanceArtifactBuilder.withSingleInstanceFieldInstance(childField, fieldInstanceArtifact);
       } else { // build Empty field instance
         fieldInstanceArtifact = fieldInstanceArtifactGenerator.buildEmptyFieldInstance(childFieldType);
-      }
-
-      if (isChildFieldMultiple) {
-        templateInstanceArtifactBuilder.withMultiInstanceFieldInstances(childField, List.of(fieldInstanceArtifact));
-      } else {
-        templateInstanceArtifactBuilder.withSingleInstanceFieldInstance(childField, fieldInstanceArtifact);
+        if (isChildFieldMultiple) {
+          templateInstanceArtifactBuilder.withMultiInstanceFieldInstances(childField, List.of(fieldInstanceArtifact));
+        } else {
+          templateInstanceArtifactBuilder.withSingleInstanceFieldInstance(childField, fieldInstanceArtifact);
+        }
       }
     }
 

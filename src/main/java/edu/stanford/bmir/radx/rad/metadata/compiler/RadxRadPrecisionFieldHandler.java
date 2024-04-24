@@ -7,10 +7,7 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 import static edu.stanford.bmir.radx.rad.metadata.compiler.RadxSpecificationMetadataConstant.*;
 
@@ -23,14 +20,13 @@ public class RadxRadPrecisionFieldHandler {
   private final static String created = "Created";
   private final static String meshUri =  "http://purl.bioontology.org/ontology/MESH";
   private final static String contributorIdentifierPath = "/Data File Contributors/Contributor Identifier";
-  private final static String contributorAffiliationIdPath = "/Data File Contributors/Contributor Affiliation Identifier";
   private final static String creatorIdentifierPath = "/Data File Creators/Creator Identifier";
   private final static String creatorAffiliationIdPath = "/Data File Creators/Creator Affiliation Identifier";
   private final static String creatorNamePath = "/Data File Creators/Creator Name";
   private final static String relatedResourceIdentifierPath = "/Data File Related Resources/Related Resource Identifier";
   private final static String datePath = "/Data File Dates/Date";
   private final static String studyIdentifierPath = "/Data File Parent Studies/Study Identifier";
-  private final static String primaryLangPath = "/Data File Language/Primary Language";
+  private final static String primaryLangPath = "/Primary Language";
   private static final FieldInstanceArtifactGenerator fieldInstanceArtifactGenerator = new FieldInstanceArtifactGenerator();
 
   /***
@@ -43,7 +39,7 @@ public class RadxRadPrecisionFieldHandler {
       String elementName,
       String expectedField,
       ElementSchemaArtifact elementSchemaArtifact,
-      Map<String, Map<Integer, String>> groupedData,
+      Map<String, Map<Integer, List<String>>> groupedData,
       Map<String, Integer> elementInstanceCounts,
       int i){
 
@@ -58,28 +54,28 @@ public class RadxRadPrecisionFieldHandler {
           (elementName.equals(DATA_FILE_CREATORS.getValue()) && expectedField.equals(CREATOR_TYPE.getValue()))){
         elementInstanceArtifactBuilder.withSingleInstanceFieldInstance(expectedField,
             fieldInstanceArtifactGenerator.buildFieldInstanceWithValues(fieldType, person, Optional.empty()));
-      } else if (elementName.equals(DATA_FILE_CONTRIBUTORS.getValue())  //Set Contributor Identifier Scheme to ORCiD
-          && expectedField.equals(CONTRIBUTOR_IDENTIFIER_SCHEME.getValue())
-          && groupedData.containsKey(contributorIdentifierPath)
-          && groupedData.get(contributorIdentifierPath).get(i)!= null){
-        elementInstanceArtifactBuilder.withSingleInstanceFieldInstance(expectedField,
-            fieldInstanceArtifactGenerator.buildFieldInstanceWithValues(fieldType, orcid, Optional.empty()));
-      } else if (elementName.equals(DATA_FILE_CREATORS.getValue())  //Set Creator Identifier Scheme to ORCiD
-          && expectedField.equals(CREATOR_IDENTIFIER_SCHEME.getValue())
-          && groupedData.containsKey(creatorIdentifierPath)
-          && groupedData.get(creatorIdentifierPath).get(i)!= null){
-        elementInstanceArtifactBuilder.withSingleInstanceFieldInstance(expectedField,
-            fieldInstanceArtifactGenerator.buildFieldInstanceWithValues(fieldType, orcid, Optional.empty()));
-      } else if (elementName.equals(DATA_FILE_CREATORS.getValue())  //Set Creator Affiliation Identifier Scheme to ROR
-          && expectedField.equals(CREATOR_AFFILIATION_IDENTIFIER_SCHEME.getValue())
-          && groupedData.containsKey(creatorAffiliationIdPath)
-          && groupedData.get(creatorAffiliationIdPath).get(i)!= null){
-        elementInstanceArtifactBuilder.withSingleInstanceFieldInstance(expectedField,
-            fieldInstanceArtifactGenerator.buildFieldInstanceWithValues(fieldType, ror, Optional.empty()));
+//      } else if (elementName.equals(DATA_FILE_CONTRIBUTORS.getValue())  //Set Contributor Identifier Scheme to ORCiD
+//          && expectedField.equals(CONTRIBUTOR_IDENTIFIER_SCHEME.getValue())
+//          && groupedData.containsKey(contributorIdentifierPath)
+//          && groupedData.get(contributorIdentifierPath).get(i)!= null){
+//        elementInstanceArtifactBuilder.withSingleInstanceFieldInstance(expectedField,
+//            fieldInstanceArtifactGenerator.buildFieldInstanceWithValues(fieldType, orcid, Optional.empty()));
+//      } else if (elementName.equals(DATA_FILE_CREATORS.getValue())  //Set Creator Identifier Scheme to ORCiD
+//          && expectedField.equals(CREATOR_IDENTIFIER_SCHEME.getValue())
+//          && groupedData.containsKey(creatorIdentifierPath)
+//          && groupedData.get(creatorIdentifierPath).get(i)!= null){
+//        elementInstanceArtifactBuilder.withSingleInstanceFieldInstance(expectedField,
+//            fieldInstanceArtifactGenerator.buildFieldInstanceWithValues(fieldType, orcid, Optional.empty()));
+//      } else if (elementName.equals(DATA_FILE_CREATORS.getValue())  //Set Creator Affiliation Identifier Scheme to ROR
+//          && expectedField.equals(CREATOR_AFFILIATION_IDENTIFIER_SCHEME.getValue())
+//          && groupedData.containsKey(creatorAffiliationIdPath)
+//          && groupedData.get(creatorAffiliationIdPath).get(i)!= null){
+//        elementInstanceArtifactBuilder.withSingleInstanceFieldInstance(expectedField,
+//            fieldInstanceArtifactGenerator.buildFieldInstanceWithValues(fieldType, ror, Optional.empty()));
       } else if (elementName.equals(DATA_FILE_CREATORS.getValue()) //Set Creator Given Name
           && expectedField.equals(CREATOR_GIVEN_NAME.getValue())
           && groupedData.containsKey(creatorNamePath)){
-        var name = groupedData.get(creatorNamePath).get(i);
+        var name = groupedData.get(creatorNamePath).get(i).get(0);
         if(name != null){
           var givenName = name.split(" ")[0];
           elementInstanceArtifactBuilder.withSingleInstanceFieldInstance(expectedField,
@@ -88,7 +84,7 @@ public class RadxRadPrecisionFieldHandler {
       } else if (elementName.equals(DATA_FILE_CREATORS.getValue()) //Set Creator Family Name
           && expectedField.equals(CREATOR_FAMILY_NAME.getValue())
           && groupedData.containsKey(creatorNamePath)){
-        var name = groupedData.get(creatorNamePath).get(i);
+        var name = groupedData.get(creatorNamePath).get(i).get(0);
         if(name != null){
           var familyName = name.split(" ")[1];
           elementInstanceArtifactBuilder.withSingleInstanceFieldInstance(expectedField,
@@ -106,16 +102,16 @@ public class RadxRadPrecisionFieldHandler {
           && groupedData.get(datePath).get(i) != null)  {
         elementInstanceArtifactBuilder.withSingleInstanceFieldInstance(expectedField,
             fieldInstanceArtifactGenerator.buildFieldInstanceWithValues(fieldType, created, Optional.empty()));
-      } else if (elementName.equals(DATA_FILE_PARENT_STUDIES.getValue())  //Set Study Identifier Scheme to URL
-          && expectedField.equals(STUDY_IDENTIFIER_SCHEME.getValue())
-          && groupedData.containsKey(studyIdentifierPath)
-          && isValidURL(groupedData.get(studyIdentifierPath).get(i))) {
-        elementInstanceArtifactBuilder.withSingleInstanceFieldInstance(expectedField,
-            fieldInstanceArtifactGenerator.buildFieldInstanceWithValues(fieldType, url, Optional.empty()));
-      } else if(elementName.equals(DATA_FILE_TITLES.getValue())  //Set Data File Title Language to en
-          && expectedField.equals(LANGUAGE.getValue())){
-        elementInstanceArtifactBuilder.withSingleInstanceFieldInstance(expectedField,
-            fieldInstanceArtifactGenerator.buildFieldInstanceWithValues(fieldType, "en", Optional.empty()));
+//      } else if (elementName.equals(DATA_FILE_PARENT_STUDIES.getValue())  //Set Study Identifier Scheme to URL
+//          && expectedField.equals(STUDY_IDENTIFIER_SCHEME.getValue())
+//          && groupedData.containsKey(studyIdentifierPath)
+//          && isValidURL(groupedData.get(studyIdentifierPath).get(i))) {
+//        elementInstanceArtifactBuilder.withSingleInstanceFieldInstance(expectedField,
+//            fieldInstanceArtifactGenerator.buildFieldInstanceWithValues(fieldType, url, Optional.empty()));
+//      } else if(elementName.equals(DATA_FILE_TITLES.getValue())  //Set Data File Title Language to en
+//          && expectedField.equals(LANGUAGE.getValue())){
+//        elementInstanceArtifactBuilder.withSingleInstanceFieldInstance(expectedField,
+//            fieldInstanceArtifactGenerator.buildFieldInstanceWithValues(fieldType, "en", Optional.empty()));
       } else{
         var fieldInstanceArtifact = fieldInstanceArtifactGenerator.buildEmptyFieldInstance(fieldType);
         buildWithFieldInstanceArtifact(elementInstanceArtifactBuilder, fieldInstanceArtifact, expectedField, isMultiple);
@@ -174,10 +170,10 @@ public class RadxRadPrecisionFieldHandler {
         FieldInstanceArtifact subjectIdentifierField;
         if (mesh.containsKey(keyword)){
           var classId = mesh.get(keyword);
-          subjectIdentifierField = FieldInstanceArtifact.controlledTermFieldInstanceBuilder().withValue(new URI(classId)).withLabel(keyword).build();
+          subjectIdentifierField = ControlledTermFieldInstance.builder().withValue(new URI(classId)).withLabel(keyword).build();
 
         } else{
-          subjectIdentifierField = FieldInstanceArtifact.controlledTermFieldInstanceBuilder().build();
+          subjectIdentifierField = ControlledTermFieldInstance.builder().build();
         }
         elementInstanceArtifactBuilder.withSingleInstanceFieldInstance(SUBJECT_IDENTIFIER.getValue(), subjectIdentifierField);
 
@@ -185,7 +181,7 @@ public class RadxRadPrecisionFieldHandler {
         elementInstanceArtifactBuilder.withSingleInstanceFieldInstance(KEYWORD.getValue(), new TextFieldGenerator().buildWithValue(keyword));
 
         //add Subject Identifier Scheme
-        elementInstanceArtifactBuilder.withSingleInstanceFieldInstance(SUBJECT_IDENTIFIER_SCHEME.getValue(), new TextFieldGenerator().buildWithValue(meshUri));
+//        elementInstanceArtifactBuilder.withSingleInstanceFieldInstance(SUBJECT_IDENTIFIER_SCHEME.getValue(), new TextFieldGenerator().buildWithValue(meshUri));
 
         //add context
         var elementSchemaArtifact = templateSchemaArtifact.getElementSchemaArtifact(DATA_FILE_SUBJECTS.getValue());
@@ -199,7 +195,7 @@ public class RadxRadPrecisionFieldHandler {
 
       templateInstanceArtifactBuilder.withMultiInstanceElementInstances(DATA_FILE_SUBJECTS.getValue(), elementInstances);
     } else { //empty keywords input
-      templateInstanceArtifactBuilder.withEmptyMultiInstanceElementInstances(DATA_FILE_SUBJECTS.getValue());
+      templateInstanceArtifactBuilder.withMultiInstanceElementInstances(DATA_FILE_SUBJECTS.getValue(), Collections.emptyList());
     }
   }
 
