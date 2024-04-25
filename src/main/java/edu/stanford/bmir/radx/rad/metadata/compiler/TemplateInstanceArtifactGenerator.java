@@ -35,32 +35,28 @@ public class TemplateInstanceArtifactGenerator {
 
     //Build child element instances artifacts
     for(var childElement : elements){
-      if(childElement.equals(DATA_FILE_SUBJECTS.getValue())){
-        //generate Data File Subjects element
-        RadxRadPrecisionFieldHandler.addDataFileSubjectsElement(spreadsheetData.get(KEYWORDS.getValue()), templateSchemaArtifact, templateInstanceArtifactBuilder);
-      } else{
-        var childElementSchemaArtifact = templateSchemaArtifact.getElementSchemaArtifact(childElement);
-        var isChildElementMultiple = childElementSchemaArtifact.isMultiple();
-        if (mappedElements.contains(childElement)){
-          var childElementInstanceArtifacts = elementInstanceArtifactGenerator.generateElementInstanceWithValue(childElement, "", childElementSchemaArtifact, templateSchemaArtifact, spreadsheetData);
-          if(isChildElementMultiple){
-            templateInstanceArtifactBuilder.withMultiInstanceElementInstances(childElement, childElementInstanceArtifacts);
-          } else{
-            templateInstanceArtifactBuilder.withSingleInstanceElementInstance(childElement, childElementInstanceArtifacts.get(0));
-          }
-        } else{ // build empty element
-          if(isChildElementMultiple){
-            templateInstanceArtifactBuilder.withMultiInstanceElementInstances(childElement, Collections.emptyList());
-          } else{
-            var elementInstanceArtifact = elementInstanceArtifactGenerator.buildSingleEmptyElementInstance(childElementSchemaArtifact, templateSchemaArtifact, "/" + childElement);
-            templateInstanceArtifactBuilder.withSingleInstanceElementInstance(childElement, elementInstanceArtifact);
-          }
+      var childElementSchemaArtifact = templateSchemaArtifact.getElementSchemaArtifact(childElement);
+      var isChildElementMultiple = childElementSchemaArtifact.isMultiple();
+      if (mappedElements.contains(childElement)){
+        var childElementInstanceArtifacts = elementInstanceArtifactGenerator.generateElementInstanceWithValue(childElement, "", childElementSchemaArtifact, templateSchemaArtifact, spreadsheetData);
+        if(isChildElementMultiple){
+          templateInstanceArtifactBuilder.withMultiInstanceElementInstances(childElement, childElementInstanceArtifacts);
+        } else{
+          templateInstanceArtifactBuilder.withSingleInstanceElementInstance(childElement, childElementInstanceArtifacts.get(0));
+        }
+      } else{ // build empty element
+        if(isChildElementMultiple){
+          templateInstanceArtifactBuilder.withMultiInstanceElementInstances(childElement, Collections.emptyList());
+        } else{
+          var elementInstanceArtifact = elementInstanceArtifactGenerator.buildSingleEmptyElementInstance(childElementSchemaArtifact, templateSchemaArtifact, "/" + childElement);
+          templateInstanceArtifactBuilder.withSingleInstanceElementInstance(childElement, elementInstanceArtifact);
         }
       }
     }
 
     //Build child field instances artifacts
     var childFields = templateSchemaArtifact.getFieldNames();
+    var buildKeywords = false;
     for(var childField : childFields) {
       var childFieldSchemaArtifact = templateSchemaArtifact.getFieldSchemaArtifact(childField);
       var childFieldType = FieldType.getFieldType(childFieldSchemaArtifact);
@@ -86,12 +82,22 @@ public class TemplateInstanceArtifactGenerator {
       } else if (RadxRadPrecisionFieldHandler.isPrimaryLanguageField(currentPath)) { //Set default value for language
         fieldInstanceArtifact = fieldInstanceArtifactGenerator.buildFieldInstanceWithValues(childFieldType, "en", Optional.empty());
         templateInstanceArtifactBuilder.withSingleInstanceFieldInstance(childField, fieldInstanceArtifact);
-      } else { // build Empty field instance
-        fieldInstanceArtifact = fieldInstanceArtifactGenerator.buildEmptyFieldInstance(childFieldType);
-        if (isChildFieldMultiple) {
-          templateInstanceArtifactBuilder.withMultiInstanceFieldInstances(childField, List.of(fieldInstanceArtifact));
-        } else {
-          templateInstanceArtifactBuilder.withSingleInstanceFieldInstance(childField, fieldInstanceArtifact);
+      } else {
+        // Special handling for keywords
+        if ((childField.equals(RadxSpecificationMetadataConstant.KEYWORDS.getValue()) || childField.equals(SUBJECTS.getValue()))) {
+          if (!buildKeywords) {
+            var input = spreadsheetData.get(KEYWORDS.getValue());
+            RadxRadPrecisionFieldHandler.processKeywords(input, templateInstanceArtifactBuilder);
+            buildKeywords = true;
+          }
+        } else{
+          // build Empty field instance
+          fieldInstanceArtifact = fieldInstanceArtifactGenerator.buildEmptyFieldInstance(childFieldType);
+          if (isChildFieldMultiple) {
+            templateInstanceArtifactBuilder.withMultiInstanceFieldInstances(childField, List.of(fieldInstanceArtifact));
+          } else {
+            templateInstanceArtifactBuilder.withSingleInstanceFieldInstance(childField, fieldInstanceArtifact);
+          }
         }
       }
     }

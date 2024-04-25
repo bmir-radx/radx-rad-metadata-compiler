@@ -157,53 +157,28 @@ public class RadxRadPrecisionFieldHandler {
     }
   }
 
-  public static void addDataFileSubjectsElement(String input, TemplateSchemaArtifact templateSchemaArtifact, TemplateInstanceArtifact.Builder templateInstanceArtifactBuilder) throws URISyntaxException {
+  public static void processKeywords(String input, TemplateInstanceArtifact.Builder templateInstanceArtifactBuilder) throws URISyntaxException {
+    var subjectsInstances = new ArrayList<FieldInstanceArtifact>();
+    var keywordsInstances = new ArrayList<FieldInstanceArtifact>();
     if(input != null) {
       var mesh = MeshCsvReader.readCSVToMap();
       String[] keywords = input.split(",");
-      var elementInstances = new ArrayList<ElementInstanceArtifact>();
       for(var keyword: keywords){
-        var elementInstanceArtifactBuilder = ElementInstanceArtifact.builder();
         keyword = keyword.trim();
 
-        //add Data File Subjects/Subject Identifier
-        FieldInstanceArtifact subjectIdentifierField;
+        //add Subject field
         if (mesh.containsKey(keyword)){
           var classId = mesh.get(keyword);
-          subjectIdentifierField = ControlledTermFieldInstance.builder().withValue(new URI(classId)).withLabel(keyword).build();
-
-        } else{
-          subjectIdentifierField = ControlledTermFieldInstance.builder().build();
+          var subjectField = ControlledTermFieldInstance.builder().withValue(new URI(classId)).withLabel(keyword).build();
+          subjectsInstances.add(subjectField);
         }
-        elementInstanceArtifactBuilder.withSingleInstanceFieldInstance(SUBJECT_IDENTIFIER.getValue(), subjectIdentifierField);
 
         //add Keyword
-        elementInstanceArtifactBuilder.withSingleInstanceFieldInstance(KEYWORD.getValue(), new TextFieldGenerator().buildWithValue(keyword));
-
-        //add Subject Identifier Scheme
-//        elementInstanceArtifactBuilder.withSingleInstanceFieldInstance(SUBJECT_IDENTIFIER_SCHEME.getValue(), new TextFieldGenerator().buildWithValue(meshUri));
-
-        //add context
-        var elementSchemaArtifact = templateSchemaArtifact.getElementSchemaArtifact(DATA_FILE_SUBJECTS.getValue());
-        ContextGenerator.generateElementInstanceContext(elementSchemaArtifact, elementInstanceArtifactBuilder);
-
-        //add @id
-        IdGenerator.generateElementId(elementInstanceArtifactBuilder);
-
-        elementInstances.add(elementInstanceArtifactBuilder.build());
+        keywordsInstances.add(new TextFieldGenerator().buildWithValue(keyword));
       }
-
-      templateInstanceArtifactBuilder.withMultiInstanceElementInstances(DATA_FILE_SUBJECTS.getValue(), elementInstances);
-    } else { //empty keywords input
-      templateInstanceArtifactBuilder.withMultiInstanceElementInstances(DATA_FILE_SUBJECTS.getValue(), Collections.emptyList());
     }
-  }
-
-  public static void addPrimaryLanguage(String path, String field, ElementInstanceArtifact.Builder elementInstanceArtifactBuilder){
-    if(isPrimaryLanguageField(path)){
-      elementInstanceArtifactBuilder.withSingleInstanceFieldInstance(field,
-          fieldInstanceArtifactGenerator.buildFieldInstanceWithValues(FieldType.LIST, "en", Optional.empty()));
-    }
+    templateInstanceArtifactBuilder.withMultiInstanceFieldInstances(SUBJECTS.getValue(), subjectsInstances);
+    templateInstanceArtifactBuilder.withMultiInstanceFieldInstances(KEYWORDS.getValue(), keywordsInstances);
   }
 
   public static boolean isPrimaryLanguageField(String path){
