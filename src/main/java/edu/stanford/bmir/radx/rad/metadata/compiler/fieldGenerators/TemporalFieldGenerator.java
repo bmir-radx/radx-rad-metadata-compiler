@@ -25,9 +25,12 @@ public class TemporalFieldGenerator implements FieldGenerator{
     } else{
       if(valueConstraints.isPresent()){
         var defaultValue = valueConstraints.get().defaultValue();
-        defaultValue.ifPresent(defaultValue1 -> fieldInstanceArtifactBuilder
-            .withValue(defaultValue1.asTemporalDefaultValue().value())
-            .withType(temporalType));
+        defaultValue.ifPresent(defaultValue1 -> {
+          var v = defaultValue1.asTemporalDefaultValue().value();
+          if (!v.equals("")) {
+            fieldInstanceArtifactBuilder.withValue(v).withType(temporalType);
+          }
+        });
       }
     }
 

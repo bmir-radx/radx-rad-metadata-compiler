@@ -38,9 +38,11 @@ public class ControlledTermGenerator implements FieldGenerator{
         var defaultValue = valueConstraints.get().defaultValue();
         if(defaultValue.isPresent()){
           Pair<URI, String> defaultValuePair = defaultValue.get().asControlledTermDefaultValue().value();
-          fieldInstanceArtifactBuilder
-              .withValue(defaultValuePair.getLeft())
-              .withLabel(defaultValuePair.getRight());
+          if(!defaultValuePair.getRight().equals("")){
+            fieldInstanceArtifactBuilder
+                .withValue(defaultValuePair.getLeft())
+                .withLabel(defaultValuePair.getRight());
+          }
         }
       }
     }

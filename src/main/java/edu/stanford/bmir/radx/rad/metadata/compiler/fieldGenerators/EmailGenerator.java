@@ -15,7 +15,12 @@ public class EmailGenerator implements FieldGenerator{
     } else{
       if(valueConstraints.isPresent()){
         var defaultValue = valueConstraints.get().defaultValue();
-        defaultValue.ifPresent(defaultValue1 -> fieldInstanceArtifactBuilder.withValue(defaultValue1.asTextDefaultValue().value()));
+        defaultValue.ifPresent(defaultValue1 -> {
+          var v = defaultValue1.asTextDefaultValue().value();
+          if (!v.equals("")) {
+            fieldInstanceArtifactBuilder.withValue(v);
+          }
+        });
       }
     }
     return fieldInstanceArtifactBuilder.build();

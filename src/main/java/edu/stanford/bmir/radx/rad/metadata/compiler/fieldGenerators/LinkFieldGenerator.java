@@ -22,6 +22,12 @@ public class LinkFieldGenerator implements FieldGenerator{
       if(valueConstraints.isPresent()){
         var defaultValue = valueConstraints.get().defaultValue();
         defaultValue.ifPresent(defaultValue1 -> fieldInstanceArtifactBuilder.withValue(defaultValue1.asLinkDefaultValue().value()));
+        defaultValue.ifPresent(defaultValue1 -> {
+          var v = defaultValue1.asLinkDefaultValue().value();
+          if (!v.toString().equals("")) {
+            fieldInstanceArtifactBuilder.withValue(v);
+          }
+        });
       }
     }
     return fieldInstanceArtifactBuilder.build();
