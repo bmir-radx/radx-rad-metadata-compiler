@@ -141,6 +141,6 @@ public class Compiler {
   }
 
   private static String getOutputFileName(Path spreadSheetFile){
-    return spreadSheetFile.getFileName().toString().replaceAll("\\.xlsx$", "_transform.json");
+    return spreadSheetFile.getFileName().toString().replaceAll("\\.xlsx$", ".json");
   }
 }
