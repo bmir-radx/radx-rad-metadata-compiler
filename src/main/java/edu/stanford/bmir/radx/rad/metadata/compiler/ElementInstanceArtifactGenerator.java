@@ -45,12 +45,7 @@ public class ElementInstanceArtifactGenerator {
             if(isMultipleField){
               // build field instance one by one, explicitly for creator/contributor ids
               var valueSet = groupedData.get(currentPath).get(i);
-              var fieldInstanceArtifactList = new ArrayList<FieldInstanceArtifact>();
-              for(var j=0; j < valueSet.size(); j ++){
-                var currentValue = valueSet.get(j);
-                fieldInstanceArtifact = fieldInstanceArtifactGenerator.buildFieldInstanceWithValues(expectedFieldType, currentValue, expectedFieldValueConstraint);
-                fieldInstanceArtifactList.add(fieldInstanceArtifact);
-              }
+              var fieldInstanceArtifactList = fieldInstanceArtifactGenerator.buildMultiFieldInstances(expectedFieldType, valueSet, expectedFieldValueConstraint);
               elementInstanceBuilder.withMultiInstanceFieldInstances(expectedField, fieldInstanceArtifactList);
 
             } else{

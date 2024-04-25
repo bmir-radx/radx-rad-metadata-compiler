@@ -67,12 +67,7 @@ public class TemplateInstanceArtifactGenerator {
       if (groupedData.containsKey(currentPath)) { // Build field instance with value
         if(isChildFieldMultiple){
           var valueSet = groupedData.get(currentPath).get(1);
-          var fieldInstanceArtifactList = new ArrayList<FieldInstanceArtifact>();
-          for(var i=0; i<valueSet.size(); i++){
-            var currentValue = valueSet.get(i);
-            fieldInstanceArtifact = fieldInstanceArtifactGenerator.buildFieldInstanceWithValues(childFieldType, currentValue, childValueConstraints);
-            fieldInstanceArtifactList.add(fieldInstanceArtifact);
-          }
+          var fieldInstanceArtifactList = fieldInstanceArtifactGenerator.buildMultiFieldInstances(childFieldType, valueSet, childValueConstraints);
           templateInstanceArtifactBuilder.withMultiInstanceFieldInstances(childField, fieldInstanceArtifactList);
         } else{
           var value = groupedData.get(currentPath).get(1).get(0);

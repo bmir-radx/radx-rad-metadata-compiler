@@ -6,10 +6,7 @@ import org.metadatacenter.artifacts.model.core.FieldInstanceArtifact;
 import org.metadatacenter.artifacts.model.core.FieldSchemaArtifact;
 import org.metadatacenter.artifacts.model.core.fields.constraints.ValueConstraints;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 public class FieldInstanceArtifactGenerator {
   private final Map<FieldType, FieldGenerator> fieldGenerators;
@@ -52,5 +49,14 @@ public class FieldInstanceArtifactGenerator {
       }
     }
     return attributeValueFieldInstances;
+  }
+
+  public List<FieldInstanceArtifact> buildMultiFieldInstances(FieldType fieldType, List<String> valueSet, Optional<ValueConstraints> valueConstraints){
+    var fieldInstanceArtifactList = new ArrayList<FieldInstanceArtifact>();
+    for (String currentValue : valueSet) {
+      var fieldInstanceArtifact = buildFieldInstanceWithValues(fieldType, currentValue, valueConstraints);
+      fieldInstanceArtifactList.add(fieldInstanceArtifact);
+    }
+    return fieldInstanceArtifactList;
   }
 }
