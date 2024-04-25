@@ -9,21 +9,16 @@ import java.util.Optional;
 public class PhoneNumberFieldGenerator implements FieldGenerator{
 
   @Override
-  public FieldInstanceArtifact buildWithValue(String value, Optional<ValueConstraints> valueConstraints) {
+  public FieldInstanceArtifact buildFieldInstance(String value, Optional<ValueConstraints> valueConstraints) {
     var fieldInstanceArtifactBuilder = PhoneNumberFieldInstance.builder();
-    FieldInstanceArtifact fieldInstanceArtifact;
     if(value != null){
-      fieldInstanceArtifact = fieldInstanceArtifactBuilder
-          .withValue(value)
-          .build();
+      fieldInstanceArtifactBuilder.withValue(value);
     } else{
-      fieldInstanceArtifact = fieldInstanceArtifactBuilder.build();
+      if(valueConstraints.isPresent()){
+        var defaultValue = valueConstraints.get().defaultValue();
+        defaultValue.ifPresent(defaultValue1 -> fieldInstanceArtifactBuilder.withValue(defaultValue1.asTextDefaultValue().value()));
+      }
     }
-    return fieldInstanceArtifact;
-  }
-
-  @Override
-  public FieldInstanceArtifact buildEmptyFieldInstanceArtifact() {
-    return PhoneNumberFieldInstance.builder().build();
+    return fieldInstanceArtifactBuilder.build();
   }
 }

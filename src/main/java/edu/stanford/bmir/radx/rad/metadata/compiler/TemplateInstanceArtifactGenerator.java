@@ -2,6 +2,7 @@ package edu.stanford.bmir.radx.rad.metadata.compiler;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import edu.stanford.bmir.radx.rad.metadata.compiler.fieldGenerators.TextFieldGenerator;
 import org.metadatacenter.artifacts.model.core.*;
 import org.metadatacenter.artifacts.model.reader.JsonSchemaArtifactReader;
 
@@ -64,7 +65,13 @@ public class TemplateInstanceArtifactGenerator {
       var isChildFieldMultiple = childFieldSchemaArtifact.isMultiple();
       var currentPath = "/" + childField;
       FieldInstanceArtifact fieldInstanceArtifact;
-      if (groupedData.containsKey(currentPath)) { // Build field instance with value
+
+      if(childField.equals(TITLE.getValue())){ // Build Title field with language tag
+        var textFieldInstanceGenerator = new TextFieldGenerator();
+        var value = groupedData.get(currentPath).get(1).get(0);
+        fieldInstanceArtifact = textFieldInstanceGenerator.buildWithLanguage(value, "en");
+        templateInstanceArtifactBuilder.withSingleInstanceFieldInstance(childField, fieldInstanceArtifact);
+      } else if (groupedData.containsKey(currentPath)) { // Build field instance with value
         if(isChildFieldMultiple){
           var valueSet = groupedData.get(currentPath).get(1);
           var fieldInstanceArtifactList = fieldInstanceArtifactGenerator.buildMultiFieldInstances(childFieldType, valueSet, childValueConstraints);
@@ -74,9 +81,6 @@ public class TemplateInstanceArtifactGenerator {
           fieldInstanceArtifact = fieldInstanceArtifactGenerator.buildFieldInstanceWithValues(childFieldType, value, childValueConstraints);
           templateInstanceArtifactBuilder.withSingleInstanceFieldInstance(childField, fieldInstanceArtifact);
         }
-      } else if (RadxRadPrecisionFieldHandler.isPrimaryLanguageField(currentPath)) { //Set default value for language
-        fieldInstanceArtifact = fieldInstanceArtifactGenerator.buildFieldInstanceWithValues(childFieldType, "en", Optional.empty());
-        templateInstanceArtifactBuilder.withSingleInstanceFieldInstance(childField, fieldInstanceArtifact);
       } else {
         // Special handling for keywords
         if ((childField.equals(RadxSpecificationMetadataConstant.KEYWORDS.getValue()) || childField.equals(SUBJECTS.getValue()))) {
@@ -87,7 +91,7 @@ public class TemplateInstanceArtifactGenerator {
           }
         } else{
           // build Empty field instance
-          fieldInstanceArtifact = fieldInstanceArtifactGenerator.buildEmptyFieldInstance(childFieldType);
+          fieldInstanceArtifact = fieldInstanceArtifactGenerator.buildEmptyFieldInstance(childFieldType, childValueConstraints);
           if (isChildFieldMultiple) {
             templateInstanceArtifactBuilder.withMultiInstanceFieldInstances(childField, List.of(fieldInstanceArtifact));
           } else {

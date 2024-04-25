@@ -10,31 +10,30 @@ import java.util.Optional;
 public class NumericFieldGenerator implements FieldGenerator{
 
   @Override
-  public FieldInstanceArtifact buildWithValue(String value, Optional<ValueConstraints> valueConstraints) {
+  public FieldInstanceArtifact buildFieldInstance(String value, Optional<ValueConstraints> valueConstraints) {
+    var fieldInstanceArtifactBuilder = NumericFieldInstance.builder();
     XsdNumericDatatype numberType;
+
     if(valueConstraints.isPresent()){
       numberType = valueConstraints.get().asNumericValueConstraints().numberType();
     } else{
       numberType = XsdNumericDatatype.DOUBLE;
     }
 
-    var fieldInstanceArtifactBuilder = NumericFieldInstance.builder();
-    FieldInstanceArtifact fieldInstanceArtifact;
     if(value != null){
-      fieldInstanceArtifact = fieldInstanceArtifactBuilder
+      fieldInstanceArtifactBuilder
           //TODO: need to convert to different Number based on number type
           .withValue(Double.valueOf(value))
-          .withType(numberType)
-          .build();
+          .withType(numberType);
     } else{
-      fieldInstanceArtifact = fieldInstanceArtifactBuilder.build();
+      if(valueConstraints.isPresent()){
+        var defaultValue = valueConstraints.get().defaultValue();
+        defaultValue.ifPresent(defaultValue1 -> fieldInstanceArtifactBuilder
+            .withValue(defaultValue1.asNumericDefaultValue().value())
+            .withType(numberType));
+      }
     }
 
-    return fieldInstanceArtifact;
-  }
-
-  @Override
-  public FieldInstanceArtifact buildEmptyFieldInstanceArtifact() {
-    return NumericFieldInstance.builder().build();
+    return fieldInstanceArtifactBuilder.build();
   }
 }

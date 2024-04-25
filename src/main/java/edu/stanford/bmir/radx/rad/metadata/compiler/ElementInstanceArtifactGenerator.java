@@ -55,7 +55,7 @@ public class ElementInstanceArtifactGenerator {
             }
           } else {
             if (isMultipleField) {
-              fieldInstanceArtifact = fieldInstanceArtifactGenerator.buildEmptyFieldInstance(expectedFieldType);
+              fieldInstanceArtifact = fieldInstanceArtifactGenerator.buildEmptyFieldInstance(expectedFieldType, expectedFieldValueConstraint);
               elementInstanceBuilder.withMultiInstanceFieldInstances(expectedField, List.of(fieldInstanceArtifact));
             } else {
               //Add values to RADx-rad specific controlled terms fields or add an empty field entry
@@ -130,7 +130,7 @@ public class ElementInstanceArtifactGenerator {
         var fieldSchemaArtifact = elementSchemaArtifact.getFieldSchemaArtifact(expectedField);
         var inputType = FieldType.getFieldType(fieldSchemaArtifact);
         var isMultiple = fieldSchemaArtifact.isMultiple();
-        var fieldInstanceArtifact = fieldInstanceArtifactGenerator.buildEmptyFieldInstance(inputType);
+        var fieldInstanceArtifact = fieldInstanceArtifactGenerator.buildEmptyFieldInstance(inputType, fieldSchemaArtifact.valueConstraints());
         if(isMultiple){
           elementInstanceBuilder.withMultiInstanceFieldInstances(expectedField, Collections.emptyList());
         } else{

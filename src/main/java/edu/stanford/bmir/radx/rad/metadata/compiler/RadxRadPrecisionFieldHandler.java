@@ -44,17 +44,13 @@ public class RadxRadPrecisionFieldHandler {
       int i){
 
     var fieldSchemaArtifact = elementSchemaArtifact.getFieldSchemaArtifact(expectedField);
+    var valueConstraints = fieldSchemaArtifact.valueConstraints();
     var isMultiple = fieldSchemaArtifact.isMultiple();
     var fieldType = FieldType.getFieldType(fieldSchemaArtifact);
 
-
     //If the element instance is not empty, then set specific controlled term fields
     if(!isEmptyElementInstance(elementInstanceCounts, elementName, elementSchemaArtifact)){
-      if ((elementName.equals(DATA_FILE_CONTRIBUTORS.getValue()) && expectedField.equals(CONTRIBUTOR_TYPE.getValue())) || //Set Contributor Type and Creator Type to Person
-          (elementName.equals(DATA_FILE_CREATORS.getValue()) && expectedField.equals(CREATOR_TYPE.getValue()))){
-        elementInstanceArtifactBuilder.withSingleInstanceFieldInstance(expectedField,
-            fieldInstanceArtifactGenerator.buildFieldInstanceWithValues(fieldType, person, Optional.empty()));
-//      } else if (elementName.equals(DATA_FILE_CONTRIBUTORS.getValue())  //Set Contributor Identifier Scheme to ORCiD
+//     if (elementName.equals(DATA_FILE_CONTRIBUTORS.getValue())  //Set Contributor Identifier Scheme to ORCiD
 //          && expectedField.equals(CONTRIBUTOR_IDENTIFIER_SCHEME.getValue())
 //          && groupedData.containsKey(contributorIdentifierPath)
 //          && groupedData.get(contributorIdentifierPath).get(i)!= null){
@@ -72,7 +68,8 @@ public class RadxRadPrecisionFieldHandler {
 //          && groupedData.get(creatorAffiliationIdPath).get(i)!= null){
 //        elementInstanceArtifactBuilder.withSingleInstanceFieldInstance(expectedField,
 //            fieldInstanceArtifactGenerator.buildFieldInstanceWithValues(fieldType, ror, Optional.empty()));
-      } else if (elementName.equals(DATA_FILE_CREATORS.getValue()) //Set Creator Given Name
+//      } else if (elementName.equals(DATA_FILE_CREATORS.getValue()) //Set Creator Given Name
+      if( elementName.equals(DATA_FILE_CREATORS.getValue())
           && expectedField.equals(CREATOR_GIVEN_NAME.getValue())
           && groupedData.containsKey(creatorNamePath)){
         var name = groupedData.get(creatorNamePath).get(i).get(0);
@@ -113,11 +110,11 @@ public class RadxRadPrecisionFieldHandler {
 //        elementInstanceArtifactBuilder.withSingleInstanceFieldInstance(expectedField,
 //            fieldInstanceArtifactGenerator.buildFieldInstanceWithValues(fieldType, "en", Optional.empty()));
       } else{
-        var fieldInstanceArtifact = fieldInstanceArtifactGenerator.buildEmptyFieldInstance(fieldType);
+        var fieldInstanceArtifact = fieldInstanceArtifactGenerator.buildEmptyFieldInstance(fieldType, valueConstraints);
         buildWithFieldInstanceArtifact(elementInstanceArtifactBuilder, fieldInstanceArtifact, expectedField, isMultiple);
       }
     } else{
-      var fieldInstanceArtifact = fieldInstanceArtifactGenerator.buildEmptyFieldInstance(fieldType);
+      var fieldInstanceArtifact = fieldInstanceArtifactGenerator.buildEmptyFieldInstance(fieldType, valueConstraints);
       buildWithFieldInstanceArtifact(elementInstanceArtifactBuilder, fieldInstanceArtifact, expectedField, isMultiple);
     }
   }
@@ -174,14 +171,10 @@ public class RadxRadPrecisionFieldHandler {
         }
 
         //add Keyword
-        keywordsInstances.add(new TextFieldGenerator().buildWithValue(keyword));
+        keywordsInstances.add(new TextFieldGenerator().buildFieldInstance(keyword));
       }
     }
     templateInstanceArtifactBuilder.withMultiInstanceFieldInstances(SUBJECTS.getValue(), subjectsInstances);
     templateInstanceArtifactBuilder.withMultiInstanceFieldInstances(KEYWORDS.getValue(), keywordsInstances);
-  }
-
-  public static boolean isPrimaryLanguageField(String path){
-    return path.equals(primaryLangPath);
   }
 }

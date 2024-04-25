@@ -10,25 +10,20 @@ import java.util.Optional;
 
 public class LinkFieldGenerator implements FieldGenerator{
   @Override
-  public FieldInstanceArtifact buildWithValue(String value, Optional<ValueConstraints> valueConstraints) {
+  public FieldInstanceArtifact buildFieldInstance(String value, Optional<ValueConstraints> valueConstraints) {
     var fieldInstanceArtifactBuilder = LinkFieldInstance.builder();
-    FieldInstanceArtifact fieldInstanceArtifact;
     if(value != null){
       try{
-        fieldInstanceArtifact = fieldInstanceArtifactBuilder
-            .withValue(new URI(value))
-            .build();
+        fieldInstanceArtifactBuilder.withValue(new URI(value));
       } catch (URISyntaxException e){
         throw new RuntimeException(e);
       }
     } else{
-      fieldInstanceArtifact = fieldInstanceArtifactBuilder.build();
+      if(valueConstraints.isPresent()){
+        var defaultValue = valueConstraints.get().defaultValue();
+        defaultValue.ifPresent(defaultValue1 -> fieldInstanceArtifactBuilder.withValue(defaultValue1.asLinkDefaultValue().value()));
+      }
     }
-    return fieldInstanceArtifact;
-  }
-
-  @Override
-  public FieldInstanceArtifact buildEmptyFieldInstanceArtifact() {
-    return LinkFieldInstance.builder().build();
+    return fieldInstanceArtifactBuilder.build();
   }
 }
