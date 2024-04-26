@@ -1,18 +1,13 @@
 package edu.stanford.bmir.radx.rad.metadata.compiler;
 
 import edu.stanford.bmir.radx.rad.metadata.compiler.fieldGenerators.*;
-import org.metadatacenter.artifacts.model.core.ElementSchemaArtifact;
 import org.metadatacenter.artifacts.model.core.FieldInstanceArtifact;
-import org.metadatacenter.artifacts.model.core.FieldSchemaArtifact;
 import org.metadatacenter.artifacts.model.core.fields.constraints.ValueConstraints;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 public class FieldInstanceArtifactGenerator {
-  private final Map<FieldType, FieldGenerator> fieldGenerators;
+  final Map<FieldType, FieldGenerator> fieldGenerators;
 
   public FieldInstanceArtifactGenerator() {
     fieldGenerators = Map.ofEntries(
@@ -32,12 +27,12 @@ public class FieldInstanceArtifactGenerator {
 
   public FieldInstanceArtifact buildFieldInstanceWithValues(FieldType fieldType, String value, Optional<ValueConstraints> valueConstraints) {
     FieldGenerator generator = fieldGenerators.get(fieldType);
-    return generator.buildWithValue(value, valueConstraints);
+    return generator.buildFieldInstance(value, valueConstraints);
   }
 
-  public FieldInstanceArtifact buildEmptyFieldInstance(FieldType fieldType) {
+  public FieldInstanceArtifact buildEmptyFieldInstance(FieldType fieldType, Optional<ValueConstraints> valueConstraints) {
     FieldGenerator generator = fieldGenerators.get(fieldType);
-    return generator.buildEmptyFieldInstanceArtifact();
+    return generator.buildFieldInstance(null, valueConstraints);
   }
 
   public Map<String, FieldInstanceArtifact> buildAttributeValueField(Map<String, String> spreadsheetData, List<String> spreadsheetFields) {
@@ -47,10 +42,19 @@ public class FieldInstanceArtifactGenerator {
         var spreadsheetValue = spreadsheetData.get(spreadsheetField);
         if (spreadsheetValue != null && !spreadsheetValue.equals("")) {
           attributeValueFieldInstances.put(spreadsheetField,
-              fieldGenerators.get(FieldType.TEXTFIELD).buildWithValue(spreadsheetValue));
+              fieldGenerators.get(FieldType.TEXTFIELD).buildFieldInstance(spreadsheetValue));
         }
       }
     }
     return attributeValueFieldInstances;
+  }
+
+  public List<FieldInstanceArtifact> buildMultiFieldInstances(FieldType fieldType, List<String> valueSet, Optional<ValueConstraints> valueConstraints){
+    var fieldInstanceArtifactList = new ArrayList<FieldInstanceArtifact>();
+    for (String currentValue : valueSet) {
+      var fieldInstanceArtifact = buildFieldInstanceWithValues(fieldType, currentValue, valueConstraints);
+      fieldInstanceArtifactList.add(fieldInstanceArtifact);
+    }
+    return fieldInstanceArtifactList;
   }
 }

@@ -19,6 +19,8 @@ public class Compiler {
   private static final String OUTPUT_DIRECTORY_PATH = "o";
   private static final String TEMPLATE_PATH = "t";
   private static final String MAPPING_SPREADSHEET_PATH = "m";
+  private static final String HELP = "h";
+  private static final String DEFAULT_MAPPING_SPREADSHEET_PATH = "src/main/resources/spreadsheet2templatePath2.0.xlsx";
   private static final SpreadsheetReader spreadsheetReader = new SpreadsheetReader();
   private static final JsonSchemaArtifactRenderer jsonSchemaArtifactRenderer = new JsonSchemaArtifactRenderer();
   private static final TemplateInstanceArtifactGenerator templateArtifactInstanceGenerator = new TemplateInstanceArtifactGenerator();
@@ -33,7 +35,18 @@ public class Compiler {
       Path spreadSheetFile = Path.of(command.getOptionValue(SPREADSHEET_FILE_PATH));
       Path outputDirectory = Path.of(command.getOptionValue(OUTPUT_DIRECTORY_PATH));
       Path template = Path.of(command.getOptionValue(TEMPLATE_PATH));
-      Path mappingSpreadsheet = Path.of(command.getOptionValue(MAPPING_SPREADSHEET_PATH));
+      Path mappingSpreadsheet;
+      if(command.hasOption(MAPPING_SPREADSHEET_PATH)){
+        mappingSpreadsheet = Path.of(command.getOptionValue(MAPPING_SPREADSHEET_PATH));
+      } else{
+        mappingSpreadsheet = Path.of(DEFAULT_MAPPING_SPREADSHEET_PATH);
+      }
+
+      if(command.hasOption(HELP)){
+        Usage(options, "");
+        return;
+      }
+
       if (!Files.exists(outputDirectory)) {
         Files.createDirectories(outputDirectory);
       }
@@ -105,14 +118,19 @@ public class Compiler {
     Option mappingPathOption = Option.builder(MAPPING_SPREADSHEET_PATH)
         .argName("spreadsheet-to-template-mapping-path")
         .desc("Spreadsheet2templatePath mapping spreadsheet path")
-        .required(true)
+        .required(false)
         .hasArg()
         .build();
+
+    Option helpOption = Option.builder(HELP)
+            .desc("Show help")
+            .build();
 
     options.addOption(spreadsheetFilePathOption);
     options.addOption(outputDirectoryPathOption);
     options.addOption(templatePathOption);
     options.addOption(mappingPathOption);
+    options.addOption(helpOption);
     return options;
   }
 
@@ -123,6 +141,6 @@ public class Compiler {
   }
 
   private static String getOutputFileName(Path spreadSheetFile){
-    return spreadSheetFile.getFileName().toString().replaceAll("\\.xlsx$", "_transform.json");
+    return spreadSheetFile.getFileName().toString().replaceAll("\\.xlsx$", ".json");
   }
 }

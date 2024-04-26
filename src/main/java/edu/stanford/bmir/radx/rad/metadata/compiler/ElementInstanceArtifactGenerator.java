@@ -42,20 +42,24 @@ public class ElementInstanceArtifactGenerator {
           // otherwise, build an empty fieldArtifactInstance
           FieldInstanceArtifact fieldInstanceArtifact;
           if (groupedData.containsKey(currentPath)) {
-            var value = groupedData.get(currentPath).get(i);
-            fieldInstanceArtifact = fieldInstanceArtifactGenerator.buildFieldInstanceWithValues(expectedFieldType, value, expectedFieldValueConstraint);
             if(isMultipleField){
-              elementInstanceBuilder.withMultiInstanceFieldInstances(expectedField, List.of(fieldInstanceArtifact));
+              // build field instance one by one, explicitly for creator/contributor ids
+              var valueSet = groupedData.get(currentPath).get(i);
+              var fieldInstanceArtifactList = fieldInstanceArtifactGenerator.buildMultiFieldInstances(expectedFieldType, valueSet, expectedFieldValueConstraint);
+              elementInstanceBuilder.withMultiInstanceFieldInstances(expectedField, fieldInstanceArtifactList);
+
             } else{
+              var value = groupedData.get(currentPath).get(i).get(0);
+              fieldInstanceArtifact = fieldInstanceArtifactGenerator.buildFieldInstanceWithValues(expectedFieldType, value, expectedFieldValueConstraint);
               elementInstanceBuilder.withSingleInstanceFieldInstance(expectedField, fieldInstanceArtifact);
             }
           } else {
             if (isMultipleField) {
-              fieldInstanceArtifact = fieldInstanceArtifactGenerator.buildEmptyFieldInstance(expectedFieldType);
+              fieldInstanceArtifact = fieldInstanceArtifactGenerator.buildEmptyFieldInstance(expectedFieldType, expectedFieldValueConstraint);
               elementInstanceBuilder.withMultiInstanceFieldInstances(expectedField, List.of(fieldInstanceArtifact));
             } else {
               //Add values to RADx-rad specific controlled terms fields or add an empty field entry
-              RadxRadPrecisionFieldHandler.addSpecificControlledTerms(elementInstanceBuilder, currentElement, expectedField, elementSchemaArtifact, groupedData, elementInstanceCounts, i);
+              RadxRadPrecisionFieldHandler.addSpecificFields(elementInstanceBuilder, currentElement, expectedField, elementSchemaArtifact, groupedData, elementInstanceCounts, i);
             }
           }
         }
@@ -97,7 +101,7 @@ public class ElementInstanceArtifactGenerator {
         }
       } else{ // build empty element
         if(isChildElementMultiple){
-          elementInstanceBuilder.withEmptyMultiInstanceElementInstances(childElement);
+          elementInstanceBuilder.withMultiInstanceElementInstances(childElement, Collections.emptyList());
         } else{
           buildSingleEmptyElementInstance(childElementSchemaArtifact, templateSchemaArtifact, path + "/" + childElement);
         }
@@ -126,9 +130,9 @@ public class ElementInstanceArtifactGenerator {
         var fieldSchemaArtifact = elementSchemaArtifact.getFieldSchemaArtifact(expectedField);
         var inputType = FieldType.getFieldType(fieldSchemaArtifact);
         var isMultiple = fieldSchemaArtifact.isMultiple();
-        var fieldInstanceArtifact = fieldInstanceArtifactGenerator.buildEmptyFieldInstance(inputType);
+        var fieldInstanceArtifact = fieldInstanceArtifactGenerator.buildEmptyFieldInstance(inputType, fieldSchemaArtifact.valueConstraints());
         if(isMultiple){
-          elementInstanceBuilder.withEmptyMultiInstanceFieldInstances(expectedField);
+          elementInstanceBuilder.withMultiInstanceFieldInstances(expectedField, Collections.emptyList());
         } else{
           elementInstanceBuilder.withSingleInstanceFieldInstance(expectedField, fieldInstanceArtifact);
         }
@@ -140,7 +144,7 @@ public class ElementInstanceArtifactGenerator {
     for (var childElement : childElements){
       var childElementSchemaArtifact = elementSchemaArtifact.getElementSchemaArtifact(childElement);
       if (childElementSchemaArtifact.isMultiple()){
-        elementInstanceBuilder.withEmptyMultiInstanceElementInstances(childElement);
+        elementInstanceBuilder.withMultiInstanceElementInstances(childElement, Collections.emptyList());
       } else {
         var emptyElementInstanceArtifact = buildSingleEmptyElementInstance(childElementSchemaArtifact, templateSchemaArtifact, path + "/" + childElement);
         elementInstanceBuilder.withSingleInstanceElementInstance(childElement, emptyElementInstanceArtifact);

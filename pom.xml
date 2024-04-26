@@ -41,15 +41,27 @@
     </dependency>
 
     <dependency>
-      <groupId>org.metadatacenter</groupId>
-      <artifactId>cedar-artifact-library</artifactId>
-      <version>2.6.55-SNAPSHOT</version>
+      <groupId>commons-cli</groupId>
+      <artifactId>commons-cli</artifactId>
+      <version>1.4</version>
     </dependency>
 
     <dependency>
-      <groupId>edu.stanford.bmir.radx</groupId>
-      <artifactId>radx-metadata-validator-lib</artifactId>
-      <version>1.0.3</version>
+      <groupId>org.metadatacenter</groupId>
+      <artifactId>cedar-artifact-library</artifactId>
+      <version>2.6.58-SNAPSHOT</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.apache.logging.log4j</groupId>
+      <artifactId>log4j-api</artifactId>
+      <version>2.17.1</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.apache.logging.log4j</groupId>
+      <artifactId>log4j-core</artifactId>
+      <version>2.17.1</version>
     </dependency>
 
   </dependencies>
@@ -65,6 +77,64 @@
           <cleanupDaemonThreads>false</cleanupDaemonThreads>
         </configuration>
       </plugin>
+
+<!--      <plugin>-->
+<!--        <groupId>org.apache.maven.plugins</groupId>-->
+<!--        <artifactId>maven-jar-plugin</artifactId>-->
+<!--        <version>3.3.0</version>-->
+<!--        <configuration>-->
+<!--          <archive>-->
+<!--            <manifest>-->
+<!--              <addClasspath>true</addClasspath>-->
+<!--              <classpathPrefix>lib/</classpathPrefix>-->
+<!--              <mainClass>edu.stanford.bmir.radx.rad.metadata.compiler.Compiler</mainClass>-->
+<!--            </manifest>-->
+<!--          </archive>-->
+<!--        </configuration>-->
+<!--      </plugin>-->
+
+      <plugin>
+        <artifactId>maven-assembly-plugin</artifactId>
+        <version>3.6.0</version>
+        <configuration>
+          <descriptorRefs>
+            <descriptorRef>jar-with-dependencies</descriptorRef>
+          </descriptorRefs>
+          <archive>
+            <manifest>
+              <mainClass>edu.stanford.bmir.radx.rad.metadata.compiler.Compiler</mainClass>
+            </manifest>
+          </archive>
+        </configuration>
+        <executions>
+          <execution>
+            <id>make-assembly</id>
+            <phase>package</phase>
+            <goals>
+              <goal>single</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+
+      <plugin>
+        <groupId>org.skife.maven</groupId>
+        <artifactId>really-executable-jar-maven-plugin</artifactId>
+        <version>2.1.1</version>
+        <executions>
+          <execution>
+            <phase>package</phase>
+            <goals>
+              <goal>really-executable-jar</goal>
+            </goals>
+          </execution>
+        </executions>
+        <configuration>
+          <inputFile>target/${project.build.finalName}-jar-with-dependencies.jar</inputFile>
+          <programFile>rrmc</programFile>
+        </configuration>
+      </plugin>
+
     </plugins>
   </build>
 

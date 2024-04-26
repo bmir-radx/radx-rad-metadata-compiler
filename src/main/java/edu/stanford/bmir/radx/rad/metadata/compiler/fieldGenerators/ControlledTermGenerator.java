@@ -1,6 +1,8 @@
 package edu.stanford.bmir.radx.rad.metadata.compiler.fieldGenerators;
 
 import edu.stanford.bmir.radx.rad.metadata.compiler.MapInitializer;
+import org.apache.commons.lang3.tuple.Pair;
+import org.metadatacenter.artifacts.model.core.ControlledTermFieldInstance;
 import org.metadatacenter.artifacts.model.core.FieldInstanceArtifact;
 import org.metadatacenter.artifacts.model.core.fields.constraints.ValueConstraints;
 
@@ -11,9 +13,8 @@ import java.util.Optional;
 
 public class ControlledTermGenerator implements FieldGenerator{
   @Override
-  public FieldInstanceArtifact buildWithValue(String value, Optional<ValueConstraints> valueConstraints) {
-    var fieldInstanceArtifactBuilder = FieldInstanceArtifact.controlledTermFieldInstanceBuilder();
-    FieldInstanceArtifact fieldInstanceArtifact;
+  public FieldInstanceArtifact buildFieldInstance(String value, Optional<ValueConstraints> valueConstraints) {
+    var fieldInstanceArtifactBuilder = ControlledTermFieldInstance.builder();
     if(value != null){
       // Precision handling for co-PI, contact-PI, and data-PI
       String piRegex = "(?i)co[- ]?PI";
@@ -25,23 +26,27 @@ public class ControlledTermGenerator implements FieldGenerator{
 
       try{
         var URI = MapInitializer.createControlledTermsMap().get(value);
-        fieldInstanceArtifact = fieldInstanceArtifactBuilder
+        fieldInstanceArtifactBuilder
             .withLabel(value)
-            .withValue(new URI(URI))
-            .build();
+            .withValue(new URI(URI));
       } catch (URISyntaxException e){
         throw new RuntimeException(e);
       }
 
     } else{
-      fieldInstanceArtifact = fieldInstanceArtifactBuilder.build();
+      if(valueConstraints.isPresent()){
+        var defaultValue = valueConstraints.get().defaultValue();
+        if(defaultValue.isPresent()){
+          Pair<URI, String> defaultValuePair = defaultValue.get().asControlledTermDefaultValue().value();
+          if(!defaultValuePair.getRight().equals("")){
+            fieldInstanceArtifactBuilder
+                .withValue(defaultValuePair.getLeft())
+                .withLabel(defaultValuePair.getRight());
+          }
+        }
+      }
     }
 
-    return fieldInstanceArtifact;
-  }
-
-  @Override
-  public FieldInstanceArtifact buildEmptyFieldInstanceArtifact() {
-    return FieldInstanceArtifact.controlledTermFieldInstanceBuilder().build();
+    return fieldInstanceArtifactBuilder.build();
   }
 }
