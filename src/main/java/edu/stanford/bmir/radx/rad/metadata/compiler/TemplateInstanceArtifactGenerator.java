@@ -107,8 +107,15 @@ public class TemplateInstanceArtifactGenerator {
     //generate JsonLdId
     IdGenerator.generateTemplateId(templateInstanceArtifactBuilder);
 
+    //with IsBasedOn
+    var id = templateSchemaArtifact.jsonLdId();
+    if(id.isPresent()) {
+      templateInstanceArtifactBuilder.withIsBasedOn(id.get());
+    } else {
+      templateInstanceArtifactBuilder.withIsBasedOn(new URI(IS_BASED_ON.getValue()));
+    }
+
     return templateInstanceArtifactBuilder
-        .withIsBasedOn(new URI(IS_BASED_ON.getValue()))
         .withDescription(SCHEMA_DESCRIPTION.getValue())
         .withName(SCHEMA_NAME.getValue())
         .build();
