@@ -77,12 +77,8 @@ public class Compiler {
   }
 
   private static void transform(Path spreadsheetFile, Path outputFile, Path template, Path mappingSpreadsheet) throws IOException, URISyntaxException {
-//    var templateNode = mapper.readTree(Compiler.class.getClassLoader().getResource("RADxMetadataSpecification.json"));
     var templateNode = mapper.readTree(template.toFile());
     var spreadsheetData = spreadsheetReader.readRadxRadSpreadsheet(spreadsheetFile.toString());
-//    var spreadSheet2templatePath = spreadsheetReader.readSpreadsheet2templatePath(
-//        Objects.requireNonNull(Compiler.class.getClassLoader().getResource("spreadsheet2templatePath.xlsx")).getPath()
-//    );
     var spreadSheet2templatePath = spreadsheetReader.readSpreadsheet2templatePath(mappingSpreadsheet.toString());
     var templateInstanceArtifact = templateArtifactInstanceGenerator.generateTemplateArtifactInstance(
         spreadsheetData,spreadSheet2templatePath, templateNode
