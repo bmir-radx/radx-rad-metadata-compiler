@@ -11,11 +11,12 @@ public class ElementInstanceArtifactGenerator {
   public List<ElementInstanceArtifact> generateElementInstanceWithValue(String currentElement, String path,
                                                                ElementSchemaArtifact elementSchemaArtifact,
                                                                TemplateSchemaArtifact templateSchemaArtifact,
-                                                               Map<String, String> spreadsheetData) throws URISyntaxException {
+                                                               Map<String, String> spreadsheetData,
+                                                              SpreadsheetDataManager spreadsheetDataManager) throws URISyntaxException {
 
-    var attributeValueMap = SpreadsheetDataManager.attributeValueMap;
-    var elementInstanceCounts = SpreadsheetDataManager.elementInstanceCounts;
-    var groupedData = SpreadsheetDataManager.groupedData;
+    var attributeValueMap = spreadsheetDataManager.attributeValueMap;
+    var elementInstanceCounts = spreadsheetDataManager.elementInstanceCounts;
+    var groupedData = spreadsheetDataManager.groupedData;
     var childFields = elementSchemaArtifact.getFieldNames();
     var instanceCount = elementInstanceCounts.get(currentElement);
 
@@ -66,7 +67,7 @@ public class ElementInstanceArtifactGenerator {
       }
 
       //Build nested child element
-      buildWithElementInstances(spreadsheetData, elementSchemaArtifact, templateSchemaArtifact, elementInstanceBuilder, path + "/" + currentElement);
+      buildWithElementInstances(spreadsheetData, elementSchemaArtifact, templateSchemaArtifact, elementInstanceBuilder, spreadsheetDataManager, path + "/" + currentElement);
 
       //Add JsonLdContext for each elementInstance
       ContextGenerator.generateElementInstanceContext(
@@ -84,16 +85,17 @@ public class ElementInstanceArtifactGenerator {
                                          ElementSchemaArtifact currentElementSchemaArtifact,
                                          TemplateSchemaArtifact templateSchemaArtifact,
                                          ElementInstanceArtifact.Builder elementInstanceBuilder,
+                                         SpreadsheetDataManager spreadsheetDataManager,
                                          String path) throws URISyntaxException {
     var childElements = currentElementSchemaArtifact.getElementNames();
-    var elementInstanceCounts = SpreadsheetDataManager.elementInstanceCounts;
+    var elementInstanceCounts = spreadsheetDataManager.elementInstanceCounts;
     var mappedElements = elementInstanceCounts.keySet();
     for (var childElement : childElements) {
       var childElementSchemaArtifact = currentElementSchemaArtifact.getElementSchemaArtifact(childElement);
       var isChildElementMultiple = childElementSchemaArtifact.isMultiple();
       //build element that has mapping in radx rad spreadsheet
       if (mappedElements.contains(childElement)){
-        var childElementInstanceArtifacts = generateElementInstanceWithValue(childElement, path, childElementSchemaArtifact, templateSchemaArtifact, spreadsheetData);
+        var childElementInstanceArtifacts = generateElementInstanceWithValue(childElement, path, childElementSchemaArtifact, templateSchemaArtifact, spreadsheetData, spreadsheetDataManager);
         if(isChildElementMultiple){
           elementInstanceBuilder.withMultiInstanceElementInstances(childElement, childElementInstanceArtifacts);
         } else{

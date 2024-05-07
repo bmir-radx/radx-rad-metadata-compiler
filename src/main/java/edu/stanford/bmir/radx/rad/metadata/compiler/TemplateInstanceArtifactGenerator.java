@@ -17,11 +17,12 @@ public class TemplateInstanceArtifactGenerator {
 
   private final ElementInstanceArtifactGenerator elementInstanceArtifactGenerator = new ElementInstanceArtifactGenerator();
   private final FieldInstanceArtifactGenerator fieldInstanceArtifactGenerator = new FieldInstanceArtifactGenerator();
-
   public TemplateInstanceArtifact generateTemplateArtifactInstance(Map<String, String> spreadsheetData,
                                                                    Map<String, String> spreadsheet2templatePath,
                                                                    JsonNode templateNode,
                                                                    String schemaName) throws URISyntaxException {
+
+
     //read templateContent using cedar-artifact-library
     JsonSchemaArtifactReader jsonSchemaArtifactReader = new JsonSchemaArtifactReader();
     TemplateSchemaArtifact templateSchemaArtifact = jsonSchemaArtifactReader.readTemplateSchemaArtifact((ObjectNode) templateNode);
@@ -29,10 +30,11 @@ public class TemplateInstanceArtifactGenerator {
     var templateInstanceArtifactBuilder = TemplateInstanceArtifact.builder();
 
     var elements = templateSchemaArtifact.getElementNames();
-    SpreadsheetDataManager.groupData(spreadsheetData, spreadsheet2templatePath, templateSchemaArtifact);
-    var attributeValueMap = SpreadsheetDataManager.attributeValueMap;
-    var elementInstanceCounts = SpreadsheetDataManager.elementInstanceCounts;
-    var groupedData = SpreadsheetDataManager.groupedData;
+    var spreadsheetDataManager = new SpreadsheetDataManager();
+    spreadsheetDataManager.groupData(spreadsheetData, spreadsheet2templatePath, templateSchemaArtifact);
+    var attributeValueMap = spreadsheetDataManager.attributeValueMap;
+    var elementInstanceCounts = spreadsheetDataManager.elementInstanceCounts;
+    var groupedData = spreadsheetDataManager.groupedData;
     var mappedElements = elementInstanceCounts.keySet();
 
     //Build child element instances artifacts
@@ -40,7 +42,7 @@ public class TemplateInstanceArtifactGenerator {
       var childElementSchemaArtifact = templateSchemaArtifact.getElementSchemaArtifact(childElement);
       var isChildElementMultiple = childElementSchemaArtifact.isMultiple();
       if (mappedElements.contains(childElement)){
-        var childElementInstanceArtifacts = elementInstanceArtifactGenerator.generateElementInstanceWithValue(childElement, "", childElementSchemaArtifact, templateSchemaArtifact, spreadsheetData);
+        var childElementInstanceArtifacts = elementInstanceArtifactGenerator.generateElementInstanceWithValue(childElement, "", childElementSchemaArtifact, templateSchemaArtifact, spreadsheetData, spreadsheetDataManager);
         if(isChildElementMultiple){
           templateInstanceArtifactBuilder.withMultiInstanceElementInstances(childElement, childElementInstanceArtifacts);
         } else{

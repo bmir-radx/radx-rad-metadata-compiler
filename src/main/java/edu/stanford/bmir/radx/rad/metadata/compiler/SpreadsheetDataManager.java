@@ -9,14 +9,14 @@ import java.util.regex.Pattern;
 import static edu.stanford.bmir.radx.rad.metadata.compiler.RadxRadFieldsConstant.KEYWORDS;
 
 public class SpreadsheetDataManager {
-  private final static Pattern FIELD_PATTERN = Pattern.compile("^(?!study_include_prospective_or_retrospective_human_samples)(.+?)_?(\\d*)$");
-  private final static String FIRST_NAME_PATTERN = "^(pi|creator)_firstname_\\d+$";
-  private final static String MIDDLE_NAME_PATTERN = "^(pi|creator)_middlename_\\d+$";
-  public final static Map<String, List<String>> attributeValueMap = new HashMap<>(); //path-> List<spreadsheet fields>
-  public final static Map<String, Map<Integer, List<String>>> groupedData = new HashMap<>(); //{path->{index: [value1, value2]}}
-  public final static Map<String, Integer> elementInstanceCounts = new HashMap<>(); //{element: instances counts }
+  private final Pattern FIELD_PATTERN = Pattern.compile("^(?!study_include_prospective_or_retrospective_human_samples)(.+?)_?(\\d*)$");
+  private final String FIRST_NAME_PATTERN = "^(pi|creator)_firstname_\\d+$";
+  private final String MIDDLE_NAME_PATTERN = "^(pi|creator)_middlename_\\d+$";
+  public final Map<String, List<String>> attributeValueMap = new HashMap<>(); //path-> List<spreadsheet fields>
+  public final Map<String, Map<Integer, List<String>>> groupedData = new HashMap<>(); //{path->{index: [value1, value2]}}
+  public final Map<String, Integer> elementInstanceCounts = new HashMap<>(); //{element: instances counts }
 
-  public static void groupData(Map<String, String> spreadsheetData,
+  public void groupData(Map<String, String> spreadsheetData,
                                 Map<String, String> spreadsheet2templatePath,
                                 TemplateSchemaArtifact templateSchemaArtifact){
 
