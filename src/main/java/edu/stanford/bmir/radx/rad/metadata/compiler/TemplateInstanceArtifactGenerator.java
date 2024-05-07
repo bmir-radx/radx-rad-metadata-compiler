@@ -20,7 +20,8 @@ public class TemplateInstanceArtifactGenerator {
 
   public TemplateInstanceArtifact generateTemplateArtifactInstance(Map<String, String> spreadsheetData,
                                                                    Map<String, String> spreadsheet2templatePath,
-                                                                   JsonNode templateNode) throws URISyntaxException {
+                                                                   JsonNode templateNode,
+                                                                   String schemaName) throws URISyntaxException {
     //read templateContent using cedar-artifact-library
     JsonSchemaArtifactReader jsonSchemaArtifactReader = new JsonSchemaArtifactReader();
     TemplateSchemaArtifact templateSchemaArtifact = jsonSchemaArtifactReader.readTemplateSchemaArtifact((ObjectNode) templateNode);
@@ -115,9 +116,15 @@ public class TemplateInstanceArtifactGenerator {
       templateInstanceArtifactBuilder.withIsBasedOn(new URI(IS_BASED_ON.getValue()));
     }
 
+    //with schemaName
+    if(schemaName != null){
+      templateInstanceArtifactBuilder.withName(schemaName);
+    } else{
+      templateInstanceArtifactBuilder.withName(SCHEMA_NAME.getValue());
+    }
+
     return templateInstanceArtifactBuilder
         .withDescription(SCHEMA_DESCRIPTION.getValue())
-        .withName(SCHEMA_NAME.getValue())
         .build();
   }
 }

@@ -81,8 +81,7 @@ public class Compiler {
     var spreadsheetData = spreadsheetReader.readRadxRadSpreadsheet(spreadsheetFile.toString());
     var spreadSheet2templatePath = spreadsheetReader.readSpreadsheet2templatePath(mappingSpreadsheet.toString());
     var templateInstanceArtifact = templateArtifactInstanceGenerator.generateTemplateArtifactInstance(
-        spreadsheetData,spreadSheet2templatePath, templateNode
-    );
+        spreadsheetData,spreadSheet2templatePath, templateNode, null);
     ObjectNode templateInstanceRendering = jsonSchemaArtifactRenderer.renderTemplateInstanceArtifact(templateInstanceArtifact);
     mapper.writeValue(outputFile.toFile(), templateInstanceRendering);
   }
