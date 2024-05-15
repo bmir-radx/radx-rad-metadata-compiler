@@ -66,5 +66,55 @@ public class SpreadsheetDataManager {
         }
       }
     };
+
+//    //merge contributor and creator data
+//    mergeContributorAndCreatorData(groupedData);
+  }
+
+  /**
+   * The RADx Metadata Specification 2.0 delete Data File Creators element, need to merge Creators metadata into Data File Contributors
+   */
+  private void mergeContributorAndCreatorData(Map<String, Map<Integer, List<String>>> groupedData) {
+    String contributors = "Data File Contributors";
+    String creators = "Data File Creators";
+
+    Map<String, String> contributorToCreatorMap = new HashMap<>();
+    contributorToCreatorMap.put("/Data File Contributors/Contributor Name", "/Data File Creators/Creator Name");
+    contributorToCreatorMap.put("/Data File Contributors/Contributor Given Name", "/Data File Creators/Creator Given Name");
+    contributorToCreatorMap.put("/Data File Contributors/Contributor Family Name", "/Data File Creators/Creator Family Name");
+    contributorToCreatorMap.put("/Data File Contributors/Contributor Identifier", "/Data File Creators/Creator Identifier");
+    contributorToCreatorMap.put("/Data File Contributors/Contributor Role", "/Data File Creators/Creator Role");
+    contributorToCreatorMap.put("/Data File Contributors/Contributor Affiliation", "/Data File Creators/Creator Affiliation");
+    contributorToCreatorMap.put("/Data File Contributors/Contributor Affiliation Identifier", "/Data File Creators/Creator Affiliation Identifier");
+    contributorToCreatorMap.put("/Data File Contributors/Contributor Affiliation Identifier Scheme", "/Data File Creators/Creator Affiliation Identifier Scheme");
+
+    var contributorCounts = elementInstanceCounts.get(contributors);
+    var creatorCounts = elementInstanceCounts.get(creators);
+
+    for (Map.Entry<String, String> entry : contributorToCreatorMap.entrySet()) {
+      String contributorKey = entry.getKey();
+      String creatorKey = entry.getValue();
+
+      Map<Integer, List<String>> contributorData = groupedData.getOrDefault(contributorKey, new HashMap<>());
+      Map<Integer, List<String>> creatorData = groupedData.getOrDefault(creatorKey, new HashMap<>());
+
+      int contributorInstances = contributorData.size();
+      int creatorInstances = creatorData.size();
+
+      for (var i=1; i<=creatorCounts; i++) {
+        List<String> creatorValues = creatorData.get(i);
+        if(creatorValues != null){
+          contributorData.put(contributorCounts + i, creatorValues);
+        }
+      }
+
+      //update groupedData
+      groupedData.put(contributorKey, contributorData);
+      groupedData.remove(creatorKey);
+
+      //update elementInstanceCounts
+      elementInstanceCounts.put(contributors, contributorCounts + creatorCounts);
+      elementInstanceCounts.remove(creators);
+    }
   }
 }

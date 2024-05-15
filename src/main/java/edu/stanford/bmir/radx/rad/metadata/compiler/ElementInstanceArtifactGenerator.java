@@ -42,7 +42,7 @@ public class ElementInstanceArtifactGenerator {
           // if the expectedField in the template has the mapping field in the spreadsheet, then need to retrieve data from spreadsheet
           // otherwise, build an empty fieldArtifactInstance
           FieldInstanceArtifact fieldInstanceArtifact;
-          if (groupedData.containsKey(currentPath)) {
+          if (groupedData.containsKey(currentPath) && groupedData.get(currentPath).containsKey(i)) {
             if(isMultipleField){
               // build field instance one by one, explicitly for creator/contributor ids
               var valueSet = groupedData.get(currentPath).get(i);
