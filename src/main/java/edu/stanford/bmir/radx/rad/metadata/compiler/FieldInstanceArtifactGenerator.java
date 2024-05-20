@@ -57,4 +57,13 @@ public class FieldInstanceArtifactGenerator {
     }
     return fieldInstanceArtifactList;
   }
+
+  public List<FieldInstanceArtifact> buildMultiFieldInstances(FieldType fieldType, Map<Integer, List<String>> valueSet, Optional<ValueConstraints> valueConstraints){
+    var fieldInstanceArtifactList = new ArrayList<FieldInstanceArtifact>();
+    for (var entry : valueSet.entrySet()) {
+      var fieldInstanceArtifact = buildFieldInstanceWithValues(fieldType, entry.getValue().get(0), valueConstraints);
+      fieldInstanceArtifactList.add(fieldInstanceArtifact);
+    }
+    return fieldInstanceArtifactList;
+  }
 }
