@@ -127,7 +127,7 @@ public class ElementInstanceArtifactGenerator {
     for(var expectedField : childFields){
       var specificationPath = path + "/" + expectedField;
       if(AttributeValueFieldUtil.isAttributeValue(templateSchemaArtifact, specificationPath)){
-        elementInstanceBuilder.withAttributeValueFieldGroup(expectedField, Collections.emptyMap());
+        elementInstanceBuilder.withAttributeValueFieldGroup(expectedField, new LinkedHashMap<>());
       } else{
         var fieldSchemaArtifact = elementSchemaArtifact.getFieldSchemaArtifact(expectedField);
         var inputType = FieldType.getFieldType(fieldSchemaArtifact);

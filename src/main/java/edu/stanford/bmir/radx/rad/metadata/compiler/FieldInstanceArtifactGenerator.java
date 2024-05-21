@@ -35,8 +35,8 @@ public class FieldInstanceArtifactGenerator {
     return generator.buildFieldInstance(null, valueConstraints);
   }
 
-  public Map<String, FieldInstanceArtifact> buildAttributeValueField(Map<String, String> spreadsheetData, List<String> spreadsheetFields) {
-    Map<String, FieldInstanceArtifact> attributeValueFieldInstances = new HashMap<>();
+  public LinkedHashMap<String, FieldInstanceArtifact> buildAttributeValueField(Map<String, String> spreadsheetData, List<String> spreadsheetFields) {
+    LinkedHashMap<String, FieldInstanceArtifact> attributeValueFieldInstances = new LinkedHashMap<>();
     if (spreadsheetFields != null) {
       for (var spreadsheetField : spreadsheetFields) {
         var spreadsheetValue = spreadsheetData.get(spreadsheetField);
