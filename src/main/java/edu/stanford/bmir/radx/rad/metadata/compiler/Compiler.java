@@ -9,8 +9,10 @@ import org.metadatacenter.artifacts.model.renderer.JsonSchemaArtifactRenderer;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Objects;
 import java.util.stream.Stream;
 
@@ -20,7 +22,7 @@ public class Compiler {
   private static final String TEMPLATE_PATH = "t";
   private static final String MAPPING_SPREADSHEET_PATH = "m";
   private static final String HELP = "h";
-  private static final String DEFAULT_MAPPING_SPREADSHEET_PATH = "src/main/resources/spreadsheet2templatePath2.0.xlsx";
+  private static final String DEFAULT_MAPPING_SPREADSHEET = "/spreadsheet2templatePath.xlsx";
   private static final SpreadsheetReader spreadsheetReader = new SpreadsheetReader();
   private static final JsonSchemaArtifactRenderer jsonSchemaArtifactRenderer = new JsonSchemaArtifactRenderer();
   private static final TemplateInstanceArtifactGenerator templateArtifactInstanceGenerator = new TemplateInstanceArtifactGenerator();
@@ -39,7 +41,7 @@ public class Compiler {
       if(command.hasOption(MAPPING_SPREADSHEET_PATH)){
         mappingSpreadsheet = Path.of(command.getOptionValue(MAPPING_SPREADSHEET_PATH));
       } else{
-        mappingSpreadsheet = Path.of(DEFAULT_MAPPING_SPREADSHEET_PATH);
+        mappingSpreadsheet = getDefaultMappingPath();
       }
 
       if(command.hasOption(HELP)){
@@ -137,5 +139,14 @@ public class Compiler {
 
   private static String getOutputFileName(Path spreadSheetFile){
     return spreadSheetFile.getFileName().toString().replaceAll("\\.xlsx$", ".json");
+  }
+
+  private static Path getDefaultMappingPath()throws URISyntaxException {
+    URL resource = Compiler.class.getResource(DEFAULT_MAPPING_SPREADSHEET);
+    if (resource == null) {
+      throw new IllegalArgumentException("File not found!");
+    } else {
+      return Paths.get(resource.toURI());
+    }
   }
 }
