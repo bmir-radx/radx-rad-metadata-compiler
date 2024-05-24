@@ -6,10 +6,10 @@ import org.metadatacenter.artifacts.model.core.fields.constraints.ValueConstrain
 
 import java.util.Optional;
 
-public class PhoneNumberFieldGenerator implements FieldGenerator{
+public class PhoneNumberFieldGenerator implements FieldGenerator<PhoneNumberFieldInstance>{
 
   @Override
-  public FieldInstanceArtifact buildFieldInstance(String value, Optional<ValueConstraints> valueConstraints) {
+  public PhoneNumberFieldInstance buildFieldInstance(String value, Optional<ValueConstraints> valueConstraints) {
     var fieldInstanceArtifactBuilder = PhoneNumberFieldInstance.builder();
     if(value != null){
       fieldInstanceArtifactBuilder.withValue(value);

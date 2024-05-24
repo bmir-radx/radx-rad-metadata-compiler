@@ -49,27 +49,29 @@ public class RadxRadPrecisionFieldHandler {
     var fieldType = FieldType.getFieldType(fieldSchemaArtifact);
 
     //If the element instance is not empty, then set specific controlled term fields
+    //-----------------------start to comment out for template 2,0-----------------------------------
     if(!isEmptyElementInstance(elementInstanceCounts, elementName, elementSchemaArtifact)){
-//     if (elementName.equals(DATA_FILE_CONTRIBUTORS.getValue())  //Set Contributor Identifier Scheme to ORCiD
-//          && expectedField.equals(CONTRIBUTOR_IDENTIFIER_SCHEME.getValue())
-//          && groupedData.containsKey(contributorIdentifierPath)
-//          && groupedData.get(contributorIdentifierPath).get(i)!= null){
-//        elementInstanceArtifactBuilder.withSingleInstanceFieldInstance(expectedField,
-//            fieldInstanceArtifactGenerator.buildFieldInstanceWithValues(fieldType, orcid, Optional.empty()));
-//      } else if (elementName.equals(DATA_FILE_CREATORS.getValue())  //Set Creator Identifier Scheme to ORCiD
-//          && expectedField.equals(CREATOR_IDENTIFIER_SCHEME.getValue())
-//          && groupedData.containsKey(creatorIdentifierPath)
-//          && groupedData.get(creatorIdentifierPath).get(i)!= null){
-//        elementInstanceArtifactBuilder.withSingleInstanceFieldInstance(expectedField,
-//            fieldInstanceArtifactGenerator.buildFieldInstanceWithValues(fieldType, orcid, Optional.empty()));
-//      } else if (elementName.equals(DATA_FILE_CREATORS.getValue())  //Set Creator Affiliation Identifier Scheme to ROR
-//          && expectedField.equals(CREATOR_AFFILIATION_IDENTIFIER_SCHEME.getValue())
-//          && groupedData.containsKey(creatorAffiliationIdPath)
-//          && groupedData.get(creatorAffiliationIdPath).get(i)!= null){
-//        elementInstanceArtifactBuilder.withSingleInstanceFieldInstance(expectedField,
-//            fieldInstanceArtifactGenerator.buildFieldInstanceWithValues(fieldType, ror, Optional.empty()));
-//      } else if (elementName.equals(DATA_FILE_CREATORS.getValue()) //Set Creator Given Name
-      if( elementName.equals(DATA_FILE_CREATORS.getValue())
+     if (elementName.equals(DATA_FILE_CONTRIBUTORS.getValue())  //Set Contributor Identifier Scheme to ORCiD
+          && expectedField.equals(CONTRIBUTOR_IDENTIFIER_SCHEME.getValue())
+          && groupedData.containsKey(contributorIdentifierPath)
+          && groupedData.get(contributorIdentifierPath).get(i)!= null){
+        elementInstanceArtifactBuilder.withSingleInstanceFieldInstance(expectedField,
+            fieldInstanceArtifactGenerator.buildFieldInstanceWithValues(fieldType, orcid, Optional.empty()));
+      } else if (elementName.equals(DATA_FILE_CREATORS.getValue())  //Set Creator Identifier Scheme to ORCiD
+          && expectedField.equals(CREATOR_IDENTIFIER_SCHEME.getValue())
+          && groupedData.containsKey(creatorIdentifierPath)
+          && groupedData.get(creatorIdentifierPath).get(i)!= null){
+        elementInstanceArtifactBuilder.withSingleInstanceFieldInstance(expectedField,
+            fieldInstanceArtifactGenerator.buildFieldInstanceWithValues(fieldType, orcid, Optional.empty()));
+      } else if (elementName.equals(DATA_FILE_CREATORS.getValue())  //Set Creator Affiliation Identifier Scheme to ROR
+          && expectedField.equals(CREATOR_AFFILIATION_IDENTIFIER_SCHEME.getValue())
+          && groupedData.containsKey(creatorAffiliationIdPath)
+          && groupedData.get(creatorAffiliationIdPath).get(i)!= null){
+        elementInstanceArtifactBuilder.withSingleInstanceFieldInstance(expectedField,
+            fieldInstanceArtifactGenerator.buildFieldInstanceWithValues(fieldType, ror, Optional.empty()));
+      } else if (elementName.equals(DATA_FILE_CREATORS.getValue()) //Set Creator Given Name
+       //---------------------end of comment out for template 2.0-----------------------------------------
+//      if( elementName.equals(DATA_FILE_CREATORS.getValue())
           && expectedField.equals(CREATOR_GIVEN_NAME.getValue())
           && groupedData.containsKey(creatorNamePath)){
         var name = groupedData.get(creatorNamePath).get(i).get(0);
@@ -99,16 +101,18 @@ public class RadxRadPrecisionFieldHandler {
           && groupedData.get(datePath).get(i) != null)  {
         elementInstanceArtifactBuilder.withSingleInstanceFieldInstance(expectedField,
             fieldInstanceArtifactGenerator.buildFieldInstanceWithValues(fieldType, created, Optional.empty()));
-//      } else if (elementName.equals(DATA_FILE_PARENT_STUDIES.getValue())  //Set Study Identifier Scheme to URL
-//          && expectedField.equals(STUDY_IDENTIFIER_SCHEME.getValue())
-//          && groupedData.containsKey(studyIdentifierPath)
-//          && isValidURL(groupedData.get(studyIdentifierPath).get(i))) {
-//        elementInstanceArtifactBuilder.withSingleInstanceFieldInstance(expectedField,
-//            fieldInstanceArtifactGenerator.buildFieldInstanceWithValues(fieldType, url, Optional.empty()));
-//      } else if(elementName.equals(DATA_FILE_TITLES.getValue())  //Set Data File Title Language to en
-//          && expectedField.equals(LANGUAGE.getValue())){
-//        elementInstanceArtifactBuilder.withSingleInstanceFieldInstance(expectedField,
-//            fieldInstanceArtifactGenerator.buildFieldInstanceWithValues(fieldType, "en", Optional.empty()));
+       //-----------------------start to comment out for template 2,0-----------------------------------
+      } else if (elementName.equals(DATA_FILE_PARENT_STUDIES.getValue())  //Set Study Identifier Scheme to URL
+          && expectedField.equals(STUDY_IDENTIFIER_SCHEME.getValue())
+          && groupedData.containsKey(studyIdentifierPath)
+          && isValidURL(groupedData.get(studyIdentifierPath).get(i).get(0))) {
+        elementInstanceArtifactBuilder.withSingleInstanceFieldInstance(expectedField,
+            fieldInstanceArtifactGenerator.buildFieldInstanceWithValues(fieldType, url, Optional.empty()));
+      } else if(elementName.equals(DATA_FILE_TITLES.getValue())  //Set Data File Title Language to en
+          && expectedField.equals(LANGUAGE.getValue())){
+        elementInstanceArtifactBuilder.withSingleInstanceFieldInstance(expectedField,
+            fieldInstanceArtifactGenerator.buildFieldInstanceWithValues(fieldType, "en", Optional.empty()));
+       //-----------------------start to comment out for template 2,0-----------------------------------
       } else{
         var fieldInstanceArtifact = fieldInstanceArtifactGenerator.buildEmptyFieldInstance(fieldType, valueConstraints);
         buildWithFieldInstanceArtifact(elementInstanceArtifactBuilder, fieldInstanceArtifact, expectedField, isMultiple);

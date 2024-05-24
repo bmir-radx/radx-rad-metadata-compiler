@@ -6,9 +6,9 @@ import org.metadatacenter.artifacts.model.core.fields.constraints.ValueConstrain
 
 import java.util.Optional;
 
-public class RadioFieldGenerator implements FieldGenerator{
+public class RadioFieldGenerator implements FieldGenerator<RadioFieldInstance>{
   @Override
-  public FieldInstanceArtifact buildFieldInstance(String value, Optional<ValueConstraints> valueConstraints) {
+  public RadioFieldInstance buildFieldInstance(String value, Optional<ValueConstraints> valueConstraints) {
     var fieldInstanceArtifactBuilder = RadioFieldInstance.builder();
     if(value != null){
       fieldInstanceArtifactBuilder.withValue(value);

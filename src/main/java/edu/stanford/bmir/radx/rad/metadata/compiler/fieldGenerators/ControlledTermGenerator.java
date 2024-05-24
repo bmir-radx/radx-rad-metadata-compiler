@@ -11,9 +11,9 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Optional;
 
-public class ControlledTermGenerator implements FieldGenerator{
+public class ControlledTermGenerator implements FieldGenerator<ControlledTermFieldInstance>{
   @Override
-  public FieldInstanceArtifact buildFieldInstance(String value, Optional<ValueConstraints> valueConstraints) {
+  public ControlledTermFieldInstance buildFieldInstance(String value, Optional<ValueConstraints> valueConstraints) {
     var fieldInstanceArtifactBuilder = ControlledTermFieldInstance.builder();
     if(value != null){
       // Precision handling for co-PI, contact-PI, and data-PI

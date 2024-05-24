@@ -8,9 +8,9 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Optional;
 
-public class LinkFieldGenerator implements FieldGenerator{
+public class LinkFieldGenerator implements FieldGenerator<LinkFieldInstance>{
   @Override
-  public FieldInstanceArtifact buildFieldInstance(String value, Optional<ValueConstraints> valueConstraints) {
+  public LinkFieldInstance buildFieldInstance(String value, Optional<ValueConstraints> valueConstraints) {
     var fieldInstanceArtifactBuilder = LinkFieldInstance.builder();
     if(value != null){
       try{

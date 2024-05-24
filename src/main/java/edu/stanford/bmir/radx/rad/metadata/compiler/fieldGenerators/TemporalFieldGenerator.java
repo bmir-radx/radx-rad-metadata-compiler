@@ -7,9 +7,9 @@ import org.metadatacenter.artifacts.model.core.fields.constraints.ValueConstrain
 
 import java.util.Optional;
 
-public class TemporalFieldGenerator implements FieldGenerator{
+public class TemporalFieldGenerator implements FieldGenerator<TemporalFieldInstance>{
   @Override
-  public FieldInstanceArtifact buildFieldInstance(String value, Optional<ValueConstraints> valueConstraints) {
+  public TemporalFieldInstance buildFieldInstance(String value, Optional<ValueConstraints> valueConstraints) {
     XsdTemporalDatatype temporalType;
     if(valueConstraints.isPresent()){
       temporalType = valueConstraints.get().asTemporalValueConstraints().temporalType();
@@ -19,21 +19,19 @@ public class TemporalFieldGenerator implements FieldGenerator{
 
     var fieldInstanceArtifactBuilder = TemporalFieldInstance.builder();
     if(value != null){
-      fieldInstanceArtifactBuilder
-          .withValue(value)
-          .withType(temporalType);
+      fieldInstanceArtifactBuilder.withValue(value);
     } else{
       if(valueConstraints.isPresent()){
         var defaultValue = valueConstraints.get().defaultValue();
         defaultValue.ifPresent(defaultValue1 -> {
           var v = defaultValue1.asTemporalDefaultValue().value();
           if (!v.equals("")) {
-            fieldInstanceArtifactBuilder.withValue(v).withType(temporalType);
+            fieldInstanceArtifactBuilder.withValue(v);
           }
         });
       }
     }
 
-    return fieldInstanceArtifactBuilder.build();
+    return fieldInstanceArtifactBuilder.withType(temporalType).build();
   }
 }
