@@ -15,7 +15,7 @@ public class ControlledTermGenerator implements FieldGenerator<ControlledTermFie
   @Override
   public ControlledTermFieldInstance buildFieldInstance(String value, Optional<ValueConstraints> valueConstraints) {
     var fieldInstanceArtifactBuilder = ControlledTermFieldInstance.builder();
-    if(value != null){
+    if(value != null && !value.equals("")){
       // Precision handling for co-PI, contact-PI, and data-PI
       String piRegex = "(?i)co[- ]?PI";
       String contactPiRegex = "(?i)contact[- ]?PI";

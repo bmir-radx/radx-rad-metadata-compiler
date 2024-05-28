@@ -20,7 +20,7 @@ public class NumericFieldGenerator implements FieldGenerator<NumericFieldInstanc
       numberType = XsdNumericDatatype.DOUBLE;
     }
 
-    if(value != null){
+    if(value != null && !value.equals("")){
       fieldInstanceArtifactBuilder
           //TODO: need to convert to different Number based on number type
           .withValue(Double.valueOf(value));

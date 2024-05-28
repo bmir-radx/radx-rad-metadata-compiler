@@ -10,7 +10,7 @@ public class RadioFieldGenerator implements FieldGenerator<RadioFieldInstance>{
   @Override
   public RadioFieldInstance buildFieldInstance(String value, Optional<ValueConstraints> valueConstraints) {
     var fieldInstanceArtifactBuilder = RadioFieldInstance.builder();
-    if(value != null){
+    if(value != null && !value.equals("")){
       fieldInstanceArtifactBuilder.withValue(value);
     } else{
       if(valueConstraints.isPresent()){

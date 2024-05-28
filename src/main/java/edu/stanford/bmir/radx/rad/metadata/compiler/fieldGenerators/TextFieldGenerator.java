@@ -12,7 +12,7 @@ public class TextFieldGenerator implements FieldGenerator<TextFieldInstance>{
   @Override
   public TextFieldInstance buildFieldInstance(String value, Optional<ValueConstraints> valueConstraints) {
     var fieldInstanceArtifactBuilder = TextFieldInstance.builder();
-    if(value != null){
+    if(value != null && !value.equals("")){
       fieldInstanceArtifactBuilder.withValue(value);
     } else{
       if(valueConstraints.isPresent()){

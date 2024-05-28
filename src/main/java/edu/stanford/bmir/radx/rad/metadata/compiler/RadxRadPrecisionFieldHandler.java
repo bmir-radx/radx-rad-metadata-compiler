@@ -99,8 +99,8 @@ public class RadxRadPrecisionFieldHandler {
           && expectedField.equals(EVENT_TYPE.getValue())
           && groupedData.containsKey(datePath)
           && groupedData.get(datePath).get(i) != null)  {
-        elementInstanceArtifactBuilder.withSingleInstanceFieldInstance(expectedField,
-            fieldInstanceArtifactGenerator.buildFieldInstanceWithValues(fieldType, created, Optional.empty()));
+       var eventTypeInstance = fieldInstanceArtifactGenerator.buildFieldInstanceWithValues(fieldType, created, Optional.empty());
+        elementInstanceArtifactBuilder.withSingleInstanceFieldInstance(expectedField, eventTypeInstance);
        //-----------------------start to comment out for template 2,0-----------------------------------
       } else if (elementName.equals(DATA_FILE_PARENT_STUDIES.getValue())  //Set Study Identifier Scheme to URL
           && expectedField.equals(STUDY_IDENTIFIER_SCHEME.getValue())

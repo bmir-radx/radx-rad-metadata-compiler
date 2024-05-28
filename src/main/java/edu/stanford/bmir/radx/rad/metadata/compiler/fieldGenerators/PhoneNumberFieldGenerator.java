@@ -11,7 +11,7 @@ public class PhoneNumberFieldGenerator implements FieldGenerator<PhoneNumberFiel
   @Override
   public PhoneNumberFieldInstance buildFieldInstance(String value, Optional<ValueConstraints> valueConstraints) {
     var fieldInstanceArtifactBuilder = PhoneNumberFieldInstance.builder();
-    if(value != null){
+    if(value != null && !value.equals("")){
       fieldInstanceArtifactBuilder.withValue(value);
     } else{
       if(valueConstraints.isPresent()){

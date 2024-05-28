@@ -10,7 +10,7 @@ public class EmailGenerator implements FieldGenerator<EmailFieldInstance>{
   @Override
   public EmailFieldInstance buildFieldInstance(String value, Optional<ValueConstraints> valueConstraints) {
     var fieldInstanceArtifactBuilder = EmailFieldInstance.builder();
-    if(value != null){
+    if(value != null && !value.equals("")){
       fieldInstanceArtifactBuilder.withValue(value);
     } else{
       if(valueConstraints.isPresent()){

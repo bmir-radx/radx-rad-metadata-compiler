@@ -9,7 +9,7 @@ public class CheckBoxFieldGenerator implements FieldGenerator<CheckboxFieldInsta
   @Override
   public CheckboxFieldInstance buildFieldInstance(String value, Optional<ValueConstraints> valueConstraints) {
     var fieldInstanceArtifactBuilder = CheckboxFieldInstance.builder();
-    if(value != null){
+    if(value != null && !value.equals("")){
       fieldInstanceArtifactBuilder.withValue(value);
     } else{
       if(valueConstraints.isPresent()){

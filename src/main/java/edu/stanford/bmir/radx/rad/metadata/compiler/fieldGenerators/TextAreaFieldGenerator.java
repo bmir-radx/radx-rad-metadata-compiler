@@ -10,7 +10,7 @@ public class TextAreaFieldGenerator implements FieldGenerator<TextAreaFieldInsta
   @Override
   public TextAreaFieldInstance buildFieldInstance(String value, Optional<ValueConstraints> valueConstraints) {
     var fieldInstanceArtifactBuilder = TextAreaFieldInstance.builder();
-    if(value != null){
+    if(value != null && !value.equals("")){
       fieldInstanceArtifactBuilder.withValue(value);
     } else{
       if(valueConstraints.isPresent()){

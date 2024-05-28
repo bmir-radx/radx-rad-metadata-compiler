@@ -18,7 +18,7 @@ public class TemporalFieldGenerator implements FieldGenerator<TemporalFieldInsta
     }
 
     var fieldInstanceArtifactBuilder = TemporalFieldInstance.builder();
-    if(value != null){
+    if(value != null && !value.equals("")){
       fieldInstanceArtifactBuilder.withValue(value);
     } else{
       if(valueConstraints.isPresent()){
