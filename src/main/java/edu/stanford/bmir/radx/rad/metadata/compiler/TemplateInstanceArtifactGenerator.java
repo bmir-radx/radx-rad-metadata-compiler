@@ -69,12 +69,7 @@ public class TemplateInstanceArtifactGenerator {
       var currentPath = "/" + childField;
       FieldInstanceArtifact fieldInstanceArtifact;
 
-      if(childField.equals(TITLE.getValue())){ // Build Title field with language tag
-        var textFieldInstanceGenerator = new TextFieldGenerator();
-        var value = groupedData.get(currentPath).get(1).get(0);
-        fieldInstanceArtifact = textFieldInstanceGenerator.buildWithLanguage(value, "en");
-        templateInstanceArtifactBuilder.withSingleInstanceFieldInstance(childField, fieldInstanceArtifact);
-      } else if (groupedData.containsKey(currentPath)) { // Build field instance with value
+      if (groupedData.containsKey(currentPath)) { // Build field instance with value
         if(isChildFieldMultiple){
           var valueSet = groupedData.get(currentPath);
           var fieldInstanceArtifactList = fieldInstanceArtifactGenerator.buildMultiFieldInstances(childFieldType, valueSet, childValueConstraints);
@@ -82,6 +77,10 @@ public class TemplateInstanceArtifactGenerator {
         } else{
           var value = groupedData.get(currentPath).get(1).get(0);
           fieldInstanceArtifact = fieldInstanceArtifactGenerator.buildFieldInstanceWithValues(childFieldType, value, childValueConstraints);
+          if(childField.equals(TITLE.getValue())){ // Build Title field with language tag
+            var textFieldInstanceGenerator = new TextFieldGenerator();
+            fieldInstanceArtifact = textFieldInstanceGenerator.buildWithLanguage(value, "en");
+          }
           templateInstanceArtifactBuilder.withSingleInstanceFieldInstance(childField, fieldInstanceArtifact);
         }
       } else {
