@@ -66,7 +66,7 @@ public class RadxRadPrecisionFieldHandler {
       } else if (elementName.equals(DATA_FILE_CREATORS.getValue())  //Set Creator Affiliation Identifier Scheme to ROR
           && expectedField.equals(CREATOR_AFFILIATION_IDENTIFIER_SCHEME.getValue())
           && groupedData.containsKey(creatorAffiliationIdPath)
-          && groupedData.get(creatorAffiliationIdPath).get(i)!= null){
+          && groupedData.get(creatorAffiliationIdPath).get(i).get(0).startsWith("ror")){
         elementInstanceArtifactBuilder.withSingleInstanceFieldInstance(expectedField,
             fieldInstanceArtifactGenerator.buildFieldInstanceWithValues(fieldType, ror, Optional.empty()));
       } else if (elementName.equals(DATA_FILE_CREATORS.getValue()) //Set Creator Given Name
