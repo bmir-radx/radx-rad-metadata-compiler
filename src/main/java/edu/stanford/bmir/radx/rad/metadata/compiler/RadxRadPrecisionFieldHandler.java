@@ -112,7 +112,7 @@ public class RadxRadPrecisionFieldHandler {
           && expectedField.equals(LANGUAGE.getValue())){
         elementInstanceArtifactBuilder.withSingleInstanceFieldInstance(expectedField,
             fieldInstanceArtifactGenerator.buildFieldInstanceWithValues(fieldType, "en", Optional.empty()));
-       //-----------------------start to comment out for template 2,0-----------------------------------
+       //-----------------------end of comment out for template 2,0-----------------------------------
       } else{
         var fieldInstanceArtifact = fieldInstanceArtifactGenerator.buildEmptyFieldInstance(fieldType, valueConstraints);
         buildWithFieldInstanceArtifact(elementInstanceArtifactBuilder, fieldInstanceArtifact, expectedField, isMultiple);
@@ -158,6 +158,56 @@ public class RadxRadPrecisionFieldHandler {
     }
   }
 
+  /***
+   * This method is for Specification 1.0
+   */
+  public static void addDataFileSubjectsElement(String input, TemplateSchemaArtifact templateSchemaArtifact, TemplateInstanceArtifact.Builder templateInstanceArtifactBuilder) throws URISyntaxException {
+    if(input != null) {
+      var mesh = MeshCsvReader.readCSVToMap();
+      String[] keywords = input.split("\\|");
+      var elementInstances = new ArrayList<ElementInstanceArtifact>();
+      for(var keyword: keywords){
+        var elementInstanceArtifactBuilder = ElementInstanceArtifact.builder();
+        keyword = keyword.trim();
+
+        //add Data File Subjects/Subject Identifier
+        FieldInstanceArtifact subjectIdentifierField;
+        FieldInstanceArtifact subjectIdentifierSchemeField;
+        if (mesh.containsKey(keyword)){
+          var classId = mesh.get(keyword);
+          subjectIdentifierField = ControlledTermFieldInstance.builder().withValue(new URI(classId)).withLabel(keyword).build();
+          subjectIdentifierSchemeField = new TextFieldGenerator().buildFieldInstance(meshUri);
+        } else{
+          subjectIdentifierField = ControlledTermFieldInstance.builder().build();
+          subjectIdentifierSchemeField = new TextFieldGenerator().buildFieldInstance(null);
+        }
+        elementInstanceArtifactBuilder.withSingleInstanceFieldInstance(SUBJECT_IDENTIFIER.getValue(), subjectIdentifierField);
+
+        //add Keyword
+        elementInstanceArtifactBuilder.withSingleInstanceFieldInstance(KEYWORD.getValue(), new TextFieldGenerator().buildFieldInstance(keyword));
+
+        //add Subject Identifier Scheme
+        elementInstanceArtifactBuilder.withSingleInstanceFieldInstance(SUBJECT_IDENTIFIER_SCHEME.getValue(), subjectIdentifierSchemeField);
+
+        //add context
+        var elementSchemaArtifact = templateSchemaArtifact.getElementSchemaArtifact(DATA_FILE_SUBJECTS.getValue());
+        ContextGenerator.generateElementInstanceContext(elementSchemaArtifact, elementInstanceArtifactBuilder);
+
+        //add @id
+        IdGenerator.generateElementId(elementInstanceArtifactBuilder);
+
+        elementInstances.add(elementInstanceArtifactBuilder.build());
+      }
+
+      templateInstanceArtifactBuilder.withMultiInstanceElementInstances(DATA_FILE_SUBJECTS.getValue(), elementInstances);
+    } else { //empty keywords input
+      templateInstanceArtifactBuilder.withMultiInstanceElementInstances(DATA_FILE_SUBJECTS.getValue(), Collections.emptyList());
+    }
+  }
+
+  /***
+   * This method is for Specification 2.0
+   */
   public static void processKeywords(String input, TemplateInstanceArtifact.Builder templateInstanceArtifactBuilder) throws URISyntaxException {
     var subjectsInstances = new ArrayList<FieldInstanceArtifact>();
     var keywordsInstances = new ArrayList<FieldInstanceArtifact>();

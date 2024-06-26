@@ -17,8 +17,8 @@ public class TemplateInstanceArtifactGenerator {
 
   private final ElementInstanceArtifactGenerator elementInstanceArtifactGenerator = new ElementInstanceArtifactGenerator();
   private final FieldInstanceArtifactGenerator fieldInstanceArtifactGenerator = new FieldInstanceArtifactGenerator();
-  public TemplateInstanceArtifact generateTemplateArtifactInstance(Map<String, String> spreadsheetData,
-                                                                   Map<String, String> spreadsheet2templatePath,
+  public TemplateInstanceArtifact generateTemplateArtifactInstance(Map<String, String> csvData,
+                                                                   Map<String, String> csv2templatePath,
                                                                    JsonNode templateNode,
                                                                    String schemaName) throws URISyntaxException {
 
@@ -30,102 +30,107 @@ public class TemplateInstanceArtifactGenerator {
     var templateInstanceArtifactBuilder = TemplateInstanceArtifact.builder();
 
     var elements = templateSchemaArtifact.getElementNames();
-    var spreadsheetDataManager = new SpreadsheetDataManager();
-    spreadsheetDataManager.groupData(spreadsheetData, spreadsheet2templatePath, templateSchemaArtifact);
-    var attributeValueMap = spreadsheetDataManager.attributeValueMap;
-    var elementInstanceCounts = spreadsheetDataManager.elementInstanceCounts;
-    var groupedData = spreadsheetDataManager.groupedData;
+    var csvDataManager = new CsvDataManager();
+    csvDataManager.groupData(csvData, csv2templatePath, templateSchemaArtifact);
+    var attributeValueMap = csvDataManager.attributeValueMap;
+    var elementInstanceCounts = csvDataManager.elementInstanceCounts;
+    var groupedData = csvDataManager.groupedData;
     var mappedElements = elementInstanceCounts.keySet();
 
     //Build child element instances artifacts
-    for(var childElement : elements){
-      var childElementSchemaArtifact = templateSchemaArtifact.getElementSchemaArtifact(childElement);
-      var isChildElementMultiple = childElementSchemaArtifact.isMultiple();
-      if (mappedElements.contains(childElement)){
-        var childElementInstanceArtifacts = elementInstanceArtifactGenerator.generateElementInstanceWithValue(childElement, "", childElementSchemaArtifact, templateSchemaArtifact, spreadsheetData, spreadsheetDataManager);
-        if(isChildElementMultiple){
-          templateInstanceArtifactBuilder.withMultiInstanceElementInstances(childElement, childElementInstanceArtifacts);
-        } else{
-          templateInstanceArtifactBuilder.withSingleInstanceElementInstance(childElement, childElementInstanceArtifacts.get(0));
-        }
-      } else{ // build empty element
-        if(isChildElementMultiple){
-          templateInstanceArtifactBuilder.withMultiInstanceElementInstances(childElement, Collections.emptyList());
-        } else{
-          var elementInstanceArtifact = elementInstanceArtifactGenerator.buildSingleEmptyElementInstance(childElementSchemaArtifact, templateSchemaArtifact, "/" + childElement);
-          templateInstanceArtifactBuilder.withSingleInstanceElementInstance(childElement, elementInstanceArtifact);
-        }
-      }
-    }
-
-    //Build child field instances artifacts
-    var childFields = templateSchemaArtifact.getFieldNames();
-    var buildKeywords = false;
-    for(var childField : childFields) {
-      var childFieldSchemaArtifact = templateSchemaArtifact.getFieldSchemaArtifact(childField);
-      var childFieldType = FieldType.getFieldType(childFieldSchemaArtifact);
-      var childValueConstraints = childFieldSchemaArtifact.valueConstraints();
-      var isChildFieldMultiple = childFieldSchemaArtifact.isMultiple();
-      var currentPath = "/" + childField;
-      FieldInstanceArtifact fieldInstanceArtifact;
-
-      if (groupedData.containsKey(currentPath)) { // Build field instance with value
-        if(isChildFieldMultiple){
-          var valueSet = groupedData.get(currentPath);
-          var fieldInstanceArtifactList = fieldInstanceArtifactGenerator.buildMultiFieldInstances(childFieldType, valueSet, childValueConstraints);
-          templateInstanceArtifactBuilder.withMultiInstanceFieldInstances(childField, fieldInstanceArtifactList);
-        } else{
-          var value = groupedData.get(currentPath).get(1).get(0);
-          fieldInstanceArtifact = fieldInstanceArtifactGenerator.buildFieldInstanceWithValues(childFieldType, value, childValueConstraints);
-          if(childField.equals(TITLE.getValue())){ // Build Title field with language tag
-            var textFieldInstanceGenerator = new TextFieldGenerator();
-            fieldInstanceArtifact = textFieldInstanceGenerator.buildWithLanguage(value, "en");
-          }
-          templateInstanceArtifactBuilder.withSingleInstanceFieldInstance(childField, fieldInstanceArtifact);
-        }
+    for (var childElement : elements) {
+      if (childElement.equals(DATA_FILE_SUBJECTS.getValue())) {
+        //generate Data File Subjects element
+        RadxRadPrecisionFieldHandler.addDataFileSubjectsElement(csvData.get(KEYWORDS.getValue()), templateSchemaArtifact, templateInstanceArtifactBuilder);
       } else {
-        // Special handling for keywords
-        if ((childField.equals(RadxSpecificationMetadataConstant.KEYWORDS.getValue()) || childField.equals(SUBJECTS.getValue()))) {
-          if (!buildKeywords) {
-            var input = spreadsheetData.get(KEYWORDS.getValue());
-            RadxRadPrecisionFieldHandler.processKeywords(input, templateInstanceArtifactBuilder);
-            buildKeywords = true;
-          }
-        } else{
-          // build Empty field instance
-          fieldInstanceArtifact = fieldInstanceArtifactGenerator.buildEmptyFieldInstance(childFieldType, childValueConstraints);
-          if (isChildFieldMultiple) {
-            templateInstanceArtifactBuilder.withMultiInstanceFieldInstances(childField, List.of(fieldInstanceArtifact));
+        var childElementSchemaArtifact = templateSchemaArtifact.getElementSchemaArtifact(childElement);
+        var isChildElementMultiple = childElementSchemaArtifact.isMultiple();
+        if (mappedElements.contains(childElement)) {
+          var childElementInstanceArtifacts = elementInstanceArtifactGenerator.generateElementInstanceWithValue(childElement, "", childElementSchemaArtifact, templateSchemaArtifact, csvData, csvDataManager);
+          if (isChildElementMultiple) {
+            templateInstanceArtifactBuilder.withMultiInstanceElementInstances(childElement, childElementInstanceArtifacts);
           } else {
-            templateInstanceArtifactBuilder.withSingleInstanceFieldInstance(childField, fieldInstanceArtifact);
+            templateInstanceArtifactBuilder.withSingleInstanceElementInstance(childElement, childElementInstanceArtifacts.get(0));
+          }
+        } else { // build empty element
+          if (isChildElementMultiple) {
+            templateInstanceArtifactBuilder.withMultiInstanceElementInstances(childElement, Collections.emptyList());
+          } else {
+            var elementInstanceArtifact = elementInstanceArtifactGenerator.buildSingleEmptyElementInstance(childElementSchemaArtifact, templateSchemaArtifact, "/" + childElement);
+            templateInstanceArtifactBuilder.withSingleInstanceElementInstance(childElement, elementInstanceArtifact);
           }
         }
       }
     }
 
-    //generate JsonLdContext
-    ContextGenerator.generateTemplateInstanceContext(templateSchemaArtifact, templateInstanceArtifactBuilder);
+        //Build child field instances artifacts
+        var childFields = templateSchemaArtifact.getFieldNames();
+        var buildKeywords = false;
+        for (var childField : childFields) {
+          var childFieldSchemaArtifact = templateSchemaArtifact.getFieldSchemaArtifact(childField);
+          var childFieldType = FieldType.getFieldType(childFieldSchemaArtifact);
+          var childValueConstraints = childFieldSchemaArtifact.valueConstraints();
+          var isChildFieldMultiple = childFieldSchemaArtifact.isMultiple();
+          var currentPath = "/" + childField;
+          FieldInstanceArtifact fieldInstanceArtifact;
 
-    //generate JsonLdId
-    IdGenerator.generateTemplateId(templateInstanceArtifactBuilder);
+          if (groupedData.containsKey(currentPath)) { // Build field instance with value
+            if (isChildFieldMultiple) {
+              var valueSet = groupedData.get(currentPath);
+              var fieldInstanceArtifactList = fieldInstanceArtifactGenerator.buildMultiFieldInstances(childFieldType, valueSet, childValueConstraints);
+              templateInstanceArtifactBuilder.withMultiInstanceFieldInstances(childField, fieldInstanceArtifactList);
+            } else {
+              var value = groupedData.get(currentPath).get(1).get(0);
+              fieldInstanceArtifact = fieldInstanceArtifactGenerator.buildFieldInstanceWithValues(childFieldType, value, childValueConstraints);
+              if (childField.equals(TITLE.getValue())) { // Build Title field with language tag - for Specification 2.0
+                var textFieldInstanceGenerator = new TextFieldGenerator();
+                fieldInstanceArtifact = textFieldInstanceGenerator.buildWithLanguage(value, "en");
+              }
+              templateInstanceArtifactBuilder.withSingleInstanceFieldInstance(childField, fieldInstanceArtifact);
+            }
+          } else {
+            // Special handling for keywords - for Specification 2.0
+            if ((childField.equals(RadxSpecificationMetadataConstant.KEYWORDS.getValue()) || childField.equals(SUBJECTS.getValue()))) {
+              if (!buildKeywords) {
+                var input = csvData.get(KEYWORDS.getValue());
+                RadxRadPrecisionFieldHandler.processKeywords(input, templateInstanceArtifactBuilder);
+                buildKeywords = true;
+              }
+            } else {
+              // build Empty field instance
+              fieldInstanceArtifact = fieldInstanceArtifactGenerator.buildEmptyFieldInstance(childFieldType, childValueConstraints);
+              if (isChildFieldMultiple) {
+                templateInstanceArtifactBuilder.withMultiInstanceFieldInstances(childField, List.of(fieldInstanceArtifact));
+              } else {
+                templateInstanceArtifactBuilder.withSingleInstanceFieldInstance(childField, fieldInstanceArtifact);
+              }
+            }
+          }
+        }
 
-    //with IsBasedOn
-    var id = templateSchemaArtifact.jsonLdId();
-    if(id.isPresent()) {
-      templateInstanceArtifactBuilder.withIsBasedOn(id.get());
-    } else {
-      templateInstanceArtifactBuilder.withIsBasedOn(new URI(IS_BASED_ON.getValue()));
+        //generate JsonLdContext
+        ContextGenerator.generateTemplateInstanceContext(templateSchemaArtifact, templateInstanceArtifactBuilder);
+
+        //generate JsonLdId
+        IdGenerator.generateTemplateId(templateInstanceArtifactBuilder);
+
+        //with IsBasedOn
+        var id = templateSchemaArtifact.jsonLdId();
+        if (id.isPresent()) {
+          templateInstanceArtifactBuilder.withIsBasedOn(id.get());
+        } else {
+          templateInstanceArtifactBuilder.withIsBasedOn(new URI(IS_BASED_ON.getValue()));
+        }
+
+        //with schemaName
+        if (schemaName != null) {
+          templateInstanceArtifactBuilder.withName(schemaName);
+        } else {
+          templateInstanceArtifactBuilder.withName(SCHEMA_NAME.getValue());
+        }
+
+        return templateInstanceArtifactBuilder
+            .withDescription(SCHEMA_DESCRIPTION.getValue())
+            .build();
+      }
     }
-
-    //with schemaName
-    if(schemaName != null){
-      templateInstanceArtifactBuilder.withName(schemaName);
-    } else{
-      templateInstanceArtifactBuilder.withName(SCHEMA_NAME.getValue());
-    }
-
-    return templateInstanceArtifactBuilder
-        .withDescription(SCHEMA_DESCRIPTION.getValue())
-        .build();
-  }
-}

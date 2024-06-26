@@ -15,6 +15,7 @@ public class ControlledTermGenerator implements FieldGenerator<ControlledTermFie
   @Override
   public ControlledTermFieldInstance buildFieldInstance(String value, Optional<ValueConstraints> valueConstraints) {
     var fieldInstanceArtifactBuilder = ControlledTermFieldInstance.builder();
+    var controlTermMap = MapInitializer.createControlledTermsMap();
     if(value != null && !value.equals("")){
       // Precision handling for co-PI, contact-PI, and data-PI
       String piRegex = "(?i)co[- ]?PI";
@@ -31,7 +32,12 @@ public class ControlledTermGenerator implements FieldGenerator<ControlledTermFie
         iri = URI.create(getIri(value).get());
       } else{
         label = value;
-        iri = URI.create(MapInitializer.createControlledTermsMap().get(value));
+        if(controlTermMap.containsKey(value)){
+          iri = URI.create(controlTermMap.get(value));
+        } else{
+          iri = URI.create(controlTermMap.get("PI"));
+        }
+
       }
       fieldInstanceArtifactBuilder
           .withLabel(label)
