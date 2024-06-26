@@ -7,7 +7,7 @@ Download rrmc.zip and then unzip. Move the extracted rrmc tool to into a locatio
 Type `./rrmc -h` to show options. 
 
 You need to specify:
-1. **Input Metadata Spreadsheet Path** [Required] (<input_metadata_spreadsheet_path>): Specify the path to your input spreadsheet file containing the metadata you wish to transform. The input spreadsheet path can be either a file path or a directory path. If it is a directory path, the tool will transform all spreadsheets within that directory. Therefore, please ensure that any non-relevant spreadsheets are removed beforehand.
+1. **Input Metadata CSV Path** [Required] (<input_metadata_csv_path>): Specify the path to your input csv file containing the metadata you need to transform. The input path can be either a file path or a directory path. If it is a directory path, the tool will transform all CSV files within that directory. Therefore, please ensure that any non-relevant CSV files are removed beforehand.
 
 2. **RADx Metadata Specification Path** [Required] (<RADx_metadata_specification_path>): Provide the path to the [RADx Metadata Specification](https://cedar.metadatacenter.org/templates/edit/https://repo.metadatacenter.org/templates/c691629c-1183-4425-9a12-26201eab1a10?folderId=https:%2F%2Frepo.metadatacenter.org%2Ffolders%2F5ac6dcb6-7a9b-4a75-a945-60ae43750953) JSON file.
 
@@ -23,7 +23,7 @@ e.g., for transforming all spreadsheets stored in a folder named radx-rad-spread
 
 ```
 ./rrmc \
-   -s ../radx-rad-spreadsheets \
+   -s ../radx-rad-metadata \
    -t ../RADxTemplate.json \
    -m ../radx-rad-mapping.xlsx \
    -o ../radx-rad-output
@@ -33,7 +33,7 @@ For transforming a single spreadsheet RADxRadExampleSheet.xlsx to the JSON-LD fo
 
 ```
 ./rrmc  \
-   -s ../RADxRadExampleSheet.xlsx \
+   -s ../RADxRadExampleSheet.csv \
    -t ../RADxTemplate.json \
    -m ../radx-rad-mapping.xlsx \
    -o ../radx-rad-output"
