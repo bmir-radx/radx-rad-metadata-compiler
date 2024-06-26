@@ -8,7 +8,7 @@ import java.util.regex.Pattern;
 
 import static edu.stanford.bmir.radx.rad.metadata.compiler.RadxRadFieldsConstant.KEYWORDS;
 
-public class SpreadsheetDataManager {
+public class CsvDataManager {
   private final Pattern FIELD_PATTERN = Pattern.compile("^(?!study_include_prospective_or_retrospective_human_samples)(.+?)_?(\\d*)$");
   private final String FIRST_NAME_PATTERN = "^(pi|creator)_firstname_\\d+$";
   private final String MIDDLE_NAME_PATTERN = "^(pi|creator)_middlename_\\d+$";
@@ -16,11 +16,11 @@ public class SpreadsheetDataManager {
   public final Map<String, Map<Integer, List<String>>> groupedData = new HashMap<>(); //{path->{index: [value1, value2]}}
   public final Map<String, Integer> elementInstanceCounts = new HashMap<>(); //{element: instances counts }
 
-  public void groupData(Map<String, String> spreadsheetData,
-                                Map<String, String> spreadsheet2templatePath,
+  public void groupData(Map<String, String> csvData,
+                                Map<String, String> csv2templatePath,
                                 TemplateSchemaArtifact templateSchemaArtifact){
 
-    for (Map.Entry<String, String> entry : spreadsheetData.entrySet()) {
+    for (Map.Entry<String, String> entry : csvData.entrySet()) {
       String key = entry.getKey();
       String value = entry.getValue();
 
@@ -35,33 +35,34 @@ public class SpreadsheetDataManager {
           var isFirstName = key.matches(FIRST_NAME_PATTERN);
           var isMiddleName = key.matches(MIDDLE_NAME_PATTERN);
 
-          var path = spreadsheet2templatePath.get(spreadsheetField);
+          var path = csv2templatePath.get(spreadsheetField);
+
+
+          //Update element instances counts
+          //TODO: need to update Map<String, Integer> elementInstanceCounts, add childElement: counts to map as well
+          var element = path.split("/")[1];
+          elementInstanceCounts.merge(element, index, Math::max);
 
           //If it is attribute-value type, add to attributeValueMap
           if(AttributeValueFieldUtil.isAttributeValue(templateSchemaArtifact, path)){
             attributeValueMap.computeIfAbsent(path, k -> new ArrayList<>()).add(key);
-          } else{
-            //Update element instances counts
-            //TODO: need to update Map<String, Integer> elementInstanceCounts, add childElement: counts to map as well
-            var element = path.split("/")[1];
-            elementInstanceCounts.merge(element, index, Math::max);
+          }
 
-            //Special handling for Contributor|Creator Given Name Fields
-            if(isFirstName && value != null){
-              String middleNameKey = key.replace("firstname", "middlename");
-              String middleNameValue = spreadsheetData.getOrDefault(middleNameKey, "");
-              value = value + " " + middleNameValue;
-            }
+          //Special handling for Contributor|Creator Given Name Fields
+          if(isFirstName && value != null){
+            String middleNameKey = key.replace("firstname", "middlename");
+            String middleNameValue = csvData.getOrDefault(middleNameKey, "");
+            value = value + " " + middleNameValue;
+          }
 
-            // Skip adding to groupedData if it's a middle name field
-            if(!isMiddleName){
-              groupedData.computeIfAbsent(path, k -> new HashMap<>())
-                  .computeIfAbsent(index, k -> new ArrayList<>())
-                  .add(value);
-            }
+          // Skip adding to groupedData if it's a middle name field
+          if(!isMiddleName){
+            groupedData.computeIfAbsent(path, k -> new HashMap<>())
+                .computeIfAbsent(index, k -> new ArrayList<>())
+                .add(value);
           }
         } else{ // precision handling for field "study_include_prospective_or_retrospective_human_samples - effective_Feb_2021"
-          var path = spreadsheet2templatePath.get(key);
+          var path = csv2templatePath.get(key);
           attributeValueMap.computeIfAbsent(path, k -> new ArrayList<>()).add(key);
         }
       }
