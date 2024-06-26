@@ -2,7 +2,7 @@
 This tool is designed to transform RADx-rad spreadsheets into the JSON-LD format suitable for upload to Data Hub. 
 
 ## Execute through shell file
-The repository includes a tool for metadata transformation. The tool is packaged in a zip file (rrmc.zip), which contains the shell script (rrmc) and two essential files for the transformation process: the RADx Metadata Specification and a spreadsheet that mapping the fields in radx-rad CSV template to CEDAR template.
+The repository includes a tool for metadata transformation. The tool is packaged in a zip file [rrmc.zip](https://github.com/bmir-radx/radx-rad-metadata-compiler/releases/download/v1.0.0/rrmc.zip), which contains the shell script (rrmc) and two essential files for the transformation process: the RADx Metadata Specification and a spreadsheet that mapping the fields in radx-rad CSV template to CEDAR template.
 Download rrmc.zip and then unzip. Move the extracted rrmc tool to into a location on your executable path.
 
 ### Make the Shell Script executable
