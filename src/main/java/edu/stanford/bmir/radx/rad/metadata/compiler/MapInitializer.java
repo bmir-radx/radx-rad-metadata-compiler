@@ -4,12 +4,12 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class MapInitializer {
-  private static final String personIri = "http://vocab.fairdatacollective.org/gdmt/Person";
+  private static final String personIri = "https://w3id.org/gdmt/Person";
   private static final String orcidIri = "https://orcid.org/";
   private static final String rorIri = "https://ror.org/";
-  private static final String projectLeaderIri = "http://vocab.fairdatacollective.org/gdmt/ProjectLeader";
-  private static final String createdIri = "http://vocab.fairdatacollective.org/gdmt/Created";
-  private static final String urlIri = "http://vocab.fairdatacollective.org/gdmt/URL";
+  private static final String projectLeaderIri = "https://w3id.org/gdmt/ProjectLeader";
+  private static final String createdIri = "https://w3id.org/gdmt/Created";
+  private static final String urlIri = "https://w3id.org/gdmt/URL";
   private final static String meshIri =  "http://purl.bioontology.org/ontology/MESH";
   //TODO: need to update
   private final static String ueiIri = "https://uei.org/";

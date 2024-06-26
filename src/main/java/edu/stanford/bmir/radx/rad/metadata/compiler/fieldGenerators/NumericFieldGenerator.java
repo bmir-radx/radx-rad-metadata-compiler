@@ -7,10 +7,10 @@ import org.metadatacenter.artifacts.model.core.fields.constraints.ValueConstrain
 
 import java.util.Optional;
 
-public class NumericFieldGenerator implements FieldGenerator{
+public class NumericFieldGenerator implements FieldGenerator<NumericFieldInstance>{
 
   @Override
-  public FieldInstanceArtifact buildFieldInstance(String value, Optional<ValueConstraints> valueConstraints) {
+  public NumericFieldInstance buildFieldInstance(String value, Optional<ValueConstraints> valueConstraints) {
     var fieldInstanceArtifactBuilder = NumericFieldInstance.builder();
     XsdNumericDatatype numberType;
 
@@ -20,20 +20,18 @@ public class NumericFieldGenerator implements FieldGenerator{
       numberType = XsdNumericDatatype.DOUBLE;
     }
 
-    if(value != null){
+    if(value != null && !value.equals("")){
       fieldInstanceArtifactBuilder
           //TODO: need to convert to different Number based on number type
-          .withValue(Double.valueOf(value))
-          .withType(numberType);
+          .withValue(Double.valueOf(value));
     } else{
       if(valueConstraints.isPresent()){
         var defaultValue = valueConstraints.get().defaultValue();
         defaultValue.ifPresent(defaultValue1 -> fieldInstanceArtifactBuilder
-            .withValue(defaultValue1.asNumericDefaultValue().value())
-            .withType(numberType));
+            .withValue(defaultValue1.asNumericDefaultValue().value()));
       }
     }
 
-    return fieldInstanceArtifactBuilder.build();
+    return fieldInstanceArtifactBuilder.withType(numberType).build();
   }
 }

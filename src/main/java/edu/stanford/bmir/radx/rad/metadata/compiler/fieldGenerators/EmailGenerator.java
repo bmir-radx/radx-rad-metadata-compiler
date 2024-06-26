@@ -6,11 +6,11 @@ import org.metadatacenter.artifacts.model.core.fields.constraints.ValueConstrain
 
 import java.util.Optional;
 
-public class EmailGenerator implements FieldGenerator{
+public class EmailGenerator implements FieldGenerator<EmailFieldInstance>{
   @Override
-  public FieldInstanceArtifact buildFieldInstance(String value, Optional<ValueConstraints> valueConstraints) {
+  public EmailFieldInstance buildFieldInstance(String value, Optional<ValueConstraints> valueConstraints) {
     var fieldInstanceArtifactBuilder = EmailFieldInstance.builder();
-    if(value != null){
+    if(value != null && !value.equals("")){
       fieldInstanceArtifactBuilder.withValue(value);
     } else{
       if(valueConstraints.isPresent()){

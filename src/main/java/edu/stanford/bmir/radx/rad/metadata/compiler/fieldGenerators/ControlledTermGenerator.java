@@ -11,11 +11,12 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Optional;
 
-public class ControlledTermGenerator implements FieldGenerator{
+public class ControlledTermGenerator implements FieldGenerator<ControlledTermFieldInstance>{
   @Override
-  public FieldInstanceArtifact buildFieldInstance(String value, Optional<ValueConstraints> valueConstraints) {
+  public ControlledTermFieldInstance buildFieldInstance(String value, Optional<ValueConstraints> valueConstraints) {
     var fieldInstanceArtifactBuilder = ControlledTermFieldInstance.builder();
-    if(value != null){
+    var controlTermMap = MapInitializer.createControlledTermsMap();
+    if(value != null && !value.equals("")){
       // Precision handling for co-PI, contact-PI, and data-PI
       String piRegex = "(?i)co[- ]?PI";
       String contactPiRegex = "(?i)contact[- ]?PI";
@@ -24,14 +25,23 @@ public class ControlledTermGenerator implements FieldGenerator{
       value = value.replaceAll(contactPiRegex, "contact-PI");
       value = value.replaceAll(dataPiRegex, "data-PI");
 
-      try{
-        var URI = MapInitializer.createControlledTermsMap().get(value);
-        fieldInstanceArtifactBuilder
-            .withLabel(value)
-            .withValue(new URI(URI));
-      } catch (URISyntaxException e){
-        throw new RuntimeException(e);
+      String label;
+      URI iri;
+      if(getIri(value).isPresent()){
+        label = getLabel(value);
+        iri = URI.create(getIri(value).get());
+      } else{
+        label = value;
+        if(controlTermMap.containsKey(value)){
+          iri = URI.create(controlTermMap.get(value));
+        } else{
+          iri = URI.create(controlTermMap.get("PI"));
+        }
+
       }
+      fieldInstanceArtifactBuilder
+          .withLabel(label)
+          .withValue(iri);
 
     } else{
       if(valueConstraints.isPresent()){
@@ -48,5 +58,32 @@ public class ControlledTermGenerator implements FieldGenerator{
     }
 
     return fieldInstanceArtifactBuilder.build();
+  }
+
+  private String getLabel(String value) {
+    var trimmedValue = value.trim();
+    var openParIndex = trimmedValue.lastIndexOf('(');
+    if(openParIndex == -1) {
+      return trimmedValue;
+    }
+    var substring = trimmedValue.substring(0, openParIndex);
+    if(substring.startsWith("[") && substring.endsWith("]")) {
+      return substring.substring(1, substring.length() - 1).trim();
+    }
+    else {
+      return substring.trim();
+    }
+  }
+
+  private Optional<String> getIri(String value) {
+    var trimmedValue = value.trim();
+    if(!trimmedValue.endsWith(")")) {
+      return Optional.empty();
+    }
+    var openParIndex = trimmedValue.lastIndexOf('(');
+    if(openParIndex == -1) {
+      return Optional.empty();
+    }
+    return Optional.of((trimmedValue.substring(openParIndex + 1, trimmedValue.length() - 1)));
   }
 }

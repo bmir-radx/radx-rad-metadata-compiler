@@ -11,11 +11,12 @@ public class ElementInstanceArtifactGenerator {
   public List<ElementInstanceArtifact> generateElementInstanceWithValue(String currentElement, String path,
                                                                ElementSchemaArtifact elementSchemaArtifact,
                                                                TemplateSchemaArtifact templateSchemaArtifact,
-                                                               Map<String, String> spreadsheetData) throws URISyntaxException {
+                                                               Map<String, String> csvData,
+                                                              CsvDataManager csvDataManager) throws URISyntaxException {
 
-    var attributeValueMap = SpreadsheetDataManager.attributeValueMap;
-    var elementInstanceCounts = SpreadsheetDataManager.elementInstanceCounts;
-    var groupedData = SpreadsheetDataManager.groupedData;
+    var attributeValueMap = csvDataManager.attributeValueMap;
+    var elementInstanceCounts = csvDataManager.elementInstanceCounts;
+    var groupedData = csvDataManager.groupedData;
     var childFields = elementSchemaArtifact.getFieldNames();
     var instanceCount = elementInstanceCounts.get(currentElement);
 
@@ -34,14 +35,14 @@ public class ElementInstanceArtifactGenerator {
         //check if field is an attribute value type
         //if yes, build attribute value fields, otherwise, build regular fields
         if (attributeValueMap.containsKey(currentPath)) {
-          var spreadsheetFields = attributeValueMap.get(currentPath);
-          var attributeValueFieldInstances = fieldInstanceArtifactGenerator.buildAttributeValueField(spreadsheetData, spreadsheetFields);
+          var csvFields = attributeValueMap.get(currentPath);
+          var attributeValueFieldInstances = fieldInstanceArtifactGenerator.buildAttributeValueField(csvData, csvFields);
           elementInstanceBuilder.withAttributeValueFieldGroup(expectedField, attributeValueFieldInstances);
         } else {
-          // if the expectedField in the template has the mapping field in the spreadsheet, then need to retrieve data from spreadsheet
+          // if the expectedField in the template has the mapping field in the csv, then need to retrieve data from csv
           // otherwise, build an empty fieldArtifactInstance
           FieldInstanceArtifact fieldInstanceArtifact;
-          if (groupedData.containsKey(currentPath)) {
+          if (groupedData.containsKey(currentPath) && groupedData.get(currentPath).containsKey(i)) {
             if(isMultipleField){
               // build field instance one by one, explicitly for creator/contributor ids
               var valueSet = groupedData.get(currentPath).get(i);
@@ -66,7 +67,7 @@ public class ElementInstanceArtifactGenerator {
       }
 
       //Build nested child element
-      buildWithElementInstances(spreadsheetData, elementSchemaArtifact, templateSchemaArtifact, elementInstanceBuilder, path + "/" + currentElement);
+      buildWithElementInstances(csvData, elementSchemaArtifact, templateSchemaArtifact, elementInstanceBuilder, csvDataManager, path + "/" + currentElement);
 
       //Add JsonLdContext for each elementInstance
       ContextGenerator.generateElementInstanceContext(
@@ -84,16 +85,17 @@ public class ElementInstanceArtifactGenerator {
                                          ElementSchemaArtifact currentElementSchemaArtifact,
                                          TemplateSchemaArtifact templateSchemaArtifact,
                                          ElementInstanceArtifact.Builder elementInstanceBuilder,
+                                         CsvDataManager CSVDataManager,
                                          String path) throws URISyntaxException {
     var childElements = currentElementSchemaArtifact.getElementNames();
-    var elementInstanceCounts = SpreadsheetDataManager.elementInstanceCounts;
+    var elementInstanceCounts = CSVDataManager.elementInstanceCounts;
     var mappedElements = elementInstanceCounts.keySet();
     for (var childElement : childElements) {
       var childElementSchemaArtifact = currentElementSchemaArtifact.getElementSchemaArtifact(childElement);
       var isChildElementMultiple = childElementSchemaArtifact.isMultiple();
       //build element that has mapping in radx rad spreadsheet
       if (mappedElements.contains(childElement)){
-        var childElementInstanceArtifacts = generateElementInstanceWithValue(childElement, path, childElementSchemaArtifact, templateSchemaArtifact, spreadsheetData);
+        var childElementInstanceArtifacts = generateElementInstanceWithValue(childElement, path, childElementSchemaArtifact, templateSchemaArtifact, spreadsheetData, CSVDataManager);
         if(isChildElementMultiple){
           elementInstanceBuilder.withMultiInstanceElementInstances(childElement, childElementInstanceArtifacts);
         } else{
@@ -125,7 +127,7 @@ public class ElementInstanceArtifactGenerator {
     for(var expectedField : childFields){
       var specificationPath = path + "/" + expectedField;
       if(AttributeValueFieldUtil.isAttributeValue(templateSchemaArtifact, specificationPath)){
-        elementInstanceBuilder.withAttributeValueFieldGroup(expectedField, Collections.emptyMap());
+        elementInstanceBuilder.withAttributeValueFieldGroup(expectedField, new LinkedHashMap<>());
       } else{
         var fieldSchemaArtifact = elementSchemaArtifact.getFieldSchemaArtifact(expectedField);
         var inputType = FieldType.getFieldType(fieldSchemaArtifact);

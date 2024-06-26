@@ -8,11 +8,11 @@ import org.metadatacenter.artifacts.model.core.fields.constraints.ValueConstrain
 
 import java.util.Optional;
 
-public class TextFieldGenerator implements FieldGenerator{
+public class TextFieldGenerator implements FieldGenerator<TextFieldInstance>{
   @Override
-  public FieldInstanceArtifact buildFieldInstance(String value, Optional<ValueConstraints> valueConstraints) {
+  public TextFieldInstance buildFieldInstance(String value, Optional<ValueConstraints> valueConstraints) {
     var fieldInstanceArtifactBuilder = TextFieldInstance.builder();
-    if(value != null){
+    if(value != null && !value.equals("")){
       fieldInstanceArtifactBuilder.withValue(value);
     } else{
       if(valueConstraints.isPresent()){

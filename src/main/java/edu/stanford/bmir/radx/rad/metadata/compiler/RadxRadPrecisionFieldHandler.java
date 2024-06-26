@@ -49,27 +49,29 @@ public class RadxRadPrecisionFieldHandler {
     var fieldType = FieldType.getFieldType(fieldSchemaArtifact);
 
     //If the element instance is not empty, then set specific controlled term fields
+    //-----------------------start to comment out for template 2,0-----------------------------------
     if(!isEmptyElementInstance(elementInstanceCounts, elementName, elementSchemaArtifact)){
-//     if (elementName.equals(DATA_FILE_CONTRIBUTORS.getValue())  //Set Contributor Identifier Scheme to ORCiD
-//          && expectedField.equals(CONTRIBUTOR_IDENTIFIER_SCHEME.getValue())
-//          && groupedData.containsKey(contributorIdentifierPath)
-//          && groupedData.get(contributorIdentifierPath).get(i)!= null){
-//        elementInstanceArtifactBuilder.withSingleInstanceFieldInstance(expectedField,
-//            fieldInstanceArtifactGenerator.buildFieldInstanceWithValues(fieldType, orcid, Optional.empty()));
-//      } else if (elementName.equals(DATA_FILE_CREATORS.getValue())  //Set Creator Identifier Scheme to ORCiD
-//          && expectedField.equals(CREATOR_IDENTIFIER_SCHEME.getValue())
-//          && groupedData.containsKey(creatorIdentifierPath)
-//          && groupedData.get(creatorIdentifierPath).get(i)!= null){
-//        elementInstanceArtifactBuilder.withSingleInstanceFieldInstance(expectedField,
-//            fieldInstanceArtifactGenerator.buildFieldInstanceWithValues(fieldType, orcid, Optional.empty()));
-//      } else if (elementName.equals(DATA_FILE_CREATORS.getValue())  //Set Creator Affiliation Identifier Scheme to ROR
-//          && expectedField.equals(CREATOR_AFFILIATION_IDENTIFIER_SCHEME.getValue())
-//          && groupedData.containsKey(creatorAffiliationIdPath)
-//          && groupedData.get(creatorAffiliationIdPath).get(i)!= null){
-//        elementInstanceArtifactBuilder.withSingleInstanceFieldInstance(expectedField,
-//            fieldInstanceArtifactGenerator.buildFieldInstanceWithValues(fieldType, ror, Optional.empty()));
-//      } else if (elementName.equals(DATA_FILE_CREATORS.getValue()) //Set Creator Given Name
-      if( elementName.equals(DATA_FILE_CREATORS.getValue())
+     if (elementName.equals(DATA_FILE_CONTRIBUTORS.getValue())  //Set Contributor Identifier Scheme to ORCiD
+          && expectedField.equals(CONTRIBUTOR_IDENTIFIER_SCHEME.getValue())
+          && groupedData.containsKey(contributorIdentifierPath)
+          && groupedData.get(contributorIdentifierPath).get(i)!= null){
+        elementInstanceArtifactBuilder.withSingleInstanceFieldInstance(expectedField,
+            fieldInstanceArtifactGenerator.buildFieldInstanceWithValues(fieldType, orcid, Optional.empty()));
+      } else if (elementName.equals(DATA_FILE_CREATORS.getValue())  //Set Creator Identifier Scheme to ORCiD
+          && expectedField.equals(CREATOR_IDENTIFIER_SCHEME.getValue())
+          && groupedData.containsKey(creatorIdentifierPath)
+          && groupedData.get(creatorIdentifierPath).get(i)!= null){
+        elementInstanceArtifactBuilder.withSingleInstanceFieldInstance(expectedField,
+            fieldInstanceArtifactGenerator.buildFieldInstanceWithValues(fieldType, orcid, Optional.empty()));
+      } else if (elementName.equals(DATA_FILE_CREATORS.getValue())  //Set Creator Affiliation Identifier Scheme to ROR
+          && expectedField.equals(CREATOR_AFFILIATION_IDENTIFIER_SCHEME.getValue())
+          && groupedData.containsKey(creatorAffiliationIdPath)
+          && groupedData.get(creatorAffiliationIdPath).get(i).get(0).startsWith("ror")){
+        elementInstanceArtifactBuilder.withSingleInstanceFieldInstance(expectedField,
+            fieldInstanceArtifactGenerator.buildFieldInstanceWithValues(fieldType, ror, Optional.empty()));
+      } else if (elementName.equals(DATA_FILE_CREATORS.getValue()) //Set Creator Given Name
+       //---------------------end of comment out for template 2.0-----------------------------------------
+//      if( elementName.equals(DATA_FILE_CREATORS.getValue())
           && expectedField.equals(CREATOR_GIVEN_NAME.getValue())
           && groupedData.containsKey(creatorNamePath)){
         var name = groupedData.get(creatorNamePath).get(i).get(0);
@@ -97,18 +99,20 @@ public class RadxRadPrecisionFieldHandler {
           && expectedField.equals(EVENT_TYPE.getValue())
           && groupedData.containsKey(datePath)
           && groupedData.get(datePath).get(i) != null)  {
+       var eventTypeInstance = fieldInstanceArtifactGenerator.buildFieldInstanceWithValues(fieldType, created, Optional.empty());
+        elementInstanceArtifactBuilder.withSingleInstanceFieldInstance(expectedField, eventTypeInstance);
+       //-----------------------start to comment out for template 2,0-----------------------------------
+      } else if (elementName.equals(DATA_FILE_PARENT_STUDIES.getValue())  //Set Study Identifier Scheme to URL
+          && expectedField.equals(STUDY_IDENTIFIER_SCHEME.getValue())
+          && groupedData.containsKey(studyIdentifierPath)
+          && isValidURL(groupedData.get(studyIdentifierPath).get(i).get(0))) {
         elementInstanceArtifactBuilder.withSingleInstanceFieldInstance(expectedField,
-            fieldInstanceArtifactGenerator.buildFieldInstanceWithValues(fieldType, created, Optional.empty()));
-//      } else if (elementName.equals(DATA_FILE_PARENT_STUDIES.getValue())  //Set Study Identifier Scheme to URL
-//          && expectedField.equals(STUDY_IDENTIFIER_SCHEME.getValue())
-//          && groupedData.containsKey(studyIdentifierPath)
-//          && isValidURL(groupedData.get(studyIdentifierPath).get(i))) {
-//        elementInstanceArtifactBuilder.withSingleInstanceFieldInstance(expectedField,
-//            fieldInstanceArtifactGenerator.buildFieldInstanceWithValues(fieldType, url, Optional.empty()));
-//      } else if(elementName.equals(DATA_FILE_TITLES.getValue())  //Set Data File Title Language to en
-//          && expectedField.equals(LANGUAGE.getValue())){
-//        elementInstanceArtifactBuilder.withSingleInstanceFieldInstance(expectedField,
-//            fieldInstanceArtifactGenerator.buildFieldInstanceWithValues(fieldType, "en", Optional.empty()));
+            fieldInstanceArtifactGenerator.buildFieldInstanceWithValues(fieldType, url, Optional.empty()));
+      } else if(elementName.equals(DATA_FILE_TITLES.getValue())  //Set Data File Title Language to en
+          && expectedField.equals(LANGUAGE.getValue())){
+        elementInstanceArtifactBuilder.withSingleInstanceFieldInstance(expectedField,
+            fieldInstanceArtifactGenerator.buildFieldInstanceWithValues(fieldType, "en", Optional.empty()));
+       //-----------------------end of comment out for template 2,0-----------------------------------
       } else{
         var fieldInstanceArtifact = fieldInstanceArtifactGenerator.buildEmptyFieldInstance(fieldType, valueConstraints);
         buildWithFieldInstanceArtifact(elementInstanceArtifactBuilder, fieldInstanceArtifact, expectedField, isMultiple);
@@ -154,6 +158,56 @@ public class RadxRadPrecisionFieldHandler {
     }
   }
 
+  /***
+   * This method is for Specification 1.0
+   */
+  public static void addDataFileSubjectsElement(String input, TemplateSchemaArtifact templateSchemaArtifact, TemplateInstanceArtifact.Builder templateInstanceArtifactBuilder) throws URISyntaxException {
+    if(input != null) {
+      var mesh = MeshCsvReader.readCSVToMap();
+      String[] keywords = input.split("\\|");
+      var elementInstances = new ArrayList<ElementInstanceArtifact>();
+      for(var keyword: keywords){
+        var elementInstanceArtifactBuilder = ElementInstanceArtifact.builder();
+        keyword = keyword.trim();
+
+        //add Data File Subjects/Subject Identifier
+        FieldInstanceArtifact subjectIdentifierField;
+        FieldInstanceArtifact subjectIdentifierSchemeField;
+        if (mesh.containsKey(keyword)){
+          var classId = mesh.get(keyword);
+          subjectIdentifierField = ControlledTermFieldInstance.builder().withValue(new URI(classId)).withLabel(keyword).build();
+          subjectIdentifierSchemeField = new TextFieldGenerator().buildFieldInstance(meshUri);
+        } else{
+          subjectIdentifierField = ControlledTermFieldInstance.builder().build();
+          subjectIdentifierSchemeField = new TextFieldGenerator().buildFieldInstance(null);
+        }
+        elementInstanceArtifactBuilder.withSingleInstanceFieldInstance(SUBJECT_IDENTIFIER.getValue(), subjectIdentifierField);
+
+        //add Keyword
+        elementInstanceArtifactBuilder.withSingleInstanceFieldInstance(KEYWORD.getValue(), new TextFieldGenerator().buildFieldInstance(keyword));
+
+        //add Subject Identifier Scheme
+        elementInstanceArtifactBuilder.withSingleInstanceFieldInstance(SUBJECT_IDENTIFIER_SCHEME.getValue(), subjectIdentifierSchemeField);
+
+        //add context
+        var elementSchemaArtifact = templateSchemaArtifact.getElementSchemaArtifact(DATA_FILE_SUBJECTS.getValue());
+        ContextGenerator.generateElementInstanceContext(elementSchemaArtifact, elementInstanceArtifactBuilder);
+
+        //add @id
+        IdGenerator.generateElementId(elementInstanceArtifactBuilder);
+
+        elementInstances.add(elementInstanceArtifactBuilder.build());
+      }
+
+      templateInstanceArtifactBuilder.withMultiInstanceElementInstances(DATA_FILE_SUBJECTS.getValue(), elementInstances);
+    } else { //empty keywords input
+      templateInstanceArtifactBuilder.withMultiInstanceElementInstances(DATA_FILE_SUBJECTS.getValue(), Collections.emptyList());
+    }
+  }
+
+  /***
+   * This method is for Specification 2.0
+   */
   public static void processKeywords(String input, TemplateInstanceArtifact.Builder templateInstanceArtifactBuilder) throws URISyntaxException {
     var subjectsInstances = new ArrayList<FieldInstanceArtifact>();
     var keywordsInstances = new ArrayList<FieldInstanceArtifact>();

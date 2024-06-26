@@ -5,9 +5,9 @@ import org.metadatacenter.artifacts.model.core.fields.constraints.ValueConstrain
 
 import java.util.Optional;
 
-public interface FieldGenerator {
-  default FieldInstanceArtifact buildFieldInstance(String value) {
+public interface FieldGenerator<T extends FieldInstanceArtifact> {
+  default T buildFieldInstance(String value) {
     return buildFieldInstance(value, Optional.empty());
   }
-  FieldInstanceArtifact buildFieldInstance(String value, Optional<ValueConstraints> valueConstraints);
+  T buildFieldInstance(String value, Optional<ValueConstraints> valueConstraints);
 }
