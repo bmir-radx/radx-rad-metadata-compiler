@@ -4,8 +4,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.apache.commons.cli.*;
 import org.metadatacenter.artifacts.model.renderer.JsonSchemaArtifactRenderer;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -31,7 +29,6 @@ public class Compiler {
   private static final JsonSchemaArtifactRenderer jsonSchemaArtifactRenderer = new JsonSchemaArtifactRenderer();
   private static final TemplateInstanceArtifactGenerator templateArtifactInstanceGenerator = new TemplateInstanceArtifactGenerator();
   private static final ObjectMapper mapper = new ObjectMapper();
-  private static final Logger logger = LoggerFactory.getLogger(Compiler.class);
   public static void main(String[] args) throws Exception {
     CommandLineParser commandLineParser = new DefaultParser();
     Options options = buildCommamdLineOptions();
@@ -66,16 +63,16 @@ public class Compiler {
                 try {
                   String outputFileName = getOutputFileName(file);
                   transform(file, outputDirectory.resolve(outputFileName), template, mappingSpreadsheet);
-                  logger.info("File compiled successfully: {}", file);
+                  System.out.println("File compiled successfully: " + file);
                 } catch (Exception e) {
-                  logger.error("Error processing file {}: {}", file, e.getMessage());
+                  System.out.println("Error processing file  " + file + ": " + e.getMessage());
                 }
               });
         }
       } else if (Files.exists(csvFile)) {
         String outputFileName = getOutputFileName(csvFile);
         transform(csvFile, outputDirectory.resolve(outputFileName), template, mappingSpreadsheet);
-        logger.info("File compiled successfully: {}", csvFile);
+        System.out.println("File compiled successfully: " + csvFile);
       } else {
         throw new FileNotFoundException("CSV path not found: " + csvFile);
       }
