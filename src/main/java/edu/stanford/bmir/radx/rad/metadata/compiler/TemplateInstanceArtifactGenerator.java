@@ -41,7 +41,7 @@ public class TemplateInstanceArtifactGenerator {
     for (var childElement : elements) {
       if (childElement.equals(DATA_FILE_SUBJECTS.getValue())) {
         //generate Data File Subjects element
-        RadxRadPrecisionFieldHandler.addDataFileSubjectsElement(csvData.get(KEYWORDS.getValue()), templateSchemaArtifact, templateInstanceArtifactBuilder);
+//        RadxRadPrecisionFieldHandler.addDataFileSubjectsElement(csvData.get(KEYWORDS.getValue()), templateSchemaArtifact, templateInstanceArtifactBuilder);
       } else {
         var childElementSchemaArtifact = templateSchemaArtifact.getElementSchemaArtifact(childElement);
         var isChildElementMultiple = childElementSchemaArtifact.isMultiple();

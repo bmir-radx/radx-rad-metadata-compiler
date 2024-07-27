@@ -27,7 +27,7 @@ public class Compiler {
   private static final CsvReader csvReader = new CsvReader();
   private static final PathMappingReader pathMappingReader = new PathMappingReader();
   private static final JsonSchemaArtifactRenderer jsonSchemaArtifactRenderer = new JsonSchemaArtifactRenderer();
-  private static final TemplateInstanceArtifactGenerator templateArtifactInstanceGenerator = new TemplateInstanceArtifactGenerator();
+  private static final TemplateInstanceArtifactGenerator2 templateArtifactInstanceGenerator = new TemplateInstanceArtifactGenerator2();
   private static final ObjectMapper mapper = new ObjectMapper();
   public static void main(String[] args) throws Exception {
     CommandLineParser commandLineParser = new DefaultParser();
@@ -83,10 +83,10 @@ public class Compiler {
 
   private static void transform(Path spreadsheetFile, Path outputFile, Path template, Path mappingSpreadsheet) throws IOException, URISyntaxException {
     var templateNode = mapper.readTree(template.toFile());
-    var spreadsheetData = csvReader.readCsvMetadata(spreadsheetFile.toString());
+    var csvData = csvReader.readCsvMetadata(spreadsheetFile.toString());
     var csv2templatePath = pathMappingReader.readCsv2templatePath(mappingSpreadsheet.toString());
     var templateInstanceArtifact = templateArtifactInstanceGenerator.generateTemplateArtifactInstance(
-        spreadsheetData,csv2templatePath, templateNode, null);
+        csvData,csv2templatePath, templateNode, null);
     ObjectNode templateInstanceRendering = jsonSchemaArtifactRenderer.renderTemplateInstanceArtifact(templateInstanceArtifact);
     mapper.writeValue(outputFile.toFile(), templateInstanceRendering);
   }

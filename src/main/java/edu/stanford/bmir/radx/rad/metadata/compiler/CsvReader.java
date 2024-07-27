@@ -16,7 +16,7 @@ import java.util.*;
 
 public class CsvReader {
   public Map<String, String> readCsvMetadata(String pathToFile) throws IOException {
-    Map<String, String> csvData = new HashMap<>();
+    Map<String, String> csvData = new LinkedHashMap<>();
 
     try (FileReader reader = new FileReader(pathToFile);
          CSVParser csvParser = new CSVParser(reader, CSVFormat.DEFAULT.withFirstRecordAsHeader())) {

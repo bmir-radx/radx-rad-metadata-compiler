@@ -60,7 +60,7 @@ public class ElementInstanceArtifactGenerator {
               elementInstanceBuilder.withMultiInstanceFieldInstances(expectedField, List.of(fieldInstanceArtifact));
             } else {
               //Add values to RADx-rad specific controlled terms fields or add an empty field entry
-              RadxRadPrecisionFieldHandler.addSpecificFields(elementInstanceBuilder, currentElement, expectedField, elementSchemaArtifact, groupedData, elementInstanceCounts, i);
+//              RadxRadPrecisionFieldHandler.addSpecificFields(elementInstanceBuilder, currentElement, expectedField, elementSchemaArtifact, groupedData, elementInstanceCounts, i);
             }
           }
         }
