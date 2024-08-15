@@ -1,16 +1,15 @@
 package edu.stanford.bmir.radx.rad.metadata.compiler.fieldGenerators;
 
 import org.metadatacenter.artifacts.model.core.CheckboxFieldInstance;
-import org.metadatacenter.artifacts.model.core.FieldInstanceArtifact;
 import org.metadatacenter.artifacts.model.core.fields.constraints.ValueConstraints;
 
 import java.util.Optional;
 
-public class CheckBoxFieldGenerator implements FieldGenerator{
+public class CheckBoxFieldGenerator implements FieldGenerator<CheckboxFieldInstance>{
   @Override
-  public FieldInstanceArtifact buildFieldInstance(String value, Optional<ValueConstraints> valueConstraints) {
+  public CheckboxFieldInstance buildFieldInstance(String value, Optional<ValueConstraints> valueConstraints) {
     var fieldInstanceArtifactBuilder = CheckboxFieldInstance.builder();
-    if(value != null){
+    if(value != null && !value.equals("")){
       fieldInstanceArtifactBuilder.withValue(value);
     } else{
       if(valueConstraints.isPresent()){

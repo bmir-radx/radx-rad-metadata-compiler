@@ -1,0 +1,85 @@
+Field,Value,Descriptions
+pi_fullname_1,Diana Carolina Vanegas-Gamboa,
+pi_firstname_1,Diana,"from NIH Reporter (the contact PI needs to be checked/updated with data that Alissa is collecting, there are instances where the dbGaP PI is not the grant PI)"
+pi_middlename_1,Carolina,from NIH Reporter (middle name or initial)
+pi_lastname_1,Vanegas-Gamboa,from NIH Reporter
+pi_profileid_1,77816868,from NIH Reporter (unique NIH PI identifier)
+pi_orcid_1,0000-0001-9858-0960,from orcid.org
+pi_role_1,,contact-PI | co-PI | data-PI
+pi_inst_name_1,,
+pi_inst_id_1,,
+pi_inst_id_type_1,,ROR | UEI
+,,
+pi_fullname_2,,
+pi_firstname_2,,
+pi_middlename_2,,
+pi_lastname_2,,
+pi_profileid_2,,
+pi_orcid_2,,
+pi_role_2,,
+pi_inst_name_2,,
+pi_inst_id_2,,
+pi_inst_id_type_2,,ROR | UEI
+,,
+project_title,Development of an Automated Diagnostic Platform for SARS-CoV-2 Monitoring in Vulnerable Areas,
+subproject,Automatic Detection and Tracing,from https://www.radxrad.org/awardees/ based on the FOA area
+nih_project_id,U01AA029328,this ID needs to be checked/updated with data that Alissa is collating
+nih_reporter_abstract,"Project Summary
+The devastation caused by emerging pathogens with fast transmission capacity, such as SARS-CoV-2, has
+demonstrated the importance of preparedness for future viral outbreaks; this includes the ability for fast
+deployment of in-situ testing tools and epidemiological surveillance with high temporal and spatial
+resolution; particularly in places that are most vulnerable to becoming reservoirs of infectious agents.
+We propose to develop a versatile multiplexing detection platform for SARS-CoV-2 in saliva. The proposed
+system will integrate signals from different biorecognition elements. Aptamer, antibody, and ACE2 will be
+immobilized onto laser inscribed graphene electrodes, and detection mechanisms targeting SARS-CoV-2
+spike protein will be studied under varying testing conditions (pH, temperature, ionic strength). After
+determining the operating conditions for enhanced performance of each biosensor, a self-referencing
+approach will be used between complementary recognition elements (i.e., possible combinations of
+aptamers, antibodies, and ACE2 enzyme biosensors) to evaluate the effects on test results accuracy (i.e.,
+risk of false-positive and false-negative results). A saliva pre-treatment protocol will be developed to
+facilitate SARS-CoV-2 testing in human saliva using the multiplex biosensor platform. An open channel
+microfluidics system will be designed to automatically split and channel a single saliva sample into multiple
+streams to the biosensors without saturation, biofouling, and pump requirement. The development of a
+functional and reliable multiplex biosensor system will be useful for addressing longstanding needs in public
+health as the respiratory Coronavirus family continues its seasonal visits, which may repeat over several
+decades, much like the occasional visits from the influenza virus, with varying degrees of virulence.",the abstract will only be included if it is RADx-rad specific
+nih_reporter_narrative,"Project Narrative
+The proposed research aims to develop a multiplex biosensor platform to support increased
+testing of SARS-CoV-2 with high accuracy and temporal resolution. A multiplex biosensor system
+could help reduce testing gaps in vulnerable areas where access to standard laboratory testing is
+very limited.",the narrative will only be included if it is RADx-rad specific
+,,
+creator_fullname_1,Diana Carolina Vanegas-Gamboa,
+creator_firstname_1,Diana,
+creator_middlename_1,Carolina,
+creator_lastname_1,Vanegas-Gamboa,
+creator_profileid_1,77816868,
+creator_orcid_1,0000-0001-9858-0960,
+creator_inst_name_1,e.g. Brown University,
+creator_inst_id_1,e.g. https://ror.org/05gq02987,
+creator_inst_id_type_1,ROR,ROR | UEI
+,,
+creator_fullname_2,Diana Carolina Vanegas-Gamboa,
+creator_firstname_2,Diana,
+creator_middlename_2,Carolina,
+creator_lastname_2,Vanegas-Gamboa,
+creator_profileid_2,77816868,
+creator_orcid_2,0000-0001-9858-0960,
+creator_inst_name_2,e.g. Brown University,
+creator_inst_id_2,e.g. https://ror.org/05gq02987,
+creator_inst_id_type_2,ROR,ROR | UEI
+,,
+dbGaP_study_ID,phs002546,full dbGaP accession number. Note that this is not the NIH Project Id
+description_of_project,The proposed research aims to develop a multiplex biosensor platform to support increased testing of SARS-CoV-2 with high accuracy and temporal resolution. A multiplex biosensor system could help reduce testing gaps in vulnerable areas where access to standard laboratory testing is very limited.,
+keywords,biosensor system| SARS-CoV-2 |saliva| electrochemical sensing| diagnostic| vulnerable areas| low-cost,
+publication_url,,leave cells empty if there is no data
+study_include_prospective_or_retrospective_human_samples - effective_Feb_2021,prospective,
+collected_NIH_Minimum_CDEs_for_all_datasets,Yes,
+method_of_data_analysis - software_statistical_approach,Excel,
+,,
+specimen_type_used,wastewater,"this information can be extracted from the data files. Data elements including ""specimen_type"" and ""virus_sample_type"", and others can be used to retrieve this information data elements. The harmonized data dictionary has enumerations for these data elements (https://github.com/radxrad/common-data-elements/blob/main/technology_common_data_elements.csv)."
+data_file_title,A human readable title for the data file,
+data_file_name,The data file name,
+data_dictionary_file_name,,
+data_file_creation_dateTime,2007-04-05T12:30−02:00,
+data_file_sha256_digest,A sha256 digest of the data file,

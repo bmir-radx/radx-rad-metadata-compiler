@@ -35,6 +35,12 @@ public enum RadxSpecificationMetadataConstant {
   AUXILIARY_METADATA("Auxiliary Metadata"),
   DATA_FILE_DESCRIPTIVE_KEY_VALUE_PAIRS("Data File Descriptive Key-Value Pairs"),
   ADDITIONAL_COMMENTARY("Additional Commentary"),
+  //start to comment out for Specification 2.0
+  DATA_FILE_SUBJECTS("Data File Subjects"),
+  SUBJECT_IDENTIFIER("Subject Identifier"),
+  SUBJECT_IDENTIFIER_SCHEME("Subject Identifier Scheme"),
+  //end of comment out for Specification 2.0
+  KEYWORD("Keyword"),
   SUBJECTS("Subjects"),
   KEYWORDS("Keywords"),
   DATA_FILE_RELATED_RESOURCES("Data File Related Resources"),

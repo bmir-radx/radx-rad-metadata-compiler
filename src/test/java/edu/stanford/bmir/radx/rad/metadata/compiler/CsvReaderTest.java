@@ -7,15 +7,16 @@ import java.io.IOException;
 import java.util.Map;
 
 
-public class SpreadsheetReaderTest {
+public class CsvReaderTest {
   @Test
   public void testReadSpreadsheet() throws IOException {
-    String pathToFile = getClass().getClassLoader().getResource("RADxRadMetadataTemplateSheet.xlsx").getPath();
+    String pathToFile = getClass().getClassLoader().getResource("RADxRadMetadataExample.csv").getPath();
 
-    SpreadsheetReader reader = new SpreadsheetReader();
-    Map<String, String> fieldValues = reader.readRadxRadSpreadsheet(pathToFile);
+    CsvReader reader = new CsvReader();
+    Map<String, String> fieldValues = reader.readCsvMetadata(pathToFile);
 
     assertEquals("Diana Carolina Vanegas-Gamboa", fieldValues.get("pi_fullname_1"));
     assertEquals("Development of an Automated Diagnostic Platform for SARS-CoV-2 Monitoring in Vulnerable Areas", fieldValues.get("project_title"));
+    assertEquals("2007-04-05T12:30−02:00", fieldValues.get("data_file_creation_dateTime"));
   }
 }
