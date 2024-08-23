@@ -4,7 +4,7 @@
 
   <groupId>edu.stanford.bmir.radx</groupId>
   <artifactId>radx-rad-metadata-compiler</artifactId>
-  <version>1.0-SNAPSHOT</version>
+  <version>1.0.0</version>
   <packaging>jar</packaging>
 
   <properties>
