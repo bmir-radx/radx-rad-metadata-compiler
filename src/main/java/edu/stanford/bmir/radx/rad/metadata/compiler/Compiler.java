@@ -162,8 +162,8 @@ public class Compiler {
 
     if (resource.getProtocol().equals("jar")) {
       try (InputStream inputStream = resource.openStream()) {
-        var fileName = path.split(".")[0].replace("/", "");
-        var suffix = "." + path.split(".")[1];
+        var fileName = path.split("\\.")[0].replace("/", "");
+        var suffix = "." + path.split("\\.")[1];
         Path tempFile = Files.createTempFile(fileName, suffix);
         Files.copy(inputStream, tempFile, StandardCopyOption.REPLACE_EXISTING);
         return tempFile;

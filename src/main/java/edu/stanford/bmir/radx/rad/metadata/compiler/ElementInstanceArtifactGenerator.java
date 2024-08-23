@@ -94,9 +94,6 @@ public class ElementInstanceArtifactGenerator {
             builder.withMultiInstanceFieldInstances(childField, fieldInstanceArtifacts);
           }
           else{
-            if(childField.equals("Contributor Role")){
-              System.out.println("this is contributor Role");
-            }
             var value = getSingleInstanceValue(currentPath);
             var fieldInstanceArtifact = fieldInstanceArtifactGenerator.buildSingleInstanceWithValue(childFieldType, value, childFieldValueConstraint);
             builder.withSingleInstanceFieldInstance(childField, fieldInstanceArtifact);
