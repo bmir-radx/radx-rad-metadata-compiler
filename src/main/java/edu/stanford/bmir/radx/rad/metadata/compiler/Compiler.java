@@ -4,8 +4,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.apache.commons.cli.*;
 import org.metadatacenter.artifacts.model.renderer.JsonSchemaArtifactRenderer;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -25,13 +23,13 @@ public class Compiler {
   private static final String TEMPLATE_PATH = "t";
   private static final String MAPPING_SPREADSHEET_PATH = "m";
   private static final String HELP = "h";
-  private static final String DEFAULT_MAPPING_SPREADSHEET = "/csv2templatePath.xlsx";
+  private static final String DEFAULT_MAPPING_SPREADSHEET = "/csv2templatePath1.xlsx";
+  private static final String DEFAULT_METADATA_SPECIFICATION = "/RADxMetadataSpecification1.json";
   private static final CsvReader csvReader = new CsvReader();
   private static final PathMappingReader pathMappingReader = new PathMappingReader();
   private static final JsonSchemaArtifactRenderer jsonSchemaArtifactRenderer = new JsonSchemaArtifactRenderer();
   private static final TemplateInstanceArtifactGenerator templateArtifactInstanceGenerator = new TemplateInstanceArtifactGenerator();
   private static final ObjectMapper mapper = new ObjectMapper();
-  private static final Logger logger = LoggerFactory.getLogger(Compiler.class);
   public static void main(String[] args) throws Exception {
     CommandLineParser commandLineParser = new DefaultParser();
     Options options = buildCommamdLineOptions();
@@ -40,12 +38,18 @@ public class Compiler {
       CommandLine command = commandLineParser.parse(options, args);
       Path csvFile = Path.of(command.getOptionValue(CSV_FILE_PATH));
       Path outputDirectory = Path.of(command.getOptionValue(OUTPUT_DIRECTORY_PATH));
-      Path template = Path.of(command.getOptionValue(TEMPLATE_PATH));
+      Path template;
       Path mappingSpreadsheet;
+      if(command.hasOption(TEMPLATE_PATH)){
+        template = Path.of(command.getOptionValue(TEMPLATE_PATH));
+      } else{
+        template = getDefaultPath(DEFAULT_METADATA_SPECIFICATION);
+      }
+
       if(command.hasOption(MAPPING_SPREADSHEET_PATH)){
         mappingSpreadsheet = Path.of(command.getOptionValue(MAPPING_SPREADSHEET_PATH));
       } else{
-        mappingSpreadsheet = getDefaultMappingPath();
+        mappingSpreadsheet = getDefaultPath(DEFAULT_MAPPING_SPREADSHEET);
       }
 
       if(command.hasOption(HELP)){
@@ -64,18 +68,21 @@ public class Compiler {
               .forEach(file -> {
                 // For each file, generate a report in the specified output directory
                 try {
-                  String outputFileName = getOutputFileName(file);
-                  transform(file, outputDirectory.resolve(outputFileName), template, mappingSpreadsheet);
-                  logger.info("File compiled successfully: {}", file);
+                  Path relativePath = csvFile.relativize(file.getParent());
+                  Path outputFilePath = outputDirectory.resolve(relativePath).resolve(getOutputFileName(file));
+                  Files.createDirectories(outputFilePath.getParent());
+                  transform(file, outputFilePath, template, mappingSpreadsheet);
+                  System.out.println("File compiled successfully: " + file);
                 } catch (Exception e) {
-                  logger.error("Error processing file {}: {}", file, e.getMessage());
+                  System.out.println("Error processing file  " + file + ": " + e.getMessage());
                 }
               });
         }
       } else if (Files.exists(csvFile)) {
-        String outputFileName = getOutputFileName(csvFile);
-        transform(csvFile, outputDirectory.resolve(outputFileName), template, mappingSpreadsheet);
-        logger.info("File compiled successfully: {}", csvFile);
+        Path outputFilePath = outputDirectory.resolve(getOutputFileName(csvFile));
+        Files.createDirectories(outputFilePath.getParent());
+        transform(csvFile, outputFilePath, template, mappingSpreadsheet);
+        System.out.println("File compiled successfully: " + csvFile);
       } else {
         throw new FileNotFoundException("CSV path not found: " + csvFile);
       }
@@ -86,10 +93,10 @@ public class Compiler {
 
   private static void transform(Path spreadsheetFile, Path outputFile, Path template, Path mappingSpreadsheet) throws IOException, URISyntaxException {
     var templateNode = mapper.readTree(template.toFile());
-    var spreadsheetData = csvReader.readCsvMetadata(spreadsheetFile.toString());
+    var csvData = csvReader.readCsvMetadata(spreadsheetFile.toString());
     var csv2templatePath = pathMappingReader.readCsv2templatePath(mappingSpreadsheet.toString());
     var templateInstanceArtifact = templateArtifactInstanceGenerator.generateTemplateArtifactInstance(
-        spreadsheetData,csv2templatePath, templateNode, null);
+        csvData,csv2templatePath, templateNode, null);
     ObjectNode templateInstanceRendering = jsonSchemaArtifactRenderer.renderTemplateInstanceArtifact(templateInstanceArtifact);
     mapper.writeValue(outputFile.toFile(), templateInstanceRendering);
   }
@@ -114,7 +121,7 @@ public class Compiler {
     Option templatePathOption = Option.builder(TEMPLATE_PATH)
         .argName("RADx-Metadata-Specification-path")
         .desc("RADx Metadata Specification Path")
-        .required(true)
+        .required(false)
         .hasArg()
         .build();
 
@@ -147,15 +154,17 @@ public class Compiler {
     return spreadSheetFile.getFileName().toString().replaceAll("\\.csv$", ".json");
   }
 
-  private static Path getDefaultMappingPath()throws URISyntaxException {
-    URL resource = Compiler.class.getResource(DEFAULT_MAPPING_SPREADSHEET);
+  private static Path getDefaultPath(String path)throws URISyntaxException {
+    URL resource = Compiler.class.getResource(path);
     if (resource == null) {
       throw new IllegalArgumentException("File not found!");
     }
 
     if (resource.getProtocol().equals("jar")) {
       try (InputStream inputStream = resource.openStream()) {
-        Path tempFile = Files.createTempFile("csv2templatePath", ".xlsx");
+        var fileName = path.split(".")[0].replace("/", "");
+        var suffix = "." + path.split(".")[1];
+        Path tempFile = Files.createTempFile(fileName, suffix);
         Files.copy(inputStream, tempFile, StandardCopyOption.REPLACE_EXISTING);
         return tempFile;
       } catch (IOException e) {

@@ -47,7 +47,7 @@ public enum RadxSpecificationMetadataConstant {
   RELATED_RESOURCE_IDENTIFER("Related Resource Identifier"),
   RELATED_RESOURCE_IDENTIFER_TYPE("Related Resource Identifier Type"),
   RELATED_RESOURCE_FILE_NAME("Related Resource File Name"),
-  RELATED_RESOURCE_TYPE_CATEGORY("Related Resource Type Category\n"),
+  RELATED_RESOURCE_TYPE_CATEGORY("Related Resource Type Category"),
   RELATED_RESOURCE_RELATION("Related Resource Relation"),
   DATA_FILE_TITLES("Data File Titles"),
   TITLE("Title"),

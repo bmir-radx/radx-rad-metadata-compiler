@@ -2,7 +2,6 @@ package edu.stanford.bmir.radx.rad.metadata.compiler;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import edu.stanford.bmir.radx.rad.metadata.compiler.fieldGenerators.TextFieldGenerator;
 import org.metadatacenter.artifacts.model.core.*;
 import org.metadatacenter.artifacts.model.reader.JsonSchemaArtifactReader;
 
@@ -10,13 +9,16 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.*;
 
-import static edu.stanford.bmir.radx.rad.metadata.compiler.RadxRadFieldsConstant.KEYWORDS;
 import static edu.stanford.bmir.radx.rad.metadata.compiler.RadxSpecificationMetadataConstant.*;
+import static edu.stanford.bmir.radx.rad.metadata.compiler.VersionSpecial.FIRST_VERSION_SPECIAL;
 
 public class TemplateInstanceArtifactGenerator {
+  private boolean isFirstVersionTemplate;
+  private Map<String, List<String>> attributeValueMap = new HashMap<>();
+  private Map<String, String> groupedData = new HashMap<>();
+  private Map<String, Integer> fieldsCounts = new HashMap<>();
+  private Map<String, Integer> elementCounts = new HashMap<>();
 
-  private final ElementInstanceArtifactGenerator elementInstanceArtifactGenerator = new ElementInstanceArtifactGenerator();
-  private final FieldInstanceArtifactGenerator fieldInstanceArtifactGenerator = new FieldInstanceArtifactGenerator();
   public TemplateInstanceArtifact generateTemplateArtifactInstance(Map<String, String> csvData,
                                                                    Map<String, String> csv2templatePath,
                                                                    JsonNode templateNode,
@@ -26,111 +28,156 @@ public class TemplateInstanceArtifactGenerator {
     //read templateContent using cedar-artifact-library
     JsonSchemaArtifactReader jsonSchemaArtifactReader = new JsonSchemaArtifactReader();
     TemplateSchemaArtifact templateSchemaArtifact = jsonSchemaArtifactReader.readTemplateSchemaArtifact((ObjectNode) templateNode);
+    isFirstVersionTemplate = TemplateVersion.isFirstVersion(templateSchemaArtifact.jsonLdId());
 
     var templateInstanceArtifactBuilder = TemplateInstanceArtifact.builder();
 
-    var elements = templateSchemaArtifact.getElementNames();
     var csvDataManager = new CsvDataManager();
     csvDataManager.groupData(csvData, csv2templatePath, templateSchemaArtifact);
-    var attributeValueMap = csvDataManager.attributeValueMap;
-    var elementInstanceCounts = csvDataManager.elementInstanceCounts;
-    var groupedData = csvDataManager.groupedData;
-    var mappedElements = elementInstanceCounts.keySet();
+    attributeValueMap = csvDataManager.getAttributeValueMap();
+    fieldsCounts = csvDataManager.getFieldsCounts();
+    elementCounts = csvDataManager.getElementCounts();
+    groupedData = csvDataManager.getGroupedData();
 
-    //Build child element instances artifacts
+    var elementInstanceArtifactGenerator = new ElementInstanceArtifactGenerator(isFirstVersionTemplate, csvData, attributeValueMap, groupedData, fieldsCounts, elementCounts, templateSchemaArtifact);
+
+    //Build child field instances artifacts
+    buildChildFieldInstances("", csvData, templateSchemaArtifact, templateInstanceArtifactBuilder);
+
+    //build child element instances artifacts
+    buildChildElementInstance(csvData, templateSchemaArtifact, templateInstanceArtifactBuilder, elementInstanceArtifactGenerator);
+
+    //generate JsonLdContext
+    ContextGenerator.generateTemplateInstanceContext(templateSchemaArtifact, templateInstanceArtifactBuilder);
+
+    //generate JsonLdId
+    IdGenerator.generateTemplateId(templateInstanceArtifactBuilder);
+
+    //with IsBasedOn
+    var id = templateSchemaArtifact.jsonLdId();
+    if (id.isPresent()) {
+      templateInstanceArtifactBuilder.withIsBasedOn(id.get());
+    } else {
+      templateInstanceArtifactBuilder.withIsBasedOn(new URI(IS_BASED_ON.getValue()));
+    }
+
+    //with schemaName
+    if (schemaName != null) {
+      templateInstanceArtifactBuilder.withName(schemaName);
+    } else {
+      templateInstanceArtifactBuilder.withName(SCHEMA_NAME.getValue());
+    }
+
+    return templateInstanceArtifactBuilder
+        .withDescription(SCHEMA_DESCRIPTION.getValue())
+        .build();
+  }
+
+  private void buildChildFieldInstances(String parentPath,
+                                        Map<String, String> csvData,
+                                        TemplateSchemaArtifact templateSchemaArtifact,
+                                        TemplateInstanceArtifact.Builder builder){
+    var fieldInstanceArtifactGenerator = new FieldInstanceArtifactGenerator();
+    var childFields = templateSchemaArtifact.getFieldNames();
+
+    for(var childField: childFields){
+      var currentPath = "/" + childField;
+      var normalizedPath = normalizePath(currentPath);
+      var childFieldArtifactSchema = templateSchemaArtifact.getFieldSchemaArtifact(childField);
+      var childFieldValueConstraint = childFieldArtifactSchema.valueConstraints();
+      var childFieldType = FieldType.getFieldType(childFieldArtifactSchema);
+      var isMultipleField = childFieldArtifactSchema.isMultiple();
+      //Check if the child field is an attribute value type, which need to be build differently
+      if(AttributeValueFieldUtil.isAttributeValue(templateSchemaArtifact, normalizedPath)){
+        if(attributeValueMap.containsKey(normalizedPath)){
+          var avInstances = fieldInstanceArtifactGenerator.buildAttributeValueField(csvData, attributeValueMap.get(normalizedPath));
+          builder.withAttributeValueFieldGroup(childField, avInstances);
+        }
+        else{
+          builder.withAttributeValueFieldGroup(childField, new LinkedHashMap<>());
+        }
+      }
+      else{
+        //todo special handle for template2.0: Title, keywords and Subjects.
+        if(fieldsCounts.containsKey(currentPath)){
+          if(isMultipleField){
+            var childFieldInstanceNumber = fieldsCounts.get(currentPath);
+            var values = getInstancesValues(currentPath, childFieldInstanceNumber);
+            var fieldInstanceArtifacts = fieldInstanceArtifactGenerator.buildMultipleInstancesWithValues(childFieldType, values, childFieldValueConstraint);
+            builder.withMultiInstanceFieldInstances(childField, fieldInstanceArtifacts);
+          }
+          else{
+            var value = getSingleInstanceValue(parentPath);
+            var fieldInstanceArtifact = fieldInstanceArtifactGenerator.buildSingleInstanceWithValue(childFieldType, value, childFieldValueConstraint);
+            builder.withSingleInstanceFieldInstance(childField, fieldInstanceArtifact);
+          }
+        }
+        else{
+          if(isMultipleField){
+            var fieldInstanceArtifacts = fieldInstanceArtifactGenerator.buildMultipleEmptyInstances(childFieldType, childFieldValueConstraint);
+            builder.withMultiInstanceFieldInstances(childField, fieldInstanceArtifacts);
+          }
+          else{
+            var fieldInstanceArtifact = fieldInstanceArtifactGenerator.buildSingleEmptyInstance(childFieldType, childFieldValueConstraint);
+            builder.withSingleInstanceFieldInstance(childField, fieldInstanceArtifact);
+          }
+        }
+      }
+    }
+  }
+
+  private void buildChildElementInstance(Map<String,String> csvData,
+                                         TemplateSchemaArtifact templateSchemaArtifact,
+                                         TemplateInstanceArtifact.Builder builder,
+                                         ElementInstanceArtifactGenerator elementInstanceArtifactGenerator) throws URISyntaxException {
+    var elements = templateSchemaArtifact.getElementNames();
     for (var childElement : elements) {
-      if (childElement.equals(DATA_FILE_SUBJECTS.getValue())) {
-        //generate Data File Subjects element
-        RadxRadPrecisionFieldHandler.addDataFileSubjectsElement(csvData.get(KEYWORDS.getValue()), templateSchemaArtifact, templateInstanceArtifactBuilder);
+      var currentPath = "/" + childElement;
+      if (FIRST_VERSION_SPECIAL.isFirstVersionSpecialty(childElement) && isFirstVersionTemplate) {
+        //generate Data File Subjects and Data File Related Resources element instances
+        RadxRadPrecisionFieldHandler.firstVersionElementPatch(childElement, fieldsCounts, groupedData, templateSchemaArtifact, builder);
       } else {
-        var childElementSchemaArtifact = templateSchemaArtifact.getElementSchemaArtifact(childElement);
-        var isChildElementMultiple = childElementSchemaArtifact.isMultiple();
-        if (mappedElements.contains(childElement)) {
-          var childElementInstanceArtifacts = elementInstanceArtifactGenerator.generateElementInstanceWithValue(childElement, "", childElementSchemaArtifact, templateSchemaArtifact, csvData, csvDataManager);
-          if (isChildElementMultiple) {
-            templateInstanceArtifactBuilder.withMultiInstanceElementInstances(childElement, childElementInstanceArtifacts);
-          } else {
-            templateInstanceArtifactBuilder.withSingleInstanceElementInstance(childElement, childElementInstanceArtifacts.get(0));
+        var childElementArtifactSchema = templateSchemaArtifact.getElementSchemaArtifact(childElement);
+        var isMultiple = childElementArtifactSchema.isMultiple();
+        if (elementCounts.containsKey(currentPath)) {
+          if(isMultiple){
+            var childElementInstances = elementInstanceArtifactGenerator.buildMultipleInstancesWithValues(childElementArtifactSchema, currentPath);
+            builder.withMultiInstanceElementInstances(childElement, childElementInstances);
           }
-        } else { // build empty element
-          if (isChildElementMultiple) {
-            templateInstanceArtifactBuilder.withMultiInstanceElementInstances(childElement, Collections.emptyList());
-          } else {
-            var elementInstanceArtifact = elementInstanceArtifactGenerator.buildSingleEmptyElementInstance(childElementSchemaArtifact, templateSchemaArtifact, "/" + childElement);
-            templateInstanceArtifactBuilder.withSingleInstanceElementInstance(childElement, elementInstanceArtifact);
+          else{
+            var childElementInstance = elementInstanceArtifactGenerator.buildSingleInstanceWithValue(childElementArtifactSchema, currentPath, 0);
+            builder.withSingleInstanceElementInstance(childElement, childElementInstance);
+          }
+        }
+        else{
+          if(isMultiple){
+            var childElementInstances = elementInstanceArtifactGenerator.buildMultipleEmptyInstances();
+            builder.withMultiInstanceElementInstances(childElement, childElementInstances);
+          }
+          else{
+            var childElementInstance = elementInstanceArtifactGenerator. buildSingleEmptyInstance(childElementArtifactSchema, currentPath);
+            builder.withSingleInstanceElementInstance(childElement, childElementInstance);
           }
         }
       }
     }
+  }
 
-        //Build child field instances artifacts
-        var childFields = templateSchemaArtifact.getFieldNames();
-        var buildKeywords = false;
-        for (var childField : childFields) {
-          var childFieldSchemaArtifact = templateSchemaArtifact.getFieldSchemaArtifact(childField);
-          var childFieldType = FieldType.getFieldType(childFieldSchemaArtifact);
-          var childValueConstraints = childFieldSchemaArtifact.valueConstraints();
-          var isChildFieldMultiple = childFieldSchemaArtifact.isMultiple();
-          var currentPath = "/" + childField;
-          FieldInstanceArtifact fieldInstanceArtifact;
+  private String normalizePath(String path){
+    return path.replace("\\[\\d+\\]", "");
+  }
 
-          if (groupedData.containsKey(currentPath)) { // Build field instance with value
-            if (isChildFieldMultiple) {
-              var valueSet = groupedData.get(currentPath);
-              var fieldInstanceArtifactList = fieldInstanceArtifactGenerator.buildMultiFieldInstances(childFieldType, valueSet, childValueConstraints);
-              templateInstanceArtifactBuilder.withMultiInstanceFieldInstances(childField, fieldInstanceArtifactList);
-            } else {
-              var value = groupedData.get(currentPath).get(1).get(0);
-              fieldInstanceArtifact = fieldInstanceArtifactGenerator.buildFieldInstanceWithValues(childFieldType, value, childValueConstraints);
-              if (childField.equals(TITLE.getValue())) { // Build Title field with language tag - for Specification 2.0
-                var textFieldInstanceGenerator = new TextFieldGenerator();
-                fieldInstanceArtifact = textFieldInstanceGenerator.buildWithLanguage(value, "en");
-              }
-              templateInstanceArtifactBuilder.withSingleInstanceFieldInstance(childField, fieldInstanceArtifact);
-            }
-          } else {
-            // Special handling for keywords - for Specification 2.0
-            if ((childField.equals(RadxSpecificationMetadataConstant.KEYWORDS.getValue()) || childField.equals(SUBJECTS.getValue()))) {
-              if (!buildKeywords) {
-                var input = csvData.get(KEYWORDS.getValue());
-                RadxRadPrecisionFieldHandler.processKeywords(input, templateInstanceArtifactBuilder);
-                buildKeywords = true;
-              }
-            } else {
-              // build Empty field instance
-              fieldInstanceArtifact = fieldInstanceArtifactGenerator.buildEmptyFieldInstance(childFieldType, childValueConstraints);
-              if (isChildFieldMultiple) {
-                templateInstanceArtifactBuilder.withMultiInstanceFieldInstances(childField, List.of(fieldInstanceArtifact));
-              } else {
-                templateInstanceArtifactBuilder.withSingleInstanceFieldInstance(childField, fieldInstanceArtifact);
-              }
-            }
-          }
-        }
-
-        //generate JsonLdContext
-        ContextGenerator.generateTemplateInstanceContext(templateSchemaArtifact, templateInstanceArtifactBuilder);
-
-        //generate JsonLdId
-        IdGenerator.generateTemplateId(templateInstanceArtifactBuilder);
-
-        //with IsBasedOn
-        var id = templateSchemaArtifact.jsonLdId();
-        if (id.isPresent()) {
-          templateInstanceArtifactBuilder.withIsBasedOn(id.get());
-        } else {
-          templateInstanceArtifactBuilder.withIsBasedOn(new URI(IS_BASED_ON.getValue()));
-        }
-
-        //with schemaName
-        if (schemaName != null) {
-          templateInstanceArtifactBuilder.withName(schemaName);
-        } else {
-          templateInstanceArtifactBuilder.withName(SCHEMA_NAME.getValue());
-        }
-
-        return templateInstanceArtifactBuilder
-            .withDescription(SCHEMA_DESCRIPTION.getValue())
-            .build();
-      }
+  private List<String> getInstancesValues(String path, Integer count){
+    var values = new ArrayList<String>();
+    for(int i=0; i<count; i++){
+      var currentPath = path + "[" + i + "]";
+      values.add(groupedData.get(currentPath));
     }
+    return values;
+  }
+
+  private String getSingleInstanceValue(String path){
+    var currentPath = path + "[0]";
+    return groupedData.get(currentPath);
+  }
+}

@@ -1,5 +1,5 @@
 # radx-rad-metadata-compiler
-This tool is designed to transform RADx-rad spreadsheets into the JSON-LD format suitable for upload to Data Hub. 
+This tool is designed to transform RADx-rad CSV metadata files into the JSON-LD format suitable for upload to Data Hub. 
 
 ## Execute through shell file
 The repository includes a tool for metadata transformation. The tool is packaged in a zip file [rrmc.zip](https://github.com/bmir-radx/radx-rad-metadata-compiler/releases/download/v1.0.0/rrmc.zip), which contains the shell script (rrmc) and two essential files for the transformation process: the RADx Metadata Specification and a spreadsheet that mapping the fields in radx-rad CSV template to CEDAR template.
@@ -24,7 +24,7 @@ You need to specify:
 
 2. **RADx Metadata Specification Path** [Required] (t): Provide the path to the [RADx Metadata Specification](https://cedar.metadatacenter.org/templates/edit/https://repo.metadatacenter.org/templates/c691629c-1183-4425-9a12-26201eab1a10?folderId=https:%2F%2Frepo.metadatacenter.org%2Ffolders%2F5ac6dcb6-7a9b-4a75-a945-60ae43750953) JSON file.
 
-3. **CSV to Template Mappings** [Optional] (m): Indicate the path to the spreadsheet that contains the mapping instructions. These instructions dictate how the input metadata fields correspond to the RADx Metadata Specification.
+3. **CSV to Template Mappings Path** [Optional] (m): Indicate the path to the spreadsheet that contains the mapping instructions. These instructions dictate how the input metadata fields correspond to the RADx Metadata Specification.
 
    The spreadsheet is organized into two main columns: `RADx-rad Field Label` and `RADx Metadata Specification Path`. For instance, the `nih_project_id` field is matched with the `Study Identifier` within the `Data File Parent Studies` element. Hence, the entry for the RADx Metadata Specification Path column should be `/Data File Parent Studies/Study Identifier`.  
    Here is an example [mappings spreadsheet](https://docs.google.com/spreadsheets/d/1R2PkJCNFtg8zm-V2iXK56u5WNoo3_hFz/edit#gid=951510363).
