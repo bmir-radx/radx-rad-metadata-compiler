@@ -22,7 +22,7 @@ Type `./rrmc -h` to show options.
 You need to specify:
 1. **Input Metadata CSV Path** [Required] (c): Specify the path to your input csv file containing the metadata you need to transform. The input path can be either a file path or a directory path. If it is a directory path, the tool will transform all CSV files within that directory. Therefore, please ensure that any non-relevant CSV files are removed beforehand.
 
-2. **RADx Metadata Specification Path** [Required] (t): Provide the path to the [RADx Metadata Specification](https://cedar.metadatacenter.org/templates/edit/https://repo.metadatacenter.org/templates/c691629c-1183-4425-9a12-26201eab1a10?folderId=https:%2F%2Frepo.metadatacenter.org%2Ffolders%2F5ac6dcb6-7a9b-4a75-a945-60ae43750953) JSON file.
+2. **RADx Metadata Specification Path** [Optional] (t): Provide the path to the [RADx Metadata Specification](https://cedar.metadatacenter.org/templates/edit/https://repo.metadatacenter.org/templates/c691629c-1183-4425-9a12-26201eab1a10?folderId=https:%2F%2Frepo.metadatacenter.org%2Ffolders%2F5ac6dcb6-7a9b-4a75-a945-60ae43750953) JSON file.
 
 3. **CSV to Template Mappings Path** [Optional] (m): Indicate the path to the spreadsheet that contains the mapping instructions. These instructions dictate how the input metadata fields correspond to the RADx Metadata Specification.
 
@@ -50,6 +50,18 @@ For transforming a single spreadsheet RADxRadExampleSheet.xlsx to the JSON-LD fo
    -t ../RADxTemplate.json \
    -m ../radx-rad-mapping.xlsx \
    -o ../radx-rad-output"
+```
+## Execute through JAR file
+You can use the tool for metadata transformation directly by executing the JAR file. The JAR file can be downloaded from the following link:
+
+[Download radx-rad-metadata-compiler.jar](https://github.com/bmir-radx/radx-rad-metadata-compiler/releases/download/v1.0.1/radx-rad-metadata-compiler.jar)
+
+### Usage
+
+After downloading the JAR file, you can execute it via the command line using the following syntax:
+
+```bash
+java -jar radx-rad-metadata-compiler.jar -c=<Input_Metadata_CSV_Path> -o=<Output_Directory> [-t=<Metadata_Specification_Path>] [-m=<CSV_to_Template_Mappings_Path>]
 ```
 
 ## Execute through Maven command
