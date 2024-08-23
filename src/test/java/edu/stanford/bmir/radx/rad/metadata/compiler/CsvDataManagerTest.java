@@ -10,7 +10,7 @@ import java.io.IOException;
 import java.util.Map;
 import java.util.Objects;
 
-public class CsvDataManager2Test {
+public class CsvDataManagerTest {
   private String firstVersionMappingFile = "csv2templatePath1.xlsx";
   private String secondVersionMappingFile = "csv2templatePath2.xlsx";
   private String csvFileName = "RADxRadMetadataExample.csv";
@@ -18,7 +18,7 @@ public class CsvDataManager2Test {
   private String secondVersionTemplateFile = "RADxTemplate2.json";
   private PathMappingReader pathMappingReader = new PathMappingReader();
   private CsvReader csvReader = new CsvReader();
-  private CsvDataManager2 csvDataManager = new CsvDataManager2();
+  private CsvDataManager csvDataManager = new CsvDataManager();
   private JsonSchemaArtifactReader jsonSchemaArtifactReader = new JsonSchemaArtifactReader();
   private ObjectMapper mapper = new ObjectMapper();
 
@@ -51,6 +51,9 @@ public class CsvDataManager2Test {
     var fieldCounts = csvDataManager.getFieldsCounts();
     var elementCounts = csvDataManager.getElementCounts();
     var avFields = csvDataManager.getAttributeValueMap();
-    var valuedArtifacts = csvDataManager.getArtifactsWithValue();
+    assert(groupedData.size() != 0);
+    assert(fieldCounts.size() != 0);
+    assert(elementCounts.size() != 0);
+    assert(avFields.size() != 0);
   }
 }

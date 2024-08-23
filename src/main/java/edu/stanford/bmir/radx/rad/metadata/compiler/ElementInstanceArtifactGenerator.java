@@ -6,113 +6,153 @@ import java.net.URISyntaxException;
 import java.util.*;
 
 public class ElementInstanceArtifactGenerator {
+  private final boolean isFirstVersiontempalte;
+  private final Map<String, String> csvData;
+  private final Map<String, List<String>> attributeValueMap;
+  private final Map<String, String> groupedData;
+  private final Map<String, Integer> fieldsCounts;
+  private final Map<String, Integer> elementCounts;
+  private final TemplateSchemaArtifact templateSchemaArtifact;
+
   private final FieldInstanceArtifactGenerator fieldInstanceArtifactGenerator = new FieldInstanceArtifactGenerator();
 
-  public List<ElementInstanceArtifact> generateElementInstanceWithValue(String currentElement, String path,
-                                                               ElementSchemaArtifact elementSchemaArtifact,
-                                                               TemplateSchemaArtifact templateSchemaArtifact,
-                                                               Map<String, String> csvData,
-                                                              CsvDataManager csvDataManager) throws URISyntaxException {
+  public ElementInstanceArtifactGenerator(boolean isFirstVersiontempalte,
+                                          Map<String, String> csvData,
+                                          Map<String, List<String>> attributeValueMap,
+                                          Map<String, String> groupedData,
+                                          Map<String, Integer> fieldsCounts,
+                                          Map<String, Integer> elementCounts,
+                                          TemplateSchemaArtifact templateSchemaArtifact) {
+    this.isFirstVersiontempalte = isFirstVersiontempalte;
+    this.csvData = csvData;
+    this.attributeValueMap = attributeValueMap;
+    this.groupedData = groupedData;
+    this.fieldsCounts = fieldsCounts;
+    this.elementCounts = elementCounts;
+    this.templateSchemaArtifact = templateSchemaArtifact;
+  }
 
-    var attributeValueMap = csvDataManager.attributeValueMap;
-    var elementInstanceCounts = csvDataManager.elementInstanceCounts;
-    var groupedData = csvDataManager.groupedData;
-    var childFields = elementSchemaArtifact.getFieldNames();
-    var instanceCount = elementInstanceCounts.get(currentElement);
+  public List<ElementInstanceArtifact> buildMultipleInstancesWithValues(ElementSchemaArtifact elementSchemaArtifact,
+                                                                        String path) throws URISyntaxException {
 
-    List<ElementInstanceArtifact> elementInstanceArtifacts = new ArrayList<>();
+    var currentElementInstanceNumber = elementCounts.get(path);
+    var elementInstanceArtifacts = new ArrayList<ElementInstanceArtifact>();
 
-    for(int i = 1; i <= instanceCount; i++) {
-      var elementInstanceBuilder = ElementInstanceArtifact.builder();
-
-      for (var expectedField : childFields) {
-        var currentPath = path + "/" + currentElement + "/" + expectedField;
-        var fieldSchemaArtifact = elementSchemaArtifact.getFieldSchemaArtifact(expectedField);
-        var expectedFieldValueConstraint = fieldSchemaArtifact.valueConstraints();
-        var expectedFieldType = FieldType.getFieldType(fieldSchemaArtifact);
-        var isMultipleField = fieldSchemaArtifact.isMultiple();
-
-        //check if field is an attribute value type
-        //if yes, build attribute value fields, otherwise, build regular fields
-        if (attributeValueMap.containsKey(currentPath)) {
-          var csvFields = attributeValueMap.get(currentPath);
-          var attributeValueFieldInstances = fieldInstanceArtifactGenerator.buildAttributeValueField(csvData, csvFields);
-          elementInstanceBuilder.withAttributeValueFieldGroup(expectedField, attributeValueFieldInstances);
-        } else {
-          // if the expectedField in the template has the mapping field in the csv, then need to retrieve data from csv
-          // otherwise, build an empty fieldArtifactInstance
-          FieldInstanceArtifact fieldInstanceArtifact;
-          if (groupedData.containsKey(currentPath) && groupedData.get(currentPath).containsKey(i)) {
-            if(isMultipleField){
-              // build field instance one by one, explicitly for creator/contributor ids
-              var valueSet = groupedData.get(currentPath).get(i);
-              var fieldInstanceArtifactList = fieldInstanceArtifactGenerator.buildMultiFieldInstances(expectedFieldType, valueSet, expectedFieldValueConstraint);
-              elementInstanceBuilder.withMultiInstanceFieldInstances(expectedField, fieldInstanceArtifactList);
-
-            } else{
-              var value = groupedData.get(currentPath).get(i).get(0);
-              fieldInstanceArtifact = fieldInstanceArtifactGenerator.buildFieldInstanceWithValues(expectedFieldType, value, expectedFieldValueConstraint);
-              elementInstanceBuilder.withSingleInstanceFieldInstance(expectedField, fieldInstanceArtifact);
-            }
-          } else {
-            if (isMultipleField) {
-              fieldInstanceArtifact = fieldInstanceArtifactGenerator.buildEmptyFieldInstance(expectedFieldType, expectedFieldValueConstraint);
-              elementInstanceBuilder.withMultiInstanceFieldInstances(expectedField, List.of(fieldInstanceArtifact));
-            } else {
-              //Add values to RADx-rad specific controlled terms fields or add an empty field entry
-//              RadxRadPrecisionFieldHandler.addSpecificFields(elementInstanceBuilder, currentElement, expectedField, elementSchemaArtifact, groupedData, elementInstanceCounts, i);
-            }
-          }
-        }
-      }
-
-      //Build nested child element
-      buildWithElementInstances(csvData, elementSchemaArtifact, templateSchemaArtifact, elementInstanceBuilder, csvDataManager, path + "/" + currentElement);
-
-      //Add JsonLdContext for each elementInstance
-      ContextGenerator.generateElementInstanceContext(
-          elementSchemaArtifact,
-          elementInstanceBuilder);
-
-      //Add @id
-      IdGenerator.generateElementId(elementInstanceBuilder);
-      elementInstanceArtifacts.add(elementInstanceBuilder.build());
+    for(int i=0; i<currentElementInstanceNumber; i++){
+      var elementInstanceArtifact = buildSingleInstanceWithValue(elementSchemaArtifact, path, i);
+      elementInstanceArtifacts.add(elementInstanceArtifact);
     }
     return elementInstanceArtifacts;
   }
 
-  private void buildWithElementInstances(Map<String, String> spreadsheetData,
-                                         ElementSchemaArtifact currentElementSchemaArtifact,
-                                         TemplateSchemaArtifact templateSchemaArtifact,
-                                         ElementInstanceArtifact.Builder elementInstanceBuilder,
-                                         CsvDataManager CSVDataManager,
-                                         String path) throws URISyntaxException {
-    var childElements = currentElementSchemaArtifact.getElementNames();
-    var elementInstanceCounts = CSVDataManager.elementInstanceCounts;
-    var mappedElements = elementInstanceCounts.keySet();
-    for (var childElement : childElements) {
-      var childElementSchemaArtifact = currentElementSchemaArtifact.getElementSchemaArtifact(childElement);
-      var isChildElementMultiple = childElementSchemaArtifact.isMultiple();
-      //build element that has mapping in radx rad spreadsheet
-      if (mappedElements.contains(childElement)){
-        var childElementInstanceArtifacts = generateElementInstanceWithValue(childElement, path, childElementSchemaArtifact, templateSchemaArtifact, spreadsheetData, CSVDataManager);
-        if(isChildElementMultiple){
-          elementInstanceBuilder.withMultiInstanceElementInstances(childElement, childElementInstanceArtifacts);
-        } else{
-          elementInstanceBuilder.withSingleInstanceElementInstance(childElement, childElementInstanceArtifacts.get(0));
+  public ElementInstanceArtifact buildSingleInstanceWithValue(ElementSchemaArtifact elementSchemaArtifact,
+                                                              String path,
+                                                              Integer elementIndex) throws URISyntaxException {
+    var builder = ElementInstanceArtifact.builder();
+    var currentPath = path + "[" + elementIndex + "]";
+
+    //build field instances
+    buildChildFieldInstances(currentPath, elementSchemaArtifact, builder);
+    //build nested element instances
+    buildChildElementInstances(currentPath, elementSchemaArtifact, builder);
+    //Add JsonLdContext for each elementInstance
+    ContextGenerator.generateElementInstanceContext(
+        elementSchemaArtifact,
+        builder);
+    //Add @id
+    IdGenerator.generateElementId(builder);
+    return builder.build();
+  }
+
+  private void buildChildFieldInstances(String parentElementPath,
+                                        ElementSchemaArtifact elementSchemaArtifact,
+                                        ElementInstanceArtifact.Builder builder){
+    var childFields = elementSchemaArtifact.getFieldNames();
+    for(var childField: childFields){
+      var currentPath = parentElementPath + "/" + childField;
+      var normalizedPath = normalizePath(currentPath);
+      var childFieldArtifactSchema = elementSchemaArtifact.getFieldSchemaArtifact(childField);
+      var childFieldValueConstraint = childFieldArtifactSchema.valueConstraints();
+      var childFieldType = FieldType.getFieldType(childFieldArtifactSchema);
+      var isMultipleField = childFieldArtifactSchema.isMultiple();
+      //Check if the child field is an attribute value type, which need to be build differently
+      if(AttributeValueFieldUtil.isAttributeValue(templateSchemaArtifact, normalizedPath)){
+        if(attributeValueMap.containsKey(normalizedPath)){
+          var avInstances = buildAttributeValueInstances(normalizedPath);
+          builder.withAttributeValueFieldGroup(childField, avInstances);
         }
-      } else{ // build empty element
-        if(isChildElementMultiple){
-          elementInstanceBuilder.withMultiInstanceElementInstances(childElement, Collections.emptyList());
-        } else{
-          buildSingleEmptyElementInstance(childElementSchemaArtifact, templateSchemaArtifact, path + "/" + childElement);
+        else{
+          builder.withAttributeValueFieldGroup(childField, new LinkedHashMap<>());
+        }
+      }
+      else{
+        if(fieldsCounts.containsKey(currentPath)){
+          if(isMultipleField){
+            var childFieldInstanceNumber = fieldsCounts.get(currentPath);
+            var values = getInstancesValues(currentPath, childFieldInstanceNumber);
+            var fieldInstanceArtifacts = fieldInstanceArtifactGenerator.buildMultipleInstancesWithValues(childFieldType, values, childFieldValueConstraint);
+            builder.withMultiInstanceFieldInstances(childField, fieldInstanceArtifacts);
+          }
+          else{
+            if(childField.equals("Contributor Role")){
+              System.out.println("this is contributor Role");
+            }
+            var value = getSingleInstanceValue(currentPath);
+            var fieldInstanceArtifact = fieldInstanceArtifactGenerator.buildSingleInstanceWithValue(childFieldType, value, childFieldValueConstraint);
+            builder.withSingleInstanceFieldInstance(childField, fieldInstanceArtifact);
+          }
+        }
+        else{
+          if(isMultipleField){
+            var fieldInstanceArtifacts = fieldInstanceArtifactGenerator.buildMultipleEmptyInstances(childFieldType, childFieldValueConstraint);
+            builder.withMultiInstanceFieldInstances(childField, fieldInstanceArtifacts);
+          }
+          else{
+            if(isFirstVersiontempalte){
+              RadxRadPrecisionFieldHandler.firstVersionFieldPath(currentPath, elementCounts, groupedData, childFieldArtifactSchema, builder);
+            }
+            if(!builder.build().singleInstanceFieldInstances().containsKey(childField)){
+              var fieldInstanceArtifact = fieldInstanceArtifactGenerator.buildSingleEmptyInstance(childFieldType, childFieldValueConstraint);
+              builder.withSingleInstanceFieldInstance(childField, fieldInstanceArtifact);
+            }
+          }
         }
       }
     }
   }
 
-  public ElementInstanceArtifact buildSingleEmptyElementInstance(ElementSchemaArtifact elementSchemaArtifact,
-                                               TemplateSchemaArtifact templateSchemaArtifact,
+  private void buildChildElementInstances(String parentElementPath,
+                                          ElementSchemaArtifact elementSchemaArtifact,
+                                          ElementInstanceArtifact.Builder builder) throws URISyntaxException {
+    var childElements = elementSchemaArtifact.getElementNames();
+    for(var childElement:childElements){
+      var currentChildElementPath = parentElementPath + "/" + childElement;
+      var childElementArtifactSchema = elementSchemaArtifact.getElementSchemaArtifact(childElement);
+      var isMultiple = childElementArtifactSchema.isMultiple();
+      if(elementCounts.containsKey(currentChildElementPath)){
+        if(isMultiple){
+          var childElementInstances = buildMultipleInstancesWithValues(childElementArtifactSchema, currentChildElementPath);
+          builder.withMultiInstanceElementInstances(childElement, childElementInstances);
+        }
+        else{
+          var childElementInstance = buildSingleInstanceWithValue(childElementArtifactSchema, currentChildElementPath, 0);
+          builder.withSingleInstanceElementInstance(childElement, childElementInstance);
+        }
+      }
+      else{
+        if(isMultiple){
+          var childElementInstances = buildMultipleEmptyInstances();
+          builder.withMultiInstanceElementInstances(childElement, childElementInstances);
+        }
+        else{
+          var childElementInstance = buildSingleEmptyInstance(childElementArtifactSchema, currentChildElementPath);
+          builder.withSingleInstanceElementInstance(childElement, childElementInstance);
+        }
+      }
+    }
+  }
+
+  public ElementInstanceArtifact buildSingleEmptyInstance(ElementSchemaArtifact elementSchemaArtifact,
                                                String path) throws URISyntaxException {
     var elementInstanceBuilder = ElementInstanceArtifact.builder();
     var childFields = elementSchemaArtifact.getFieldNames();
@@ -124,34 +164,82 @@ public class ElementInstanceArtifactGenerator {
     IdGenerator.generateElementId(elementInstanceBuilder);
 
     //Add child field instances
-    for(var expectedField : childFields){
-      var specificationPath = path + "/" + expectedField;
+    buildEmptyChildFieldInstances(path, elementSchemaArtifact, elementInstanceBuilder);
+
+    //Add child element instances
+    buildEmptyChildElementInstances(path, elementSchemaArtifact, elementInstanceBuilder);
+
+    return elementInstanceBuilder.build();
+  }
+
+  private void buildEmptyChildFieldInstances(String path,
+                                             ElementSchemaArtifact elementSchemaArtifact,
+                                             ElementInstanceArtifact.Builder builder){
+    var childFields = elementSchemaArtifact.getFieldNames();
+    for(var childField : childFields){
+      var specificationPath = path + "/" + childField;
       if(AttributeValueFieldUtil.isAttributeValue(templateSchemaArtifact, specificationPath)){
-        elementInstanceBuilder.withAttributeValueFieldGroup(expectedField, new LinkedHashMap<>());
+        builder.withAttributeValueFieldGroup(childField, new LinkedHashMap<>());
       } else{
-        var fieldSchemaArtifact = elementSchemaArtifact.getFieldSchemaArtifact(expectedField);
+        var fieldSchemaArtifact = elementSchemaArtifact.getFieldSchemaArtifact(childField);
         var inputType = FieldType.getFieldType(fieldSchemaArtifact);
         var isMultiple = fieldSchemaArtifact.isMultiple();
-        var fieldInstanceArtifact = fieldInstanceArtifactGenerator.buildEmptyFieldInstance(inputType, fieldSchemaArtifact.valueConstraints());
+
         if(isMultiple){
-          elementInstanceBuilder.withMultiInstanceFieldInstances(expectedField, Collections.emptyList());
+          var fieldInstanceArtifacts = fieldInstanceArtifactGenerator.buildMultipleEmptyInstances(inputType, fieldSchemaArtifact.valueConstraints());
+          builder.withMultiInstanceFieldInstances(childField, fieldInstanceArtifacts);
         } else{
-          elementInstanceBuilder.withSingleInstanceFieldInstance(expectedField, fieldInstanceArtifact);
+          if(isFirstVersiontempalte){
+            RadxRadPrecisionFieldHandler.firstVersionFieldPath(specificationPath, elementCounts, groupedData, fieldSchemaArtifact, builder);
+          }
+          if(!builder.build().singleInstanceFieldInstances().containsKey(childField)){
+              var fieldInstanceArtifact = fieldInstanceArtifactGenerator.buildSingleEmptyInstance(inputType, fieldSchemaArtifact.valueConstraints());
+              builder.withSingleInstanceFieldInstance(childField, fieldInstanceArtifact);
+          }
         }
       }
     }
+  }
 
-    //Add child element instances
+  private void buildEmptyChildElementInstances(String path,
+                                               ElementSchemaArtifact elementSchemaArtifact,
+                                               ElementInstanceArtifact.Builder builder) throws URISyntaxException {
     var childElements = elementSchemaArtifact.getElementNames();
     for (var childElement : childElements){
       var childElementSchemaArtifact = elementSchemaArtifact.getElementSchemaArtifact(childElement);
       if (childElementSchemaArtifact.isMultiple()){
-        elementInstanceBuilder.withMultiInstanceElementInstances(childElement, Collections.emptyList());
+        builder.withMultiInstanceElementInstances(childElement, Collections.emptyList());
       } else {
-        var emptyElementInstanceArtifact = buildSingleEmptyElementInstance(childElementSchemaArtifact, templateSchemaArtifact, path + "/" + childElement);
-        elementInstanceBuilder.withSingleInstanceElementInstance(childElement, emptyElementInstanceArtifact);
+        var emptyElementInstanceArtifact = buildSingleEmptyInstance(childElementSchemaArtifact, path + "/" + childElement);
+        builder.withSingleInstanceElementInstance(childElement, emptyElementInstanceArtifact);
       }
     }
-    return elementInstanceBuilder.build();
+  }
+
+  public List<ElementInstanceArtifact> buildMultipleEmptyInstances(){
+    return Collections.emptyList();
+  }
+
+  private List<String> getInstancesValues(String path, Integer count){
+    var values = new ArrayList<String>();
+    for(int i=0; i<count; i++){
+      var currentPath = path + "[" + i + "]";
+      values.add(groupedData.get(currentPath));
+    }
+    return values;
+  }
+
+  private String getSingleInstanceValue(String path){
+    var currentPath = path + "[0]";
+    return groupedData.get(currentPath);
+  }
+
+  private LinkedHashMap<String, FieldInstanceArtifact> buildAttributeValueInstances(String path){
+    var csvFields = attributeValueMap.get(path);
+    return fieldInstanceArtifactGenerator.buildAttributeValueField(csvData, csvFields);
+  }
+
+  private String normalizePath(String path){
+    return path.replaceAll("\\[\\d+\\]", "");
   }
 }

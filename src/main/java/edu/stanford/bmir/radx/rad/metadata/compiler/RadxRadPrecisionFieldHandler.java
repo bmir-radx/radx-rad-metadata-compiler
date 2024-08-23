@@ -30,7 +30,7 @@ public class RadxRadPrecisionFieldHandler {
   private final static String studyIdentifierPath = "/Data File Parent Studies/Study Identifier";
   private final static String keywordPath = "/Data File Subjects[0]/Keyword";
   private final static String primaryLangPath = "/Primary Language";
-  private static final FieldInstanceArtifactGenerator2 fieldInstanceArtifactGenerator = new FieldInstanceArtifactGenerator2();
+  private static final FieldInstanceArtifactGenerator fieldInstanceArtifactGenerator = new FieldInstanceArtifactGenerator();
 
   public static void firstVersionElementPatch(String elementName,
                                               Map<String, Integer> fieldCount,
@@ -384,9 +384,9 @@ public class RadxRadPrecisionFieldHandler {
                                                 TemplateSchemaArtifact templateSchemaArtifact,
                                                 TemplateInstanceArtifact.Builder templateInstanceArtifactBuilder) throws URISyntaxException {
     var instanceNumber = fieldCounts.get(relatedResourceIdentifierPath);
-    if(instanceNumber >= 0) {
+    if(instanceNumber != null && instanceNumber >= 0) {
       var elementInstances = new ArrayList<ElementInstanceArtifact>();
-      var fieldInstanceGenerator = new FieldInstanceArtifactGenerator2();
+      var fieldInstanceGenerator = new FieldInstanceArtifactGenerator();
       for(int i=0; i<instanceNumber; i++){
         var elementInstanceArtifactBuilder = ElementInstanceArtifact.builder();
         var currentPath = relatedResourceIdentifierPath + "[" + i + "]";
