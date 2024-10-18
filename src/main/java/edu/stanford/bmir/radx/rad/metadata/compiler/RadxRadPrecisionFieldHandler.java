@@ -206,116 +206,6 @@ public class RadxRadPrecisionFieldHandler {
     return pathParts[pathParts.length - 1];
   }
 
-//  /***
-//   * This method aims to set RADx-rad specific controlled term fields
-//   * such as set Contributor Type to Person
-//   * It adds empty field entry if it is not a specific controlled term fields
-//   */
-//  public static void addSpecificFields(
-//      ElementInstanceArtifact.Builder elementInstanceArtifactBuilder,
-//      String elementName,
-//      String expectedField,
-//      ElementSchemaArtifact elementSchemaArtifact,
-//      Map<String, String> groupedData,
-//      Map<String, Integer> elementInstanceCounts,
-//      int i){
-//
-//    var fieldSchemaArtifact = elementSchemaArtifact.getFieldSchemaArtifact(expectedField);
-//    var valueConstraints = fieldSchemaArtifact.valueConstraints();
-//    var isMultiple = fieldSchemaArtifact.isMultiple();
-//    var fieldType = FieldType.getFieldType(fieldSchemaArtifact);
-//
-//    //If the element instance is not empty, then set specific controlled term fields
-//    //-----------------------start to comment out for template 2,0-----------------------------------
-//    if(!isEmptyElementInstance(elementInstanceCounts, elementName, elementSchemaArtifact)){
-//     if (elementName.equals(DATA_FILE_CONTRIBUTORS.getValue())  //Set Contributor Identifier Scheme to ORCiD
-//          && expectedField.equals(CONTRIBUTOR_IDENTIFIER_SCHEME.getValue())
-//          && groupedData.containsKey(contributorIdentifierPath)
-//          && groupedData.get(contributorIdentifierPath).get(i)!= null){
-//        elementInstanceArtifactBuilder.withSingleInstanceFieldInstance(expectedField,
-//            fieldInstanceArtifactGenerator.buildSingleInstanceWithValue(fieldType, orcid, Optional.empty()));
-//      } else if (elementName.equals(DATA_FILE_CREATORS.getValue())  //Set Creator Identifier Scheme to ORCiD
-//          && expectedField.equals(CREATOR_IDENTIFIER_SCHEME.getValue())
-//          && groupedData.containsKey(creatorIdentifierPath)
-//          && groupedData.get(creatorIdentifierPath).get(i)!= null){
-//        elementInstanceArtifactBuilder.withSingleInstanceFieldInstance(expectedField,
-//            fieldInstanceArtifactGenerator.buildSingleInstanceWithValue(fieldType, orcid, Optional.empty()));
-//      } else if (elementName.equals(DATA_FILE_CREATORS.getValue())  //Set Creator Affiliation Identifier Scheme to ROR
-//          && expectedField.equals(CREATOR_AFFILIATION_IDENTIFIER_SCHEME.getValue())
-//          && groupedData.containsKey(creatorAffiliationIdPath)
-//          && groupedData.get(creatorAffiliationIdPath).get(i).get(0).startsWith("ror")){
-//        elementInstanceArtifactBuilder.withSingleInstanceFieldInstance(expectedField,
-//            fieldInstanceArtifactGenerator.buildSingleInstanceWithValue(fieldType, ror, Optional.empty()));
-//      } else if (elementName.equals(DATA_FILE_CREATORS.getValue()) //Set Creator Given Name
-//       //---------------------end of comment out for template 2.0-----------------------------------------
-////      if( elementName.equals(DATA_FILE_CREATORS.getValue())
-//          && expectedField.equals(CREATOR_GIVEN_NAME.getValue())
-//          && groupedData.containsKey(creatorNamePath)){
-//        var name = groupedData.get(creatorNamePath).get(i).get(0);
-//        if(name != null){
-//          var givenName = name.split(" ")[0];
-//          elementInstanceArtifactBuilder.withSingleInstanceFieldInstance(expectedField,
-//              fieldInstanceArtifactGenerator.buildSingleInstanceWithValue(fieldType, givenName, Optional.empty()));
-//        }
-//      } else if (elementName.equals(DATA_FILE_CREATORS.getValue()) //Set Creator Family Name
-//          && expectedField.equals(CREATOR_FAMILY_NAME.getValue())
-//          && groupedData.containsKey(creatorNamePath)){
-//        var name = groupedData.get(creatorNamePath).get(i).get(0);
-//        if(name != null){
-//          var familyName = name.split(" ")[1];
-//          elementInstanceArtifactBuilder.withSingleInstanceFieldInstance(expectedField,
-//              fieldInstanceArtifactGenerator.buildSingleInstanceWithValue(fieldType, familyName, Optional.empty()));
-//        }
-//      } else if (elementName.equals(DATA_FILE_DATES.getValue())  //Set Date Type to Created
-//          && expectedField.equals(EVENT_TYPE.getValue())
-//          && groupedData.containsKey(datePath)
-//          && groupedData.get(datePath).get(i) != null)  {
-//       var eventTypeInstance = fieldInstanceArtifactGenerator.buildSingleInstanceWithValue(fieldType, created, Optional.empty());
-//        elementInstanceArtifactBuilder.withSingleInstanceFieldInstance(expectedField, eventTypeInstance);
-//       //-----------------------start to comment out for template 2,0-----------------------------------
-//      } else if (elementName.equals(DATA_FILE_PARENT_STUDIES.getValue())  //Set Study Identifier Scheme to URL
-//          && expectedField.equals(STUDY_IDENTIFIER_SCHEME.getValue())
-//          && groupedData.containsKey(studyIdentifierPath)
-//          && isValidURL(groupedData.get(studyIdentifierPath).get(i).get(0))) {
-//        elementInstanceArtifactBuilder.withSingleInstanceFieldInstance(expectedField,
-//            fieldInstanceArtifactGenerator.buildSingleInstanceWithValue(fieldType, url, Optional.empty()));
-//      } else if(elementName.equals(DATA_FILE_TITLES.getValue())  //Set Data File Title Language to en
-//          && expectedField.equals(LANGUAGE.getValue())){
-//        elementInstanceArtifactBuilder.withSingleInstanceFieldInstance(expectedField,
-//            fieldInstanceArtifactGenerator.buildSingleInstanceWithValue(fieldType, "en", Optional.empty()));
-//       //-----------------------end of comment out for template 2,0-----------------------------------
-//      } else{
-//        var fieldInstanceArtifact = fieldInstanceArtifactGenerator.buildSingleEmptyInstance(fieldType, valueConstraints);
-//        buildWithFieldInstanceArtifact(elementInstanceArtifactBuilder, fieldInstanceArtifact, expectedField, isMultiple);
-//      }
-//    } else{
-//      var fieldInstanceArtifact = fieldInstanceArtifactGenerator.buildSingleEmptyInstance(fieldType, valueConstraints);
-//      buildWithFieldInstanceArtifact(elementInstanceArtifactBuilder, fieldInstanceArtifact, expectedField, isMultiple);
-//    }
-//  }
-
-//  private static void buildWithFieldInstanceArtifact(ElementInstanceArtifact.Builder elementInstanceArtifactBuilder, FieldInstanceArtifact fieldInstanceArtifact, String fieldName, boolean isMultiple){
-//    if(isMultiple){
-//      elementInstanceArtifactBuilder.withMultiInstanceFieldInstances(fieldName, List.of(fieldInstanceArtifact));
-//    } else{
-//      elementInstanceArtifactBuilder.withSingleInstanceFieldInstance(fieldName, fieldInstanceArtifact);
-//    }
-//  }
-//
-//  private static boolean isEmptyElementInstance(Map<String, Integer> elementInstanceCounts, String element, ElementSchemaArtifact elementSchemaArtifact){
-//    if(elementInstanceCounts.containsKey(element)){
-//      return false;
-//    }
-//
-//    var childElements = elementSchemaArtifact.getElementNames();
-//    for (var childElement : childElements){
-//      var childElementSchemaArtifact = elementSchemaArtifact.getElementSchemaArtifact(childElement);
-//      if(!isEmptyElementInstance(elementInstanceCounts, childElement, childElementSchemaArtifact)){
-//        return false;
-//      }
-//    }
-//    return true;
-//  }
 
   private static boolean isValidURL(String url){
     if(url == null){
@@ -337,7 +227,7 @@ public class RadxRadPrecisionFieldHandler {
                                                 TemplateSchemaArtifact templateSchemaArtifact,
                                                 TemplateInstanceArtifact.Builder templateInstanceArtifactBuilder) throws URISyntaxException {
     var instanceNumber = fieldCount.get(keywordPath);
-    if(instanceNumber >= 0) {
+    if(instanceNumber != null && instanceNumber >= 0) {
       var mesh = MeshCsvReader.readCSVToMap();
       var elementInstances = new ArrayList<ElementInstanceArtifact>();
       for(int i=0; i<instanceNumber; i++){
