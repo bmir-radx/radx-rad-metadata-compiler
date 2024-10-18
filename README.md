@@ -53,7 +53,7 @@ For transforming a single spreadsheet RADxRadExampleSheet.xlsx to the JSON-LD fo
 ## Execute through JAR file
 You can use the tool for metadata transformation directly by executing the JAR file. The JAR file can be downloaded from the following link:
 
-[Download radx-rad-metadata-compiler.jar](https://github.com/bmir-radx/radx-rad-metadata-compiler/releases/download/v1.0.2/radx-rad-metadata-compiler.jar)
+[Download radx-rad-metadata-compiler.jar](https://github.com/bmir-radx/radx-rad-metadata-compiler/releases/download/v1.0.3/radx-rad-metadata-compiler.jar)
 
 ### Usage
 
