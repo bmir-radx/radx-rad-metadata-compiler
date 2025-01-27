@@ -51,24 +51,25 @@ public class RadxRadPrecisionFieldHandler {
                                            FieldSchemaArtifact fieldSchemaArtifact,
                                            ElementInstanceArtifact.Builder builder){
     //get parentElement name
-    var parentElement = getParentElementName(path);
+    var parentElementName = getParentElementName(path);
+    var parentElementPath = "/" + parentElementName;
     var fieldType = FieldType.getFieldType(fieldSchemaArtifact);
 
-    if(elementCount.containsKey(parentElement)){
-      if(parentElement.equals(DATA_FILE_CONTRIBUTORS.getValue())){
+    if(elementCount.containsKey(parentElementPath)){
+      if(parentElementName.equals(DATA_FILE_CONTRIBUTORS.getValue())){
         patchContributorElementInstance(path, groupedData, fieldType, builder);
-      } else if (parentElement.equals(DATA_FILE_CREATORS.getValue())) {
+      } else if (parentElementName.equals(DATA_FILE_CREATORS.getValue())) {
         patchCreatorElementInstance(path, groupedData, fieldType, builder);
-      } else if (parentElement.equals(DATA_FILE_DATES.getValue())) {
+      } else if (parentElementName.equals(DATA_FILE_DATES.getValue())) {
         patchDateElementInstance(path, groupedData, fieldType, builder);
-      } else if (parentElement.equals(DATA_FILE_PARENT_STUDIES.getValue())) {
+      } else if (parentElementName.equals(DATA_FILE_PARENT_STUDIES.getValue())) {
         patchParentStudyElementInstance(path, groupedData, fieldType, builder);
-      } else if (parentElement.equals(DATA_FILE_TITLES.getValue())) {
+      } else if (parentElementName.equals(DATA_FILE_TITLES.getValue())) {
         patchTitleElementInstance(path, fieldType, builder);
       }
     }
 
-    if (parentElement.equals(DATA_FILE_LANGUAGE.getValue())) {
+    if (parentElementName.equals(DATA_FILE_LANGUAGE.getValue())) {
       patchLanguageElementInstance(path, fieldType, builder);
     }
   }
@@ -82,19 +83,19 @@ public class RadxRadPrecisionFieldHandler {
                                                       FieldType fieldType,
                                                       ElementInstanceArtifact.Builder builder){
     var fieldName = getFieldName(path);
-    String dependentFileName;
+    String dependentFieldPath;
     
     if(fieldName.equals(CONTRIBUTOR_IDENTIFIER_SCHEME.getValue())){
-      dependentFileName = path.replace(fieldName, CONTRIBUTOR_IDENTIFIER.getValue());
-      if(groupedData.containsKey(dependentFileName)
-          && groupedData.get(dependentFileName)!= null){
+      dependentFieldPath = getDependentFieldPath(path, fieldName, CONTRIBUTOR_IDENTIFIER.getValue());
+      if(groupedData.containsKey(dependentFieldPath)
+          && groupedData.get(dependentFieldPath)!= null){
         builder.withSingleInstanceFieldInstance(fieldName,
             fieldInstanceArtifactGenerator.buildSingleInstanceWithValue(fieldType, orcid, Optional.empty()));
       }
     } else if (fieldName.equals(CONTRIBUTOR_AFFILIATION_IDENTIFIER_SCHEME.getValue())) {
-      dependentFileName = path.replace(fieldName, CONTRIBUTOR_AFFILIATION_IDENTIFIER.getValue());
-      if(groupedData.containsKey(dependentFileName) && groupedData.get(dependentFileName)!= null){
-        var affiliationId = groupedData.get(dependentFileName);
+      dependentFieldPath = getDependentFieldPath(path, fieldName, CONTRIBUTOR_AFFILIATION_IDENTIFIER.getValue());
+      if(groupedData.containsKey(dependentFieldPath) && groupedData.get(dependentFieldPath)!= null){
+        var affiliationId = groupedData.get(dependentFieldPath);
         if (affiliationId.startsWith("ror")){
           builder.withSingleInstanceFieldInstance(fieldName,
               fieldInstanceArtifactGenerator.buildSingleInstanceWithValue(fieldType, ror, Optional.empty()));
@@ -115,19 +116,19 @@ public class RadxRadPrecisionFieldHandler {
                                                   FieldType fieldType,
                                                   ElementInstanceArtifact.Builder builder){
     var fieldName = getFieldName(path);
-    String dependentFileName;
+    String dependentFieldPath;
 
     if(fieldName.equals(CREATOR_IDENTIFIER_SCHEME.getValue())){
-      dependentFileName = path.replace(fieldName, CREATOR_IDENTIFIER.getValue());
-      if(groupedData.containsKey(dependentFileName)
-          && groupedData.get(dependentFileName)!= null){
+      dependentFieldPath = getDependentFieldPath(path, fieldName, CREATOR_IDENTIFIER.getValue());
+      if(groupedData.containsKey(dependentFieldPath)
+          && groupedData.get(dependentFieldPath)!= null){
         builder.withSingleInstanceFieldInstance(fieldName,
             fieldInstanceArtifactGenerator.buildSingleInstanceWithValue(fieldType, orcid, Optional.empty()));
       }
     } else if (fieldName.equals(CREATOR_AFFILIATION_IDENTIFIER_SCHEME.getValue())) {
-      dependentFileName = path.replace(fieldName, CREATOR_AFFILIATION_IDENTIFIER.getValue());
-      if(groupedData.containsKey(dependentFileName) && groupedData.get(dependentFileName)!= null){
-        var affiliationId = groupedData.get(dependentFileName);
+      dependentFieldPath = getDependentFieldPath(path, fieldName, CREATOR_AFFILIATION_IDENTIFIER.getValue());
+      if(groupedData.containsKey(dependentFieldPath) && groupedData.get(dependentFieldPath)!= null){
+        var affiliationId = groupedData.get(dependentFieldPath);
         if (affiliationId.startsWith("ror")){
           builder.withSingleInstanceFieldInstance(fieldName,
               fieldInstanceArtifactGenerator.buildSingleInstanceWithValue(fieldType, ror, Optional.empty()));
@@ -147,11 +148,11 @@ public class RadxRadPrecisionFieldHandler {
                                                FieldType fieldType,
                                                ElementInstanceArtifact.Builder builder){
     var fieldName = getFieldName(path);
-    var dependentFileName = path.replace(fieldName, DATE.getValue());
+    var dependentFieldPath = getDependentFieldPath(path, fieldName, DATE.getValue());
 
     if(fieldName.equals(EVENT_TYPE.getValue())
-        && groupedData.containsKey(dependentFileName)
-        && groupedData.get(dependentFileName) != null)  {
+        && groupedData.containsKey(dependentFieldPath)
+        && groupedData.get(dependentFieldPath) != null)  {
       builder.withSingleInstanceFieldInstance(fieldName,
           fieldInstanceArtifactGenerator.buildSingleInstanceWithValue(fieldType, created, Optional.empty()));
     }
@@ -165,11 +166,11 @@ public class RadxRadPrecisionFieldHandler {
                                          FieldType fieldType,
                                          ElementInstanceArtifact.Builder builder){
     var fieldName = getFieldName(path);
-    var dependentFileName = path.replace(fieldName, STUDY_IDENTIFIER.getValue());
+    var dependentFieldPath = getDependentFieldPath(path, fieldName, STUDY_IDENTIFIER.getValue());
 
     if(fieldName.equals(STUDY_IDENTIFIER_SCHEME.getValue())
-        && groupedData.containsKey(dependentFileName)
-        && isValidURL(groupedData.get(dependentFileName)))  {
+        && groupedData.containsKey(dependentFieldPath)
+        && isValidURL(groupedData.get(dependentFieldPath)))  {
       builder.withSingleInstanceFieldInstance(fieldName,
           fieldInstanceArtifactGenerator.buildSingleInstanceWithValue(fieldType, url, Optional.empty()));
     }
@@ -333,5 +334,9 @@ public class RadxRadPrecisionFieldHandler {
     }
     templateInstanceArtifactBuilder.withMultiInstanceFieldInstances(SUBJECTS.getValue(), subjectsInstances);
     templateInstanceArtifactBuilder.withMultiInstanceFieldInstances(KEYWORDS.getValue(), keywordsInstances);
+  }
+
+  private static String getDependentFieldPath(String originPath, String currentField, String replaceField){
+    return originPath.replace(currentField, replaceField) + "[0]";
   }
 }
