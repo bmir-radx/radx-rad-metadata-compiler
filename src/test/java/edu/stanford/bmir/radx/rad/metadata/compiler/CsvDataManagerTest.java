@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.metadatacenter.artifacts.model.reader.JsonSchemaArtifactReader;
+import org.metadatacenter.artifacts.model.reader.JsonArtifactReader;
 
 import java.io.IOException;
 import java.util.Map;
@@ -19,7 +19,7 @@ public class CsvDataManagerTest {
   private PathMappingReader pathMappingReader = new PathMappingReader();
   private CsvReader csvReader = new CsvReader();
   private CsvDataManager csvDataManager = new CsvDataManager();
-  private JsonSchemaArtifactReader jsonSchemaArtifactReader = new JsonSchemaArtifactReader();
+  private JsonArtifactReader jsonSchemaArtifactReader = new JsonArtifactReader();
   private ObjectMapper mapper = new ObjectMapper();
 
   @BeforeEach
