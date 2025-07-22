@@ -3,7 +3,7 @@ package edu.stanford.bmir.radx.rad.metadata.compiler;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.metadatacenter.artifacts.model.core.*;
-import org.metadatacenter.artifacts.model.reader.JsonSchemaArtifactReader;
+import org.metadatacenter.artifacts.model.reader.JsonArtifactReader;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -26,7 +26,7 @@ public class TemplateInstanceArtifactGenerator {
 
 
     //read templateContent using cedar-artifact-library
-    JsonSchemaArtifactReader jsonSchemaArtifactReader = new JsonSchemaArtifactReader();
+    JsonArtifactReader jsonSchemaArtifactReader = new JsonArtifactReader();
     TemplateSchemaArtifact templateSchemaArtifact = jsonSchemaArtifactReader.readTemplateSchemaArtifact((ObjectNode) templateNode);
     isFirstVersionTemplate = TemplateVersion.isFirstVersion(templateSchemaArtifact.jsonLdId());
 
@@ -78,7 +78,7 @@ public class TemplateInstanceArtifactGenerator {
                                         TemplateSchemaArtifact templateSchemaArtifact,
                                         TemplateInstanceArtifact.Builder builder){
     var fieldInstanceArtifactGenerator = new FieldInstanceArtifactGenerator();
-    var childFields = templateSchemaArtifact.getFieldNames();
+    var childFields = templateSchemaArtifact.getChildKeys();
 
     for(var childField: childFields){
       var currentPath = "/" + childField;
@@ -130,7 +130,7 @@ public class TemplateInstanceArtifactGenerator {
                                          TemplateSchemaArtifact templateSchemaArtifact,
                                          TemplateInstanceArtifact.Builder builder,
                                          ElementInstanceArtifactGenerator elementInstanceArtifactGenerator) throws URISyntaxException {
-    var elements = templateSchemaArtifact.getElementNames();
+    var elements = templateSchemaArtifact.getChildKeys();
     for (var childElement : elements) {
       var currentPath = "/" + childElement;
       if (FIRST_VERSION_SPECIAL.isFirstVersionSpecialty(childElement) && isFirstVersionTemplate) {
