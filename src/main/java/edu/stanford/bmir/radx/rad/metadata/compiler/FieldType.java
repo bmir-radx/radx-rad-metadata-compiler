@@ -25,7 +25,9 @@ public enum FieldType {
   RICHTEXT("richtext"),
   IMAGE("image"),
   YOUTUBE("youtube"),
-  CONTROLLED_TERM("controlled-term");
+  CONTROLLED_TERM("controlled-term"),
+  ROR("ror"),
+  ORCID("orcid");
 
   private final String text;
   private static final Map<FieldInputType, FieldType> typeMapping = new HashMap<>();
@@ -54,6 +56,8 @@ public enum FieldType {
     typeMapping.put(FieldInputType.RICHTEXT, RICHTEXT);
     typeMapping.put(FieldInputType.IMAGE, IMAGE);
     typeMapping.put(FieldInputType.YOUTUBE, YOUTUBE);
+    typeMapping.put(FieldInputType.ROR, ROR);
+    typeMapping.put(FieldInputType.ORCID, ORCID);
   }
 
 //  public static FieldType getFieldType(FieldInputType inputType) {

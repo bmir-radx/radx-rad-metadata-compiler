@@ -3,7 +3,7 @@ package edu.stanford.bmir.radx.rad.metadata.compiler;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.apache.commons.cli.*;
-import org.metadatacenter.artifacts.model.renderer.JsonSchemaArtifactRenderer;
+import org.metadatacenter.artifacts.model.renderer.JsonArtifactRenderer;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -27,7 +27,7 @@ public class Compiler {
   private static final String DEFAULT_METADATA_SPECIFICATION = "/RADxMetadataSpecification1.json";
   private static final CsvReader csvReader = new CsvReader();
   private static final PathMappingReader pathMappingReader = new PathMappingReader();
-  private static final JsonSchemaArtifactRenderer jsonSchemaArtifactRenderer = new JsonSchemaArtifactRenderer();
+  private static final JsonArtifactRenderer jsonSchemaArtifactRenderer = new JsonArtifactRenderer();
   private static final TemplateInstanceArtifactGenerator templateArtifactInstanceGenerator = new TemplateInstanceArtifactGenerator();
   private static final ObjectMapper mapper = new ObjectMapper();
   public static void main(String[] args) throws Exception {
