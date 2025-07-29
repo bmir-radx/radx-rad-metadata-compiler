@@ -67,7 +67,7 @@ public class ElementInstanceArtifactGenerator {
   private void buildChildFieldInstances(String parentElementPath,
                                         ElementSchemaArtifact elementSchemaArtifact,
                                         ElementInstanceArtifact.Builder builder){
-    var childFields = elementSchemaArtifact.getFieldNames();
+    var childFields = elementSchemaArtifact.getChildKeys();
     for(var childField: childFields){
       var currentPath = parentElementPath + "/" + childField;
       var normalizedPath = normalizePath(currentPath);
@@ -121,7 +121,7 @@ public class ElementInstanceArtifactGenerator {
   private void buildChildElementInstances(String parentElementPath,
                                           ElementSchemaArtifact elementSchemaArtifact,
                                           ElementInstanceArtifact.Builder builder) throws URISyntaxException {
-    var childElements = elementSchemaArtifact.getElementNames();
+    var childElements = elementSchemaArtifact.getElementKeys();
     for(var childElement:childElements){
       var currentChildElementPath = parentElementPath + "/" + childElement;
       var childElementArtifactSchema = elementSchemaArtifact.getElementSchemaArtifact(childElement);
@@ -152,7 +152,7 @@ public class ElementInstanceArtifactGenerator {
   public ElementInstanceArtifact buildSingleEmptyInstance(ElementSchemaArtifact elementSchemaArtifact,
                                                String path) throws URISyntaxException {
     var elementInstanceBuilder = ElementInstanceArtifact.builder();
-    var childFields = elementSchemaArtifact.getFieldNames();
+    var childFields = elementSchemaArtifact.getChildKeys();
 
     //Add context
     ContextGenerator.generateElementInstanceContext(elementSchemaArtifact, elementInstanceBuilder);
@@ -172,7 +172,7 @@ public class ElementInstanceArtifactGenerator {
   private void buildEmptyChildFieldInstances(String path,
                                              ElementSchemaArtifact elementSchemaArtifact,
                                              ElementInstanceArtifact.Builder builder){
-    var childFields = elementSchemaArtifact.getFieldNames();
+    var childFields = elementSchemaArtifact.getChildKeys();
     for(var childField : childFields){
       var specificationPath = path + "/" + childField;
       if(AttributeValueFieldUtil.isAttributeValue(templateSchemaArtifact, specificationPath)){
@@ -201,7 +201,7 @@ public class ElementInstanceArtifactGenerator {
   private void buildEmptyChildElementInstances(String path,
                                                ElementSchemaArtifact elementSchemaArtifact,
                                                ElementInstanceArtifact.Builder builder) throws URISyntaxException {
-    var childElements = elementSchemaArtifact.getElementNames();
+    var childElements = elementSchemaArtifact.getChildKeys();
     for (var childElement : childElements){
       var childElementSchemaArtifact = elementSchemaArtifact.getElementSchemaArtifact(childElement);
       if (childElementSchemaArtifact.isMultiple()){

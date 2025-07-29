@@ -2,6 +2,7 @@ package edu.stanford.bmir.radx.rad.metadata.compiler;
 
 import edu.stanford.bmir.radx.rad.metadata.compiler.fieldGenerators.*;
 import org.metadatacenter.artifacts.model.core.FieldInstanceArtifact;
+import org.metadatacenter.artifacts.model.core.OrcidField;
 import org.metadatacenter.artifacts.model.core.fields.constraints.ValueConstraints;
 
 import java.util.*;
